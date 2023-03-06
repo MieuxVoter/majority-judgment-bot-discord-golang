@@ -1,7 +1,7 @@
 package main
 
 // A Bot for Discord to create polls, using majority judgment.
-// Usage:   /mj <subject> <proposalA> <proposalB>
+// Usage:   /mj <subject> <proposalA> <proposalB> …
 
 import (
 	"context"
@@ -12,80 +12,15 @@ import (
 	"github.com/andersfylling/disgord/std"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+
+	cmd "main/src/commands"
+	db "main/src/database"
+	"main/src/logging"
 )
 
-var log = &logrus.Logger{
-	Out:       os.Stderr,
-	Formatter: new(logrus.TextFormatter),
-	Hooks:     make(logrus.LevelHooks),
-	Level:     logrus.DebugLevel,
-	//Level:     logrus.InfoLevel,
-}
+var log *logrus.Logger
 
 var noCtx = context.Background()
-
-// We'll probably want the builder pattern here instead of this static def
-var commands = []*disgord.CreateApplicationCommand{
-	{
-		Name:        "mj",
-		Description: "Manage Majority Judgment polls",
-		Type:        disgord.ApplicationCommandChatInput,
-		Options: []*disgord.ApplicationCommandOption{
-			{
-				Name:        "create",
-				Description: "Create a new poll",
-				Type:        disgord.OptionTypeSubCommand,
-				Options: []*disgord.ApplicationCommandOption{
-					{
-						Name:        "subject",
-						Description: "The poll's subject, such as \"When should we meet?\"",
-						Type:        disgord.OptionTypeString,
-					},
-					{
-						Name:        "proposal_a",
-						Description: "The name of the first proposal",
-						Type:        disgord.OptionTypeString,
-					},
-					{
-						Name:        "proposal_b",
-						Description: "The name of the second proposal",
-						Type:        disgord.OptionTypeString,
-					},
-					{
-						Name:        "proposal_c",
-						Description: "The name of the third proposal",
-						Type:        disgord.OptionTypeString,
-					},
-					{
-						Name:        "proposal_d",
-						Description: "The name of the fourth proposal",
-						Type:        disgord.OptionTypeString,
-					},
-					{
-						Name:        "proposal_e",
-						Description: "The name of the fifth proposal",
-						Type:        disgord.OptionTypeString,
-					},
-				},
-				//Choices: []*disgord.ApplicationCommandOptionChoice{
-				//	{
-				//		Name:  "create",
-				//		Value: "create",
-				//	},
-				//	{
-				//		Name:  "help",
-				//		Value: "help",
-				//	},
-				//},
-			},
-			{
-				Name:        "help",
-				Description: "Send an SOS: ... --- ...",
-				Type:        disgord.OptionTypeSubCommand,
-			},
-		},
-	},
-}
 
 // checkErr logs errors if not nil, along with a user-specified trace
 func checkErr(err error, trace string) {
@@ -178,20 +113,28 @@ func getOptionStringByName(
 }
 
 func main() {
-	const prefix = "!"
+	const prefix = "!" // todo: remove me
 
 	// Load Environment variables from files, for convenience
 	err := godotenv.Load(".env.local")
 	if err != nil {
-		log.Warning("No .env.local file found.  Best create one from .env with your DISCORD_TOKEN.")
+		fmt.Println("No .env.local file found.  Best create one from .env with your DISCORD_TOKEN.")
 	}
-	err = godotenv.Load()
+	err = godotenv.Load() // .env
 	if err != nil {
-		log.Warning("No .env file found.  You probably know what you are doing.")
+		fmt.Println("No .env file found.  Ignore this message in builds?")
 	}
+
+	log = logging.MakeLogger()
 
 	// Greet the dev
 	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version
+
+	// Establish a database connection
+	_, err = db.Boot(log.Level)
+	checkErr(err, "db.Boot")
+	err = db.Sync()
+	checkErr(err, "db.Sync")
 
 	// Start the Discord client
 	client := disgord.New(disgord.Config{
@@ -232,11 +175,11 @@ func main() {
 
 	// Note the permission and scope are the minimum requirements for slash commands to operate
 	u, err := client.BotAuthorizeURL(disgord.PermissionUseSlashCommands, []string{
-		"bot", // todo: try our best to remove this permission, and only use application.commands
+		"bot", // todo: try our best to remove this scope, and only use application.commands
 		"applications.commands",
 	})
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Follow this URL to authorize the bot on your server:")
 	fmt.Println(u)
@@ -245,13 +188,13 @@ func main() {
 	filter, _ := std.NewMsgFilter(context.Background(), client)
 	filter.SetPrefix(prefix)
 
-	// Create a handler and bind it to new message events
-	client.Gateway().WithMiddleware(
-		filter.NotByBot,  // ignore bot messages
-		filter.HasPrefix, // message must have the given prefix
-		//logFilter.LogMsg,   // log command message
-		filter.StripPrefix, // remove the command prefix from the message
-	).MessageCreate(handleCommand)
+	// Create a handler and bind it to new message events  (no!  use commands!)
+	//client.Gateway().WithMiddleware(
+	//	filter.NotByBot,  // ignore bot messages
+	//	filter.HasPrefix, // message must have the given prefix
+	//	logFilter.LogMsg,   // log command message
+	//	filter.StripPrefix, // remove the command prefix from the message
+	//).MessageCreate(handleCommand)
 
 	// Create a handler and bind it to new messages where the bot is mentioned
 	client.Gateway().WithMiddleware(
@@ -264,6 +207,7 @@ func main() {
 		log.Info("Bot is ready!")
 		//log.Info(fmt.Sprintf("Bot %s is ready in aplication %s"))
 		//client.CurrentUser().Get()
+		commands := cmd.GetCommands()
 		for i := range commands {
 			log.Info("Registering command /", commands[i].Name)
 			// FIXME: handle multiple guilds
@@ -293,99 +237,201 @@ func main() {
 
 			log.Debugln("Handling application command ", h, h.Data)
 
-			subcommandOptions, err := getSubcommandOptions(h.Data.Options, "create")
-			checkErr(err, "getSubcommandOptions:create")
-
-			subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
-
-			err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
-				Type: disgord.InteractionCallbackChannelMessageWithSource,
-				Data: &disgord.CreateInteractionResponseData{
-					//Content:    "Bazinga!",
-					Embeds: []*disgord.Embed{
-						{
-							Title: "⚖ `#1` " + subject,
-							//Description: "Smash that Like button and leave a comment below!",
-						},
+			if len(h.Data.Options) == 0 { // no subcommand was provided
+				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
+					Type: disgord.InteractionCallbackChannelMessageWithSource,
+					Data: &disgord.CreateInteractionResponseData{
+						Flags: disgord.MessageFlagEphemeral,
+						Content: "🤖 _Hello !_  Here are the available commands:\n" +
+							"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
+							"⌨ `/mj help`\n" +
+							"\n" +
+							"> 🕵 For extra privacy; this modern bot is NOT allowed to read messages, " +
+							"only react to its own commands and interactions.\n" +
+							//"\n" +
+							//"If \n" +
+							"",
 					},
-					//SpoilerTagContent:        true,
-					SpoilerTagAllAttachments: true,
-					//Components: buttons,
-					Components: []*disgord.MessageComponent{
-						{
-							Type:     disgord.MessageComponentActionRow,
-							CustomID: "0",
-							Components: []*disgord.MessageComponent{
-								{
-									Type:     disgord.MessageComponentButton,
-									Style:    disgord.Success,
-									CustomID: "1",
-									Label:    "Good",
-									Emoji: &disgord.Emoji{
-										Name: "🙂",
-									},
-								},
-								{
-									Type:     disgord.MessageComponentButton,
-									Style:    disgord.Primary,
-									CustomID: "2",
-									Label:    "Acceptable",
-									Emoji: &disgord.Emoji{
-										Name: "😐",
-									},
-								},
-								{
-									Type:     disgord.MessageComponentButton,
-									Style:    disgord.Danger,
-									CustomID: "3",
-									Label:    "Reject",
-									Emoji: &disgord.Emoji{
-										Name: "🙁",
+				})
+				checkErr(err, "SendInteractionResponse:Nothing")
+				return
+			}
+
+			subCmdName := h.Data.Options[0].Name
+
+			if subCmdName == "help" {
+				err = cmd.HandleHelpCommand(noCtx, s, h)
+				checkErr(err, "HandleHelpCommand")
+				return
+			} else if subCmdName == "create" {
+				subcommandOptions, err := getSubcommandOptions(h.Data.Options, "create")
+				checkErr(err, "getSubcommandOptions:create")
+
+				subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
+				proposalsNames := make([]string, 0)
+				for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
+					proposalName := getOptionStringByName(subcommandOptions, "proposal_"+v, "")
+					if proposalName == "" {
+						continue
+					}
+					proposalsNames = append(proposalsNames, proposalName)
+				}
+
+				if len(proposalsNames) == 0 {
+					err = cmd.RespondCommandFailure(noCtx, s, h, "A Poll needs at least two proposals.")
+					checkErr(err, "RespondCommandFailure:NoProposals")
+					return
+				}
+
+				// 8<-----
+
+				poll := db.Poll{
+					Subject: subject,
+				}
+				_, err = db.Orm.InsertOne(&poll)
+				checkErr(err, "InsertOne:Poll")
+				log.Infoln("New Poll:", poll)
+
+				proposals := make([]*db.Proposal, 0)
+				for _, proposalName := range proposalsNames {
+					proposal := &db.Proposal{
+						Name:   proposalName,
+						PollId: poll.Id,
+					}
+					proposals = append(proposals, proposal)
+				}
+
+				// 8<-----
+
+				pollEmbedHero := &disgord.Embed{
+					Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, subject),
+				}
+				if len(proposals) > 0 {
+					description := ""
+					for i, proposal := range proposals {
+						if i > 0 {
+							description += ", "
+						}
+						description += proposal.Name
+					}
+					pollEmbedHero.Description = description
+				} else {
+					// nothing is cool for now
+				}
+
+				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
+					Type: disgord.InteractionCallbackChannelMessageWithSource,
+					Data: &disgord.CreateInteractionResponseData{
+						Embeds: []*disgord.Embed{
+							pollEmbedHero,
+						},
+						//Embeds: []*disgord.Embed{
+						//	{
+						//		Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, subject),
+						//		//Description: "Smash that Like button and leave a comment below!",
+						//	},
+						//},
+						//Content:    "Bazinga!",
+						//SpoilerTagContent:        true,
+						SpoilerTagAllAttachments: true,
+						//Components: buttons,
+						Components: []*disgord.MessageComponent{
+							{
+								Type:     disgord.MessageComponentActionRow,
+								CustomID: "poll_action_row",
+								Components: []*disgord.MessageComponent{
+									{
+										Type:     disgord.MessageComponentButton,
+										Style:    disgord.Success,
+										CustomID: "button_vote",
+										Label:    "Participate",
+										Emoji: &disgord.Emoji{
+											Name: "📨",
+										},
 									},
 								},
 							},
-						},
-						{
-							Type:     disgord.MessageComponentActionRow,
-							CustomID: "4",
-							Components: []*disgord.MessageComponent{
-								{
-									Type:        disgord.MessageComponentSelectMenu,
-									CustomID:    "5",
-									MinValues:   1,
-									MaxValues:   1,
-									Placeholder: "Monday",
-									Options: []*disgord.SelectMenuOption{
-										{
-											Label:       "Excellent",
-											Description: "I think Monday is Excellent for me",
-											Value:       "6",
-											Emoji: &disgord.Emoji{
-												Name: "🙂",
-											},
-										},
-										{
-											Label: "Acceptable",
-											Value: "3",
-											Emoji: &disgord.Emoji{
-												Name: "😐",
-											},
-										},
-										{
-											Label: "Reject",
-											Value: "0",
-											Emoji: &disgord.Emoji{
-												Name: "🙁",
-											},
-										},
-									},
-								},
-							},
+							//{
+							//	Type:     disgord.MessageComponentActionRow,
+							//	CustomID: "0",
+							//	Components: []*disgord.MessageComponent{
+							//		{
+							//			Type:     disgord.MessageComponentButton,
+							//			Style:    disgord.Success,
+							//			CustomID: "1",
+							//			Label:    "Good",
+							//			Emoji: &disgord.Emoji{
+							//				Name: "🙂",
+							//			},
+							//		},
+							//		{
+							//			Type:     disgord.MessageComponentButton,
+							//			Style:    disgord.Primary,
+							//			CustomID: "2",
+							//			Label:    "Acceptable",
+							//			Emoji: &disgord.Emoji{
+							//				Name: "😐",
+							//			},
+							//		},
+							//		{
+							//			Type:     disgord.MessageComponentButton,
+							//			Style:    disgord.Danger,
+							//			CustomID: "3",
+							//			Label:    "Reject",
+							//			Emoji: &disgord.Emoji{
+							//				Name: "🙁",
+							//			},
+							//		},
+							//	},
+							//},
+							//{
+							//	Type:     disgord.MessageComponentActionRow,
+							//	CustomID: "4",
+							//	Components: []*disgord.MessageComponent{
+							//		{
+							//			Type:        disgord.MessageComponentSelectMenu,
+							//			CustomID:    "5",
+							//			MinValues:   1,
+							//			MaxValues:   1,
+							//			Placeholder: "Monday",
+							//			Options: []*disgord.SelectMenuOption{
+							//				{
+							//					Label:       "Excellent",
+							//					Description: "I think Monday is Excellent for me",
+							//					Value:       "6",
+							//					Emoji: &disgord.Emoji{
+							//						Name: "🙂",
+							//					},
+							//				},
+							//				{
+							//					Label: "Acceptable",
+							//					Value: "3",
+							//					Emoji: &disgord.Emoji{
+							//						Name: "😐",
+							//					},
+							//				},
+							//				{
+							//					Label: "Reject",
+							//					Value: "0",
+							//					Emoji: &disgord.Emoji{
+							//						Name: "🙁",
+							//					},
+							//				},
+							//			},
+							//		},
+							//	},
+							//},
 						},
 					},
-				},
-			})
-			checkErr(err, "SendInteractionResponse:Select")
+				})
+				checkErr(err, "SendInteractionResponse:Select")
+
+				return
+			} else {
+				log.Errorln("Unrecognized subcommand ", subCmdName)
+
+				return
+			}
 
 		} else if h.Type == disgord.InteractionMessageComponent {
 
