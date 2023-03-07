@@ -21,6 +21,23 @@ type Poll struct {
 	// Judgments         JudgmentList   `xorm:"-"`
 }
 
+func (poll *Poll) GetGradingSlice() []string {
+	list := make([]string, 0, 5)
+
+	// Placeholder until user customization somehow (poll.Grading?)
+	// - 🤮😒😐🙂😀🤩
+	// - 😫😒😐😌😀😍  (more support, apparently)
+	// - …
+	list = append(list, "🤮")
+	//list = append(list, "😒")
+	list = append(list, "😐")
+	list = append(list, "😌")
+	list = append(list, "😀")
+	list = append(list, "😍")
+
+	return list
+}
+
 type Proposal struct {
 	Id     uint64 `xorm:"pk autoincr"`
 	Name   string

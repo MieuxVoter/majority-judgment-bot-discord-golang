@@ -1,8 +1,9 @@
-package commands
+package command
 
 import (
 	"fmt"
 	"github.com/andersfylling/disgord"
+	db "main/src/database"
 )
 
 import (
@@ -79,13 +80,13 @@ func HandleHelpCommand(
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,
 			Content: "🤖 _Hello !_ " +
-				"Here are the available commands:\n" +
+				"Here are the available command:\n" +
 				"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
 				"⌨ `/mj help`\n" +
 				"\n" +
 				"🕵 **Can this bot read our messages?**\n" +
 				"> **No.**  For extra privacy, this modern bot is NOT allowed to read messages, " +
-				"only react to its own `/mj` commands and button interactions.\n" +
+				"only react to its own `/mj` command and button interactions.\n" +
 				"\n" +
 				"❺ **Can I use more than 5 proposals?**\n" +
 				"> **Not for now.**  Discord limits messages to 5 action rows, " +
@@ -96,6 +97,65 @@ func HandleHelpCommand(
 				"",
 		},
 	})
+
+	return err
+}
+
+func StartVoteProcess(
+	ctx context.Context,
+	s disgord.Session,
+	h *disgord.InteractionCreate,
+	judge *disgord.Member,
+	proposal *db.Proposal,
+	poll *db.Poll,
+) error {
+
+	interactionResponse := &disgord.CreateInteractionResponse{
+		Type: disgord.InteractionCallbackChannelMessageWithSource,
+		Data: &disgord.CreateInteractionResponseData{
+			Flags: disgord.MessageFlagEphemeral,
+			Embeds: []*disgord.Embed{
+				{
+					Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
+					Description: fmt.Sprintf("What do you think of _%s_ ?", proposal.Name),
+				},
+			},
+			Components: []*disgord.MessageComponent{
+				{
+					Type:       disgord.MessageComponentActionRow,
+					CustomID:   "poll_action_row",
+					Components: []*disgord.MessageComponent{
+						//{
+						//	Type:     disgord.MessageComponentButton,
+						//	Style:    disgord.Success,
+						//	CustomID: "button_judge", // fixme
+						//	Label:    "Obi-Wan",
+						//	//Emoji: &disgord.Emoji{
+						//	//	Name: "→",
+						//	//},
+						//},
+					},
+				},
+			},
+		},
+	}
+
+	for gradeLevel, grade := range poll.GetGradingSlice() {
+		interactionResponse.Data.Components[0].Components = append(
+			interactionResponse.Data.Components[0].Components,
+			&disgord.MessageComponent{
+				Type:     disgord.MessageComponentButton,
+				Style:    disgord.Primary,
+				CustomID: fmt.Sprintf("button_judge_%d", gradeLevel), // fixme
+				Label:    fmt.Sprintf("%s", grade),
+				//Emoji: &disgord.Emoji{
+				//	Name: "📨",
+				//},
+			},
+		)
+	}
+
+	err := s.SendInteractionResponse(ctx, h, interactionResponse)
 
 	return err
 }

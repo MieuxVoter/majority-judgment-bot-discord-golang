@@ -13,7 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 
-	cmd "main/src/commands"
+	cmd "main/src/command"
 	db "main/src/database"
 	"main/src/logging"
 )
@@ -31,8 +31,8 @@ func checkErr(err error, trace string) {
 	}
 }
 
-// handleCommand is a basic command handler for !commands
-// We aim to remove this eventually, and only use application commands (/commands)
+// handleCommand is a basic command handler for !command
+// We aim to remove this eventually, and only use application command (/command)
 func handleCommand(s disgord.Session, data *disgord.MessageCreate) {
 	msg := data.Message
 
@@ -173,10 +173,10 @@ func main() {
 	// Heartbeat
 	defer client.Gateway().StayConnectedUntilInterrupted()
 
-	// Note the permission and scope are the minimum requirements for slash commands to operate
+	// Note the permission and scope are the minimum requirements for slash command to operate
 	u, err := client.BotAuthorizeURL(disgord.PermissionUseSlashCommands, []string{
-		"bot", // todo: try our best to remove this scope, and only use application.commands
-		"applications.commands",
+		"bot", // todo: try our best to remove this scope, and only use application.command
+		"applications.command",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -188,7 +188,7 @@ func main() {
 	filter, _ := std.NewMsgFilter(context.Background(), client)
 	filter.SetPrefix(prefix)
 
-	// Create a handler and bind it to new message events  (no!  use commands!)
+	// Create a handler and bind it to new message events  (no!  use command!)
 	//client.Gateway().WithMiddleware(
 	//	filter.NotByBot,  // ignore bot messages
 	//	filter.HasPrefix, // message must have the given prefix
@@ -202,15 +202,15 @@ func main() {
 		filter.ContainsBotMention, // message must mention this bot
 	).MessageCreate(handleMessageMentioningMe)
 
-	// Register slash commands once the bot is ready
+	// Register slash command once the bot is ready
 	client.Gateway().BotReady(func() {
 		log.Info("Bot is ready!")
-		//log.Info(fmt.Sprintf("Bot %s is ready in aplication %s"))
+		//log.Info(fmt.Sprintf("Bot %s is ready in application %s"))
 		//client.CurrentUser().Get()
 		commands := cmd.GetCommands()
 		for i := range commands {
 			log.Info("Registering command /", commands[i].Name)
-			// FIXME: handle multiple guilds
+			// FIXME: handle multiple guilds; note that config may change slash API
 			// - session.GetConnectedGuilds() is empty (?)
 			// - needs a database, then
 			guildSnow, err := disgord.GetSnowflake(705322981102190593)
@@ -225,7 +225,7 @@ func main() {
 		}
 	})
 
-	// Respond to discord slash commands and other interactions
+	// Respond to discord slash command and other interactions
 	client.Gateway().InteractionCreate(func(s disgord.Session, h *disgord.InteractionCreate) {
 		fmt.Printf("Interaction: %+v\n", *h)
 		fmt.Printf("Data %+v\n", *h.Data)
@@ -242,12 +242,12 @@ func main() {
 					Type: disgord.InteractionCallbackChannelMessageWithSource,
 					Data: &disgord.CreateInteractionResponseData{
 						Flags: disgord.MessageFlagEphemeral,
-						Content: "🤖 _Hello !_  Here are the available commands:\n" +
+						Content: "🤖 _Hello !_  Here are the available command:\n" +
 							"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
 							"⌨ `/mj help`\n" +
 							"\n" +
 							"> 🕵 For extra privacy; this modern bot is NOT allowed to read messages, " +
-							"only react to its own commands and interactions.\n" +
+							"only react to its own command and interactions.\n" +
 							//"\n" +
 							//"If \n" +
 							"",
@@ -300,6 +300,8 @@ func main() {
 					}
 					proposals = append(proposals, proposal)
 				}
+				_, err = db.Orm.Insert(&proposals)
+				checkErr(err, "Insert:Proposals")
 
 				// 8<-----
 
@@ -319,7 +321,7 @@ func main() {
 					// nothing is cool for now
 				}
 
-				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
+				err = s.SendInteractionResponse(noCtx, h, &disgord.CreateInteractionResponse{
 					Type: disgord.InteractionCallbackChannelMessageWithSource,
 					Data: &disgord.CreateInteractionResponseData{
 						Embeds: []*disgord.Embed{
@@ -343,7 +345,7 @@ func main() {
 									{
 										Type:     disgord.MessageComponentButton,
 										Style:    disgord.Success,
-										CustomID: "button_vote",
+										CustomID: "button_participate",
 										Label:    "Participate",
 										Emoji: &disgord.Emoji{
 											Name: "📨",
@@ -436,16 +438,60 @@ func main() {
 		} else if h.Type == disgord.InteractionMessageComponent {
 
 			if h.Data.ComponentType == disgord.MessageComponentButton {
-				log.Debugln("Handling interaction on button", h, h.Data)
+				log.Debugln("Handling interaction on button", h, h.Data, h.Data.Options)
 
-				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
-					Type: disgord.InteractionCallbackChannelMessageWithSource,
-					Data: &disgord.CreateInteractionResponseData{
-						Flags:   disgord.MessageFlagEphemeral,
-						Content: "A Voté. (même pas vrai, c'est en chantier)",
-					},
-				})
-				checkErr(err, "SendInteractionResponse:Button")
+				if h.Data.CustomID == "button_participate" {
+
+					// Get the judge that clicked the button to participate
+					judge := h.Member
+
+					// todo: check the judges permissions to vote, somehow
+
+					// Get the poll this button is for
+					poll := db.Poll{Id: 2} // fixme
+					found, err := db.Orm.Get(&poll)
+					if !found {
+						err := cmd.RespondCommandFailure(noCtx, s, h, "Oh noes!  This poll was probably deleted.")
+						checkErr(err, "Participate:Poll404:RespondCommandFailure")
+						return
+					}
+					if err != nil {
+						checkErr(err, "Participate:GetPollById")
+						err := cmd.RespondCommandFailure(noCtx, s, h, "Ooops.  This poll was probably deleted.")
+						checkErr(err, "Participate:RespondCommandFailure")
+						return
+					}
+
+					// Get un-judged proposals
+					proposals, err := db.GetPollProposals(db.Orm, &poll)
+					if err != nil {
+						checkErr(err, "GetPollProposals")
+						// todo: handle failure
+						return
+					}
+
+					// Shuffle them and pick one todo
+					proposal := proposals[0]
+
+					// Show the UI to judge the first participant
+					err = cmd.StartVoteProcess(noCtx, s, h, judge, &proposal, &poll)
+					checkErr(err, "StartVoteProcess")
+
+					// fixme: free memory (?)
+
+				} else {
+					log.Warnln("Unhandled button interaction", h, h.Data)
+					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
+					//err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
+					//	Type: disgord.InteractionCallbackChannelMessageWithSource,
+					//	Data: &disgord.CreateInteractionResponseData{
+					//		Flags:   disgord.MessageFlagEphemeral,
+					//		Content: "A Voté. (même pas vrai, c'est en chantier)",
+					//	},
+					//})
+					checkErr(err, "RespondCommandFailure:ButtonUnknown")
+					return
+				}
 
 			} else if h.Data.ComponentType == disgord.MessageComponentSelectMenu {
 				log.Debugln("Handling interaction on select ", h, h.Data)
