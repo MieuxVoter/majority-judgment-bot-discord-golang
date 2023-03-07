@@ -6,16 +6,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
-
 	cmd "main/src/command"
 	db "main/src/database"
 	"main/src/logging"
+	"os"
 )
 
 var log *logrus.Logger
@@ -33,41 +31,41 @@ func checkErr(err error, trace string) {
 
 // handleCommand is a basic command handler for !command
 // We aim to remove this eventually, and only use application command (/command)
-func handleCommand(s disgord.Session, data *disgord.MessageCreate) {
-	msg := data.Message
-
-	//log.Info("Handling Message !")
-	//log.Info(msg.Content)
-	//log.Info(msg)
-
-	switch msg.Content {
-	case "guild":
-		_, err := msg.Reply(noCtx, s, msg.GuildID)
-		checkErr(err, "guild command")
-
-		log.Info("Connected guilds:")
-		for _, guild := range s.GetConnectedGuilds() {
-			log.Info("\t" + guild.String())
-			_, err := msg.Reply(noCtx, s, guild.String())
-			checkErr(err, "guild command")
-		}
-	case "ping": // whenever the message written is "ping", the bot replies "pong"
-		_, err := msg.Reply(noCtx, s, "pong")
-		checkErr(err, "ping command")
-	case "mj":
-		log.Info(msg.Content, msg.Author)
-
-		// Document !poll usage
-		pollUsage := fmt.Sprint(
-			"_You can create a new poll with this command._\n" +
-				"**Usage**: `!mj create <subject>, <proposalA>, <proposalB>, …`\n" +
-				"**Example**: `!mj create \"Next meeting, people ?\", Monday, Tuesday, Sunday Morning`")
-		_, err := msg.Reply(noCtx, s, pollUsage)
-		checkErr(err, "mj command usage")
-	default: // unknown command, bot does nothing.
-		return
-	}
-}
+//func handleCommand(s disgord.Session, data *disgord.MessageCreate) {
+//	msg := data.Message
+//
+//	//log.Info("Handling Message !")
+//	//log.Info(msg.Content)
+//	//log.Info(msg)
+//
+//	switch msg.Content {
+//	case "guild":
+//		_, err := msg.Reply(noCtx, s, msg.GuildID)
+//		checkErr(err, "guild command")
+//
+//		log.Info("Connected guilds:")
+//		for _, guild := range s.GetConnectedGuilds() {
+//			log.Info("\t" + guild.String())
+//			_, err := msg.Reply(noCtx, s, guild.String())
+//			checkErr(err, "guild command")
+//		}
+//	case "ping": // whenever the message written is "ping", the bot replies "pong"
+//		_, err := msg.Reply(noCtx, s, "pong")
+//		checkErr(err, "ping command")
+//	case "mj":
+//		log.Info(msg.Content, msg.Author)
+//
+//		// Document !poll usage
+//		pollUsage := fmt.Sprint(
+//			"_You can create a new poll with this command._\n" +
+//				"**Usage**: `!mj create <subject>, <proposalA>, <proposalB>, …`\n" +
+//				"**Example**: `!mj create \"Next meeting, people ?\", Monday, Tuesday, Sunday Morning`")
+//		_, err := msg.Reply(noCtx, s, pollUsage)
+//		checkErr(err, "mj command usage")
+//	default: // unknown command, bot does nothing.
+//		return
+//	}
+//}
 
 // handleMessageMentioningMe reacts when the bot is @ in a channel message
 func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
@@ -327,14 +325,9 @@ func main() {
 						Embeds: []*disgord.Embed{
 							pollEmbedHero,
 						},
-						//Embeds: []*disgord.Embed{
-						//	{
-						//		Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, subject),
-						//		//Description: "Smash that Like button and leave a comment below!",
-						//	},
-						//},
 						//Content:    "Bazinga!",
 						//SpoilerTagContent:        true,
+						// This message might be updated with the merit profile as attachment
 						SpoilerTagAllAttachments: true,
 						//Components: buttons,
 						Components: []*disgord.MessageComponent{
@@ -345,7 +338,7 @@ func main() {
 									{
 										Type:     disgord.MessageComponentButton,
 										Style:    disgord.Success,
-										CustomID: "button_participate",
+										CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
 										Label:    "Participate",
 										Emoji: &disgord.Emoji{
 											Name: "📨",
@@ -440,46 +433,16 @@ func main() {
 			if h.Data.ComponentType == disgord.MessageComponentButton {
 				log.Debugln("Handling interaction on button", h, h.Data, h.Data.Options)
 
-				if h.Data.CustomID == "button_participate" {
+				var handled = false
+				handled, err = cmd.HandleButtonParticipate(noCtx, s, h)
+				checkErr(err, "HandleButtonParticipate")
 
-					// Get the judge that clicked the button to participate
-					judge := h.Member
+				if !handled {
+					handled, err = cmd.HandleButtonJudge(noCtx, s, h)
+					checkErr(err, "HandleButtonJudge")
+				}
 
-					// todo: check the judges permissions to vote, somehow
-
-					// Get the poll this button is for
-					poll := db.Poll{Id: 2} // fixme
-					found, err := db.Orm.Get(&poll)
-					if !found {
-						err := cmd.RespondCommandFailure(noCtx, s, h, "Oh noes!  This poll was probably deleted.")
-						checkErr(err, "Participate:Poll404:RespondCommandFailure")
-						return
-					}
-					if err != nil {
-						checkErr(err, "Participate:GetPollById")
-						err := cmd.RespondCommandFailure(noCtx, s, h, "Ooops.  This poll was probably deleted.")
-						checkErr(err, "Participate:RespondCommandFailure")
-						return
-					}
-
-					// Get un-judged proposals
-					proposals, err := db.GetPollProposals(db.Orm, &poll)
-					if err != nil {
-						checkErr(err, "GetPollProposals")
-						// todo: handle failure
-						return
-					}
-
-					// Shuffle them and pick one todo
-					proposal := proposals[0]
-
-					// Show the UI to judge the first participant
-					err = cmd.StartVoteProcess(noCtx, s, h, judge, &proposal, &poll)
-					checkErr(err, "StartVoteProcess")
-
-					// fixme: free memory (?)
-
-				} else {
+				if !handled {
 					log.Warnln("Unhandled button interaction", h, h.Data)
 					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
 					//err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{

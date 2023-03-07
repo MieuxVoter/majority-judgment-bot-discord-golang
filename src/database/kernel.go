@@ -10,9 +10,10 @@ var Orm *xorm.Engine
 
 func Sync() error {
 	return Orm.Sync(
-		// We need to curate this list manually for now
+		// We need to curate this list manually for now, sorry
 		&Poll{},
 		&Proposal{},
+		&Judgment{},
 	)
 }
 

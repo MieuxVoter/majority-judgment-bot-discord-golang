@@ -15,10 +15,6 @@ type Poll struct {
 	//CreatedUnix  timeutil.TimeStamp `xorm:"INDEX created"`
 	//UpdatedUnix  timeutil.TimeStamp `xorm:"INDEX updated"`
 	//ClosedUnix   timeutil.TimeStamp `xorm:"INDEX"`
-
-	// No idea how xorm works -- help!
-	// Judgments         []*PollJudgment    `xorm:"-"`
-	// Judgments         JudgmentList   `xorm:"-"`
 }
 
 func (poll *Poll) GetGradingSlice() []string {
@@ -26,7 +22,7 @@ func (poll *Poll) GetGradingSlice() []string {
 
 	// Placeholder until user customization somehow (poll.Grading?)
 	// - 🤮😒😐🙂😀🤩
-	// - 😫😒😐😌😀😍  (more support, apparently)
+	// - 😫😒😐😌😀😍
 	// - …
 	list = append(list, "🤮")
 	//list = append(list, "😒")
@@ -42,4 +38,11 @@ type Proposal struct {
 	Id     uint64 `xorm:"pk autoincr"`
 	Name   string
 	PollId uint64 `xorm:"INDEX"`
+}
+
+type Judgment struct {
+	JudgeSnowflake string
+	ProposalId     uint64 `xorm:"INDEX"`
+	PollId         uint64 `xorm:"INDEX"`
+	Grade          uint8
 }

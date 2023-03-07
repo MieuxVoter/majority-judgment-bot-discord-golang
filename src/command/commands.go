@@ -108,6 +108,7 @@ func StartVoteProcess(
 	judge *disgord.Member,
 	proposal *db.Proposal,
 	poll *db.Poll,
+	previousJudgment *db.Judgment,
 ) error {
 
 	interactionResponse := &disgord.CreateInteractionResponse{
@@ -117,37 +118,34 @@ func StartVoteProcess(
 			Embeds: []*disgord.Embed{
 				{
 					Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
-					Description: fmt.Sprintf("What do you think of _%s_ ?", proposal.Name),
+					Description: fmt.Sprintf("What do you think of **_%s_** ?", proposal.Name),
 				},
 			},
 			Components: []*disgord.MessageComponent{
 				{
 					Type:       disgord.MessageComponentActionRow,
 					CustomID:   "poll_action_row",
-					Components: []*disgord.MessageComponent{
-						//{
-						//	Type:     disgord.MessageComponentButton,
-						//	Style:    disgord.Success,
-						//	CustomID: "button_judge", // fixme
-						//	Label:    "Obi-Wan",
-						//	//Emoji: &disgord.Emoji{
-						//	//	Name: "→",
-						//	//},
-						//},
-					},
+					Components: []*disgord.MessageComponent{}, // filled below
 				},
 			},
 		},
 	}
 
 	for gradeLevel, grade := range poll.GetGradingSlice() {
+
+		previouslySelectedMarker := ""
+		if previousJudgment != nil {
+			if uint8(gradeLevel) == previousJudgment.Grade {
+				previouslySelectedMarker = " ✅"
+			}
+		}
 		interactionResponse.Data.Components[0].Components = append(
 			interactionResponse.Data.Components[0].Components,
 			&disgord.MessageComponent{
 				Type:     disgord.MessageComponentButton,
 				Style:    disgord.Primary,
-				CustomID: fmt.Sprintf("button_judge_%d", gradeLevel), // fixme
-				Label:    fmt.Sprintf("%s", grade),
+				CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
+				Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
 				//Emoji: &disgord.Emoji{
 				//	Name: "📨",
 				//},
