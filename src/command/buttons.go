@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/andersfylling/disgord"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	db "main/src/database"
 	"net/url"
 	"regexp"
@@ -76,20 +77,22 @@ func HandleButtonParticipate(
 		return
 	}
 
-	// Shuffle proposals perhaps? todo
+	// Shuffle proposals perhaps?
+
 	// Pick one proposal (the first)
 	proposal := proposals[0]
 
-	var judgment *db.Judgment = nil
+	// Collect the past judgment (if any) on this proposal by this judge
+	var pastJudgment *db.Judgment = nil
 	for _, j := range judgments {
 		if j.ProposalId == proposal.Id {
-			judgment = &j
+			pastJudgment = &j
 			break
 		}
 	}
 
 	// Show the UI to judge that proposal
-	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, judgment, false)
+	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, pastJudgment, false)
 
 	return
 }
@@ -142,19 +145,48 @@ func HandleButtonDeliberate(
 		return
 	}
 
-	// TODO: rank the proposals
-
-	fileNameNoExt := ""
-	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
-	for proposalIndex, proposal := range proposals {
-		if proposalIndex > 0 {
-			fileNameNoExt += "_"
-		}
+	// Rank the proposals
+	proposalsTallies := make([]*judgment.ProposalTally, 0, len(proposals))
+	for _, proposal := range proposals {
+		proposalGradesTally := make([]uint64, 0)
 		for gradeLevel, _ := range poll.GetGradingSlice() {
 			gradeAmount, errCount := db.CountGrades(db.Orm, poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
 			}
+
+			proposalGradesTally = append(proposalGradesTally, gradeAmount)
+		}
+		proposalTally := &judgment.ProposalTally{Tally: proposalGradesTally}
+		proposalsTallies = append(proposalsTallies, proposalTally)
+	}
+
+	pollTally := &judgment.PollTally{
+		Proposals: proposalsTallies,
+	}
+	pollTally.GuessAmountOfJudges()
+	err = pollTally.BalanceWithStaticDefault(0)
+	if err != nil {
+		return
+	}
+	deliberator := &judgment.MajorityJudgment{}
+	result, err := deliberator.Deliberate(pollTally)
+
+	if nil != err {
+		return
+	}
+
+	// Build the path to the merit profile image
+	fileNameNoExt := ""
+	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
+	for proposalResultIndex, proposalResult := range result.ProposalsSorted {
+		proposal := proposals[proposalResult.Index]
+
+		if proposalResultIndex > 0 {
+			fileNameNoExt += "_"
+		}
+		for gradeLevel, _ := range poll.GetGradingSlice() {
+			gradeAmount := pollTally.Proposals[proposalResult.Index].Tally[gradeLevel]
 
 			if gradeLevel > 0 {
 				fileNameNoExt += "-"

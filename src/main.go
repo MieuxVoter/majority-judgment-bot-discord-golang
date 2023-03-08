@@ -140,7 +140,7 @@ func main() {
 		disgord.PermissionAttachFiles |
 		disgord.PermissionEmbedLinks
 	u, err := client.BotAuthorizeURL(permissions, []string{
-		"bot", // todo: try our best to remove this scope, and only use application.command
+		//"bot", // todo: try our best to remove this scope, and only use application.command
 		"applications.command",
 	})
 	if err != nil {
