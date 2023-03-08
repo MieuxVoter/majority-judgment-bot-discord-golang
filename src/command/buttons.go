@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
+	"net/url"
 	"regexp"
 	"strconv"
 )
 
 var pollParticipationRegex = regexp.MustCompile("^button_participate:(?P<pollId>\\d+)$")
+var pollDeliberationRegex = regexp.MustCompile("^button_deliberate:(?P<pollId>\\d+)$")
 var pollJudgmentRegex = regexp.MustCompile("^button_judge:(?P<proposalId>\\d+):(?P<gradeLevel>\\d+)$")
 
 func findNamedMatches(regex *regexp.Regexp, str string) map[string]string {
@@ -88,6 +90,129 @@ func HandleButtonParticipate(
 
 	// Show the UI to judge that proposal
 	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, judgment, false)
+
+	return
+}
+
+func HandleButtonDeliberate(
+	ctx context.Context,
+	s disgord.Session,
+	h *disgord.InteractionCreate,
+) (handled bool, err error) {
+	handled = false
+	err = nil
+
+	matches := findNamedMatches(pollDeliberationRegex, h.Data.CustomID)
+	pollIdAsString, isMatchFound := matches["pollId"]
+
+	if !isMatchFound {
+		return
+	}
+
+	handled = true
+
+	// Get the judge that clicked the button to participate
+	//actor := h.Member
+
+	// todo: check the actor's permissions to deliberate, somehow
+
+	// Get the poll this button is for
+	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
+	if err != nil {
+		return false, err
+	}
+	poll := &db.Poll{Id: pollId}
+	foundPoll, err := db.Orm.Get(poll)
+	if !foundPoll {
+		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
+		return
+	}
+	if err != nil {
+		err = RespondCommandFailure(ctx, s, h, "Ooops.  This poll was probably deleted.")
+		return
+	}
+
+	// Get the proposals of the poll
+	proposals, err := db.GetPollProposals(db.Orm, poll)
+	if err != nil {
+		return false, err
+	}
+	if len(proposals) == 0 {
+		err = RespondCommandFailure(ctx, s, h, "Wait a minute…  This poll has no proposals !?")
+		return
+	}
+
+	// TODO: rank the proposals
+
+	fileNameNoExt := ""
+	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
+	for proposalIndex, proposal := range proposals {
+		if proposalIndex > 0 {
+			fileNameNoExt += "_"
+		}
+		for gradeLevel, _ := range poll.GetGradingSlice() {
+			gradeAmount, errCount := db.CountGrades(db.Orm, poll, &proposal, uint8(gradeLevel))
+			if errCount != nil {
+				return false, errCount
+			}
+
+			if gradeLevel > 0 {
+				fileNameNoExt += "-"
+			}
+			fileNameNoExt += fmt.Sprintf("%d", gradeAmount)
+		}
+		query += fmt.Sprintf("&proposals[]=%s", url.QueryEscape(proposal.Name))
+	}
+
+	oasDomain := "https://oas.mieuxvoter.fr"
+	imageUrl := fmt.Sprintf(
+		"%s/%s.png%s",
+		oasDomain, fileNameNoExt, query,
+	)
+
+	err = s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
+		Type: disgord.InteractionCallbackChannelMessageWithSource,
+		Data: &disgord.CreateInteractionResponseData{
+			Flags:   disgord.MessageFlagEphemeral,
+			Content: "🤖 _Here are the results:_ \n" + imageUrl,
+
+			//Attachments: []*disgord.Attachment{
+			//	{
+			//		ID:         0,
+			//		Filename:   imageUrl,
+			//		//Size:       0,
+			//		URL:        imageUrl,
+			//		//ProxyURL:   "",
+			//		//Height:     0,
+			//		//Width:      0,
+			//		//SpoilerTag: true,
+			//	},
+			//},
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	//imageUrl := "https://oas.mieuxvoter.fr/%s.png?subject=%s&proposals[]=HAHA&proposals[]=HIHI"
+
+	//// Get all judgments emitted on this poll
+	//judgments, err := db.GetJudgmentsOnPoll(db.Orm, poll)
+
+	// Shuffle proposals perhaps? todo
+	// Pick one proposal (the first)
+	//proposal := proposals[0]
+
+	//var judgment *db.Judgment = nil
+	//for _, j := range judgments {
+	//	if j.ProposalId == proposal.Id {
+	//		judgment = &j
+	//		break
+	//	}
+	//}
+
+	// Show the UI to judge that proposal
+	//err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, judgment, false)
 
 	return
 }

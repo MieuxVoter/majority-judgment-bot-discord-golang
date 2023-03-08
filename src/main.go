@@ -99,9 +99,10 @@ func main() {
 		ProjectName: "Majority Judgment",
 		BotToken:    os.Getenv("DISCORD_TOKEN"),
 		Logger:      log,
-		Intents: disgord.IntentDirectMessages |
-			disgord.IntentGuildMessages |
-			disgord.IntentGuildMembers,
+		Intents:     disgord.IntentDirectMessages,
+		//Intents: disgord.IntentDirectMessages |
+		//	disgord.IntentGuildMessages |
+		//	disgord.IntentGuildMembers,
 		// Remove those once we have what we need
 		//disgord.IntentDirectMessageReactions |
 		//disgord.IntentDirectMessageTyping |
@@ -132,7 +133,13 @@ func main() {
 	defer client.Gateway().StayConnectedUntilInterrupted()
 
 	// Note the permission and scope are the minimum requirements for slash command to operate
-	u, err := client.BotAuthorizeURL(disgord.PermissionUseSlashCommands, []string{
+	//u, err := client.BotAuthorizeURL(disgord.PermissionUseSlashCommands, []string{
+	permissions := disgord.PermissionSendMessages |
+		disgord.PermissionSendTTSMessages |
+		disgord.PermissionSendMessagesInThreads |
+		disgord.PermissionAttachFiles |
+		disgord.PermissionEmbedLinks
+	u, err := client.BotAuthorizeURL(permissions, []string{
 		"bot", // todo: try our best to remove this scope, and only use application.command
 		"applications.command",
 	})
@@ -156,16 +163,16 @@ func main() {
 	//).MessageCreate(handleCommand)
 
 	// Create a handler and bind it to new messages where the bot is mentioned
+	// FIXME: check if this still works, and if we can read private direct messages
 	client.Gateway().WithMiddleware(
 		filter.NotByBot,           // ignore bot messages
 		filter.ContainsBotMention, // message must mention this bot
 	).MessageCreate(handleMessageMentioningMe)
 
 	// Register slash command once the bot is ready
+	//client.Gateway().Ready(func(s disgord.Session, h *disgord.Ready) { // too soon
 	client.Gateway().BotReady(func() {
 		log.Info("Bot is ready!")
-		//log.Info(fmt.Sprintf("Bot %s is ready in application %s"))
-		//client.CurrentUser().Get()
 		commands := cmd.GetCommands()
 		for i := range commands {
 			log.Info("Registering command /", commands[i].Name)
@@ -303,6 +310,15 @@ func main() {
 											Name: "📨",
 										},
 									},
+									{
+										Type:     disgord.MessageComponentButton,
+										Style:    disgord.Secondary,
+										CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
+										Label:    "View Results",
+										Emoji: &disgord.Emoji{
+											Name: "🔎",
+										},
+									},
 								},
 							},
 							//{
@@ -357,11 +373,19 @@ func main() {
 		} else if h.Type == disgord.InteractionMessageComponent {
 
 			if h.Data.ComponentType == disgord.MessageComponentButton {
-				log.Debugln("Handling interaction on button", h, h.Data, h.Data.Options)
+				log.Debugln("Handling interaction on button", h.Member, h.GuildID)
 
 				var handled = false
-				handled, err = cmd.HandleButtonParticipate(noCtx, s, h)
-				checkErr(err, "HandleButtonParticipate")
+
+				if !handled {
+					handled, err = cmd.HandleButtonParticipate(noCtx, s, h)
+					checkErr(err, "HandleButtonParticipate")
+				}
+
+				if !handled {
+					handled, err = cmd.HandleButtonDeliberate(noCtx, s, h)
+					checkErr(err, "HandleButtonDeliberate")
+				}
 
 				if !handled {
 					handled, err = cmd.HandleButtonJudge(noCtx, s, h)
