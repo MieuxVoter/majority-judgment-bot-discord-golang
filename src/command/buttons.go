@@ -82,6 +82,7 @@ func HandleButtonParticipate(
 	for _, j := range judgments {
 		if j.ProposalId == proposal.Id {
 			judgment = &j
+			break
 		}
 	}
 
@@ -157,22 +158,23 @@ func HandleButtonJudge(
 
 	// Get past judgment of this judge on this proposal
 	var pastJudgment *db.Judgment = nil
-	for _, judgment := range judgments {
-		if judgment.ProposalId == proposalId {
-			pastJudgment = &judgment
+	for k, _ := range judgments {
+		if judgments[k].ProposalId == proposalId {
+			pastJudgment = &(judgments[k])
 			break
 		}
 	}
 
 	// Record the judgment, by either updating or inserting
 	if pastJudgment != nil {
-		oldGrade := pastJudgment.Grade
 		pastJudgment.Grade = uint8(gradeLevel)
-		updated, err := db.Orm.Update(pastJudgment, &db.Judgment{
+		// /!. This does not update when gradeLevel is zero, unless Cols() is specified
+		// > When this param is the pointer of struct, only non-empty and non-zero field will be updated to database.
+		// > from https://xorm.io/docs/chapter-06/readme/
+		updated, err := db.Orm.Cols("grade").Update(pastJudgment, &db.Judgment{
 			JudgeSnowflake: pastJudgment.JudgeSnowflake,
 			ProposalId:     pastJudgment.ProposalId,
 			PollId:         pastJudgment.PollId,
-			Grade:          oldGrade,
 		})
 		if updated == 0 {
 			return false, fmt.Errorf("did not find a judgment to update")
@@ -180,6 +182,7 @@ func HandleButtonJudge(
 		if err != nil {
 			return false, err
 		}
+
 	} else {
 		pastJudgment = &db.Judgment{
 			JudgeSnowflake: judge.UserID.String(),
@@ -201,7 +204,7 @@ func HandleButtonJudge(
 
 	amountOfProposals := len(proposals)
 	if amountOfProposals == 0 {
-		err = RespondCommandFailure(ctx, s, h, "Wait a minute…  This proposal has no proposals !?")
+		err = RespondCommandFailure(ctx, s, h, "Wait a minute…  This poll has no proposals !?  Go :fish:")
 		return
 	}
 
@@ -218,9 +221,6 @@ func HandleButtonJudge(
 		}
 	}
 
-	// Shuffle them and pick one todo
-	//proposal := proposals[0]
-
 	if nextProposal != nil {
 
 		// Get the past judgment (if any) of this judge on the next proposal
@@ -228,6 +228,7 @@ func HandleButtonJudge(
 		for _, j := range judgments {
 			if j.ProposalId == nextProposal.Id {
 				nextJudgment = &j
+				break
 			}
 		}
 
@@ -236,15 +237,22 @@ func HandleButtonJudge(
 
 	} else {
 
-		message := "Here's the summary of your judgments:\n" +
-			"- TODO\n" +
-			"- FIXME"
+		summary := ""
+		for k, _ := range judgments {
+			if k > 0 {
+				summary += "  —  "
+			}
+
+			icon := poll.GetGradeIcon(judgments[k].Grade)
+			summary += fmt.Sprintf("(%s %s %s)", icon, proposals[k].Name, icon)
+		}
+		message := "Here's the summary of your judgments:\n" + summary
 		err = s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
 			Type: disgord.InteractionCallbackUpdateMessage,
 			Data: &disgord.CreateInteractionResponseData{
 				Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
 				Content: fmt.Sprintf(
-					"✅ **CONGRATULATIONS!**"+
+					"✅ **WELL DONE!**"+
 						" "+
 						"%s\n"+
 						"",

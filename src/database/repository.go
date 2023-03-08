@@ -21,6 +21,7 @@ func GetJudgmentsByJudgeOnPoll(e *xorm.Engine, judge *disgord.Member, poll *Poll
 	err := e.
 		Where("judge_snowflake = ?", judge.UserID.String()).
 		Where("poll_id = ?", poll.Id).
+		OrderBy("proposal_id", "ASC").
 		Find(&judgments)
 	if err != nil {
 		return nil, err

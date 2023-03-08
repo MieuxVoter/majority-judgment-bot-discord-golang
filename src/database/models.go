@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 type Poll struct {
 	Id       uint64 `xorm:"pk autoincr"`
 	AuthorId uint64 `xorm:"INDEX"`
@@ -11,16 +13,17 @@ type Poll struct {
 
 	//Gradation string `xorm:"-"`
 
+	CreatedUnix time.Time `xorm:"created"`
+	UpdatedUnix time.Time `xorm:"updated"`
 	//DeadlineUnix timeutil.TimeStamp `xorm:"INDEX"`
-	//CreatedUnix  timeutil.TimeStamp `xorm:"INDEX created"`
-	//UpdatedUnix  timeutil.TimeStamp `xorm:"INDEX updated"`
 	//ClosedUnix   timeutil.TimeStamp `xorm:"INDEX"`
 }
 
 func (poll *Poll) GetGradingSlice() []string {
 	list := make([]string, 0, 5)
 
-	// Placeholder until user customization somehow (poll.Grading?)
+	// Placeholder shim until user customization somehow (poll.Grading?)
+	// Careful: for now only 5 grades max are supported.  (amount of buttons per action row)
 	// - 🤮😒😐🙂😀🤩
 	// - 😫😒😐😌😀😍
 	// - …
@@ -34,6 +37,16 @@ func (poll *Poll) GetGradingSlice() []string {
 	return list
 }
 
+func (poll *Poll) GetGradeIcon(gradeLevel uint8) string {
+	icons := poll.GetGradingSlice()
+	gradeLevelInt := int(gradeLevel)
+	if len(icons) <= gradeLevelInt {
+		return "🥚" // easter
+	}
+
+	return icons[gradeLevelInt]
+}
+
 type Proposal struct {
 	Id     uint64 `xorm:"pk autoincr"`
 	Name   string
@@ -41,8 +54,8 @@ type Proposal struct {
 }
 
 type Judgment struct {
-	JudgeSnowflake string `xorm:"INDEX(JX)"`
-	ProposalId     uint64 `xorm:"INDEX(JX)"`
-	PollId         uint64 `xorm:"INDEX(JX)"`
+	JudgeSnowflake string `xorm:"INDEX(JX) UNIQUE(JU)"`
+	ProposalId     uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
+	PollId         uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
 	Grade          uint8
 }

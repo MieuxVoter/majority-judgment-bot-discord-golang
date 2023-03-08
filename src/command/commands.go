@@ -10,7 +10,8 @@ import (
 	"context"
 )
 
-// We'll probably want the builder pattern here instead of this static def
+// We'll probably want the builder pattern here instead of this static def.  Where is it?
+// It would also be nice to figure out how to get variadic commands with unlimited proposals.
 var commands = []*disgord.CreateApplicationCommand{
 	{
 		Name:        "mj",
@@ -55,6 +56,7 @@ var commands = []*disgord.CreateApplicationCommand{
 					// /!. Discord limits messages integrations to 5 action rows,
 					//     so we'd need multiple messages to handle more than 5 proposals.
 					//     No point in adding proposal_f here for now, it won't work as-is.
+					// > Well, now we use one message per proposal, but how to get variadism here?
 				},
 			},
 			{
@@ -80,7 +82,7 @@ func HandleHelpCommand(
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,
 			Content: "🤖 _Hello !_ " +
-				"Here are the available command:\n" +
+				"Here are the available commands:\n" +
 				"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
 				"⌨ `/mj help`\n" +
 				"\n" +
@@ -88,8 +90,8 @@ func HandleHelpCommand(
 				"> **No.**  For extra privacy, this modern bot is NOT allowed to read messages, " +
 				"only react to its own `/mj` command and button interactions.\n" +
 				"\n" +
-				"❺ **Can I use more than 5 proposals?**\n" +
-				"> **Not for now.**  Discord limits messages to 5 action rows, " +
+				"❺ **Can I use more than 5 grades?**\n" +
+				"> **Not for now.**  Discord limits messages to 5 buttons per action row, " +
 				"so we'll need more code to support more proposals.\n" +
 				"\n" +
 				//"\n" +
@@ -122,7 +124,7 @@ func RespondWithJudgmentUi(
 			Embeds: []*disgord.Embed{
 				{
 					Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
-					Description: fmt.Sprintf("What do you think of **_%s_** ?", proposal.Name),
+					Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
 				},
 			},
 			Components: []*disgord.MessageComponent{
@@ -167,12 +169,8 @@ func RespondCommandFailure(
 	s disgord.Session,
 	h *disgord.InteractionCreate,
 	message string,
-	//inPlace bool,
 ) error {
 	messageType := disgord.InteractionCallbackChannelMessageWithSource
-	//if inPlace {
-	//	messageType = disgord.InteractionCallbackUpdateMessage
-	//}
 	err := s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
 		Type: messageType,
 		Data: &disgord.CreateInteractionResponseData{

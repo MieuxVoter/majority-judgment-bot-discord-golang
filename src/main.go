@@ -1,7 +1,7 @@
 package main
 
 // A Bot for Discord to create polls, using majority judgment.
-// Usage:   /mj <subject> <proposalA> <proposalB> …
+// Usage:   /mj create <subject> <proposalA> <proposalB> …
 
 import (
 	"context"
@@ -28,44 +28,6 @@ func checkErr(err error, trace string) {
 		}).Error(err)
 	}
 }
-
-// handleCommand is a basic command handler for !command
-// We aim to remove this eventually, and only use application command (/command)
-//func handleCommand(s disgord.Session, data *disgord.MessageCreate) {
-//	msg := data.Message
-//
-//	//log.Info("Handling Message !")
-//	//log.Info(msg.Content)
-//	//log.Info(msg)
-//
-//	switch msg.Content {
-//	case "guild":
-//		_, err := msg.Reply(noCtx, s, msg.GuildID)
-//		checkErr(err, "guild command")
-//
-//		log.Info("Connected guilds:")
-//		for _, guild := range s.GetConnectedGuilds() {
-//			log.Info("\t" + guild.String())
-//			_, err := msg.Reply(noCtx, s, guild.String())
-//			checkErr(err, "guild command")
-//		}
-//	case "ping": // whenever the message written is "ping", the bot replies "pong"
-//		_, err := msg.Reply(noCtx, s, "pong")
-//		checkErr(err, "ping command")
-//	case "mj":
-//		log.Info(msg.Content, msg.Author)
-//
-//		// Document !poll usage
-//		pollUsage := fmt.Sprint(
-//			"_You can create a new poll with this command._\n" +
-//				"**Usage**: `!mj create <subject>, <proposalA>, <proposalB>, …`\n" +
-//				"**Example**: `!mj create \"Next meeting, people ?\", Monday, Tuesday, Sunday Morning`")
-//		_, err := msg.Reply(noCtx, s, pollUsage)
-//		checkErr(err, "mj command usage")
-//	default: // unknown command, bot does nothing.
-//		return
-//	}
-//}
 
 // handleMessageMentioningMe reacts when the bot is @ in a channel message
 func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
@@ -111,8 +73,6 @@ func getOptionStringByName(
 }
 
 func main() {
-	const prefix = "!" // todo: remove me
-
 	// Load Environment variables from files, for convenience
 	err := godotenv.Load(".env.local")
 	if err != nil {
@@ -179,12 +139,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Follow this URL to authorize the bot on your server:")
+	fmt.Println("\nFollow this URL to authorize the bot on your server:")
 	fmt.Println(u)
+	fmt.Println("")
 
 	//logFilter, _ := std.NewLogFilter(client)
 	filter, _ := std.NewMsgFilter(context.Background(), client)
-	filter.SetPrefix(prefix)
+	//filter.SetPrefix(prefix)
 
 	// Create a handler and bind it to new message events  (no!  use command!)
 	//client.Gateway().WithMiddleware(
@@ -211,7 +172,7 @@ func main() {
 			// FIXME: handle multiple guilds; note that config may change slash API
 			// - session.GetConnectedGuilds() is empty (?)
 			// - needs a database, then
-			guildSnow, err := disgord.GetSnowflake(705322981102190593)
+			guildSnow, err := disgord.GetSnowflake("705322981102190593")
 			checkErr(err, "GetSnowflake:Guild")
 			// application command id is 0 here, it's OK.
 			// on a ready event, the client is updated to store the application id
@@ -225,15 +186,11 @@ func main() {
 
 	// Respond to discord slash command and other interactions
 	client.Gateway().InteractionCreate(func(s disgord.Session, h *disgord.InteractionCreate) {
-		fmt.Printf("Interaction: %+v\n", *h)
-		fmt.Printf("Data %+v\n", *h.Data)
-		fmt.Printf("Options %+q\n", (*h.Data).Options)
-		//fmt.Printf("Name %s\n", *h.Data.CustomID)
-		//fmt.Printf("Options %+v\n", *h.Data.Options)
+		//fmt.Printf("Interaction: %+v\n", *h)
+		//fmt.Printf("Data %+v\n", *h.Data)
+		//fmt.Printf("Options %+q\n", (*h.Data).Options)
 
 		if h.Type == disgord.InteractionApplicationCommand {
-
-			log.Debugln("Handling application command ", h, h.Data)
 
 			if len(h.Data.Options) == 0 { // no subcommand was provided
 				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
@@ -256,6 +213,8 @@ func main() {
 			}
 
 			subCmdName := h.Data.Options[0].Name
+
+			log.Debugln("Handling application command by", h.Member, subCmdName)
 
 			if subCmdName == "help" {
 				err = cmd.HandleHelpCommand(noCtx, s, h)
@@ -346,39 +305,6 @@ func main() {
 									},
 								},
 							},
-							//{
-							//	Type:     disgord.MessageComponentActionRow,
-							//	CustomID: "0",
-							//	Components: []*disgord.MessageComponent{
-							//		{
-							//			Type:     disgord.MessageComponentButton,
-							//			Style:    disgord.Success,
-							//			CustomID: "1",
-							//			Label:    "Good",
-							//			Emoji: &disgord.Emoji{
-							//				Name: "🙂",
-							//			},
-							//		},
-							//		{
-							//			Type:     disgord.MessageComponentButton,
-							//			Style:    disgord.Primary,
-							//			CustomID: "2",
-							//			Label:    "Acceptable",
-							//			Emoji: &disgord.Emoji{
-							//				Name: "😐",
-							//			},
-							//		},
-							//		{
-							//			Type:     disgord.MessageComponentButton,
-							//			Style:    disgord.Danger,
-							//			CustomID: "3",
-							//			Label:    "Reject",
-							//			Emoji: &disgord.Emoji{
-							//				Name: "🙁",
-							//			},
-							//		},
-							//	},
-							//},
 							//{
 							//	Type:     disgord.MessageComponentActionRow,
 							//	CustomID: "4",
@@ -473,10 +399,6 @@ func main() {
 			log.Debugln("Unhandled ping interaction", h, h.Data)
 		} else {
 			log.Warningln("Unhandled interaction type", h, h.Data)
-		}
-
-		if h.Data.Type == disgord.ApplicationCommandChatInput {
-
 		}
 
 	})
