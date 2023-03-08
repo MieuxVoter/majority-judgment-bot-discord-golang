@@ -20,7 +20,7 @@ func Sync() error {
 func Boot(logLevel logrus.Level) (*xorm.Engine, error) {
 	// todo: fetch these from env
 	databaseDriver := "sqlite3"
-	databaseName := "./mjbot.db"
+	databaseName := "./var/mjbot.db"
 
 	orm, err := xorm.NewEngine(databaseDriver, databaseName)
 	if err != nil {

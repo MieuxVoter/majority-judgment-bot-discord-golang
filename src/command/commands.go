@@ -101,7 +101,7 @@ func HandleHelpCommand(
 	return err
 }
 
-func StartVoteProcess(
+func RespondWithJudgmentUi(
 	ctx context.Context,
 	s disgord.Session,
 	h *disgord.InteractionCreate,
@@ -109,10 +109,14 @@ func StartVoteProcess(
 	proposal *db.Proposal,
 	poll *db.Poll,
 	previousJudgment *db.Judgment,
+	replaceMessage bool,
 ) error {
-
+	messageType := disgord.InteractionCallbackChannelMessageWithSource
+	if replaceMessage {
+		messageType = disgord.InteractionCallbackUpdateMessage
+	}
 	interactionResponse := &disgord.CreateInteractionResponse{
-		Type: disgord.InteractionCallbackChannelMessageWithSource,
+		Type: messageType,
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,
 			Embeds: []*disgord.Embed{
@@ -163,9 +167,14 @@ func RespondCommandFailure(
 	s disgord.Session,
 	h *disgord.InteractionCreate,
 	message string,
+	//inPlace bool,
 ) error {
+	messageType := disgord.InteractionCallbackChannelMessageWithSource
+	//if inPlace {
+	//	messageType = disgord.InteractionCallbackUpdateMessage
+	//}
 	err := s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
-		Type: disgord.InteractionCallbackChannelMessageWithSource,
+		Type: messageType,
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,
 			Content: fmt.Sprintf(

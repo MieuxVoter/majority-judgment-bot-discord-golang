@@ -41,8 +41,8 @@ type Proposal struct {
 }
 
 type Judgment struct {
-	JudgeSnowflake string
-	ProposalId     uint64 `xorm:"INDEX"`
-	PollId         uint64 `xorm:"INDEX"`
+	JudgeSnowflake string `xorm:"INDEX(JX)"`
+	ProposalId     uint64 `xorm:"INDEX(JX)"`
+	PollId         uint64 `xorm:"INDEX(JX)"`
 	Grade          uint8
 }

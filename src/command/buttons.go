@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
 	"regexp"
@@ -73,7 +74,8 @@ func HandleButtonParticipate(
 		return
 	}
 
-	// Shuffle them and pick one todo
+	// Shuffle proposals perhaps? todo
+	// Pick one proposal (the first)
 	proposal := proposals[0]
 
 	var judgment *db.Judgment = nil
@@ -84,7 +86,7 @@ func HandleButtonParticipate(
 	}
 
 	// Show the UI to judge that proposal
-	err = StartVoteProcess(ctx, s, h, judge, &proposal, &poll, judgment)
+	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, judgment, false)
 
 	return
 }
@@ -146,8 +148,12 @@ func HandleButtonJudge(
 		return
 	}
 
-	// Get past judgments of the judge on this poll
+	// Get all past judgments of the judge on this poll
 	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Orm, judge, &poll)
+	if err != nil {
+		err = RespondCommandFailure(ctx, s, h, "Nein!.")
+		return
+	}
 
 	// Get past judgment of this judge on this proposal
 	var pastJudgment *db.Judgment = nil
@@ -160,8 +166,17 @@ func HandleButtonJudge(
 
 	// Record the judgment, by either updating or inserting
 	if pastJudgment != nil {
+		oldGrade := pastJudgment.Grade
 		pastJudgment.Grade = uint8(gradeLevel)
-		_, err = db.Orm.Update(pastJudgment)
+		updated, err := db.Orm.Update(pastJudgment, &db.Judgment{
+			JudgeSnowflake: pastJudgment.JudgeSnowflake,
+			ProposalId:     pastJudgment.ProposalId,
+			PollId:         pastJudgment.PollId,
+			Grade:          oldGrade,
+		})
+		if updated == 0 {
+			return false, fmt.Errorf("did not find a judgment to update")
+		}
 		if err != nil {
 			return false, err
 		}
@@ -217,11 +232,27 @@ func HandleButtonJudge(
 		}
 
 		// Show the UI to judge the next proposal
-		err = StartVoteProcess(ctx, s, h, judge, nextProposal, &poll, nextJudgment)
+		err = RespondWithJudgmentUi(ctx, s, h, judge, nextProposal, &poll, nextJudgment, true)
 
 	} else {
 
-		err = RespondCommandFailure(ctx, s, h, "**CONGRATULATIONS!**")
+		message := "Here's the summary of your judgments:\n" +
+			"- TODO\n" +
+			"- FIXME"
+		err = s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackUpdateMessage,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
+				Content: fmt.Sprintf(
+					"✅ **CONGRATULATIONS!**"+
+						" "+
+						"%s\n"+
+						"",
+					message,
+				),
+				Embeds: []*disgord.Embed{},
+			},
+		})
 		return
 
 	}
