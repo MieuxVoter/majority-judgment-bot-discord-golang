@@ -132,16 +132,16 @@ func main() {
 	// Heartbeat
 	defer client.Gateway().StayConnectedUntilInterrupted()
 
-	// Note the permission and scope are the minimum requirements for slash command to operate
-	//u, err := client.BotAuthorizeURL(disgord.PermissionUseSlashCommands, []string{
+	// Print the link one needs to invite/authorize the bot on their server
 	permissions := disgord.PermissionSendMessages |
 		disgord.PermissionSendTTSMessages |
 		disgord.PermissionSendMessagesInThreads |
 		disgord.PermissionAttachFiles |
 		disgord.PermissionEmbedLinks
+	//var permissions disgord.PermissionBit
 	u, err := client.BotAuthorizeURL(permissions, []string{
-		//"bot", // todo: try our best to remove this scope, and only use application.command
-		"applications.command",
+		//"bot", // we're try our best to remove this bot scope, and only use applications.commands
+		"applications.commands",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -176,16 +176,9 @@ func main() {
 		commands := cmd.GetCommands()
 		for i := range commands {
 			log.Info("Registering command /", commands[i].Name)
-			// FIXME: handle multiple guilds; note that config may change slash API
-			// - session.GetConnectedGuilds() is empty (?)
-			// - needs a database, then
-			guildSnow, err := disgord.GetSnowflake("705322981102190593")
-			checkErr(err, "GetSnowflake:Guild")
 			// application command id is 0 here, it's OK.
 			// on a ready event, the client is updated to store the application id
-			// you can fetch the application id using the bot id (current user id)
-			// or copy it from the discord page.
-			if err = client.ApplicationCommand(0).Guild(guildSnow).Create(commands[i]); err != nil {
+			if err = client.ApplicationCommand(0).Global().Create(commands[i]); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -270,7 +263,7 @@ func main() {
 				// 8<-----
 
 				pollEmbedHero := &disgord.Embed{
-					Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, subject),
+					Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject),
 				}
 				if len(proposals) > 0 {
 					description := ""
@@ -291,11 +284,6 @@ func main() {
 						Embeds: []*disgord.Embed{
 							pollEmbedHero,
 						},
-						//Content:    "Bazinga!",
-						//SpoilerTagContent:        true,
-						// This message might be updated with the merit profile as attachment
-						SpoilerTagAllAttachments: true,
-						//Components: buttons,
 						Components: []*disgord.MessageComponent{
 							{
 								Type:     disgord.MessageComponentActionRow,

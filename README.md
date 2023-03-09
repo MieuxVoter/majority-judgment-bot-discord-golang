@@ -3,22 +3,29 @@
 
 ## Feature Wishlist
 
-- [ ] Start a poll
-- [ ] Vote on a poll
-- [ ] Display a poll's results
-- [ ] Be discreet (use only `/` commands and don't read messages)
+- [x] Start a poll
+- [x] Vote on a poll
+- [x] Display a poll's results
+- [x] Use only `/` commands 
+- [x] Do not read messages
+- [x] Support multiple guilds
+- [ ] Quotas per guild
+- [ ] Clone past poll
 - [ ] Configure the bot per guild
+- [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself
-- [ ] Put some food in my stomach
 
 
 ## Usage
 
 1. Clone this repository.
-2. Run
+2. Configure your discord token in `.env.local`, copied from `.env`
+3. Run
    ```
    go run src/main.go
    ```
+4. Visit the OAuth URL that was printed in the output
+
 
 ## Built atop Disgord
 

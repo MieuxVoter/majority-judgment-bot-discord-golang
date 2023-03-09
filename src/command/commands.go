@@ -82,9 +82,14 @@ func HandleHelpCommand(
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,
 			Content: "🤖 _Hello !_ " +
-				"Here are the available commands:\n" +
+				"My purpose is to help you create majority judgment polls.\n" +
+				"\n" +
+				"Try me out:\n" +
 				"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
-				"⌨ `/mj help`\n" +
+				"\n" +
+				"⚖ **What is Majority Judgment?**\n" +
+				"> A pretty rad **polling system.**  It is used in french :flag_fr: wine 🍷 contests. " +
+				"It is simple, subtle and fair.\n" +
 				"\n" +
 				"🕵 **Can this bot read our messages?**\n" +
 				"> **No.**  For extra privacy, this modern bot is NOT allowed to read messages, " +
@@ -92,7 +97,11 @@ func HandleHelpCommand(
 				"\n" +
 				"❺ **Can I use more than 5 grades?**\n" +
 				"> **Not for now.**  Discord limits messages to 5 buttons per action row, " +
-				"so we'll need more code to support more proposals.\n" +
+				"so we'll need more wit to support more grades.\n" +
+				"\n" +
+				"❺ **Can I use more than 5 proposals?**\n" +
+				"> **Not for now.**  Discord does not allow variadic app commands, for now., " +
+				"We might have an acceptable workaround, though.\n" +
 				"\n" +
 				//"\n" +
 				//"If \n" +
@@ -152,9 +161,6 @@ func RespondWithJudgmentUi(
 				Style:    disgord.Primary,
 				CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
 				Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
-				//Emoji: &disgord.Emoji{
-				//	Name: "📨",
-				//},
 			},
 		)
 	}

@@ -202,11 +202,28 @@ func HandleButtonDeliberate(
 		oasDomain, fileNameNoExt, query,
 	)
 
+	winners := ""
+	for proposalResultIndex, proposalResult := range result.ProposalsSorted {
+		if proposalResult.Rank > 1 {
+			break
+		}
+		proposal := proposals[proposalResult.Index]
+		if proposalResultIndex > 0 {
+			winners += fmt.Sprintf(", ")
+		}
+		winners += fmt.Sprintf("%s", proposal.Name)
+	}
+
+	content := fmt.Sprintf(
+		"🤖 _Here are the results:_ **%s**\n"+
+			"%s",
+		winners, imageUrl,
+	)
 	err = s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
 		Type: disgord.InteractionCallbackChannelMessageWithSource,
 		Data: &disgord.CreateInteractionResponseData{
 			Flags:   disgord.MessageFlagEphemeral,
-			Content: "🤖 _Here are the results:_ \n" + imageUrl,
+			Content: content,
 
 			//Attachments: []*disgord.Attachment{
 			//	{
