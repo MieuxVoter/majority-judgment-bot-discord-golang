@@ -18,6 +18,10 @@ func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {
 }
 
 func GetJudgmentsByJudgeOnPoll(e *xorm.Engine, judge *disgord.Member, poll *Poll) ([]Judgment, error) {
+	if judge == nil {
+		return nil, fmt.Errorf("no judge is defined")
+	}
+
 	var judgments []Judgment
 	err := e.
 		Where("judge_snowflake = ?", judge.UserID.String()).

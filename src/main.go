@@ -103,7 +103,7 @@ func main() {
 		//Intents: disgord.IntentDirectMessages |
 		//	disgord.IntentGuildMessages |
 		//	disgord.IntentGuildMembers,
-		// Remove those once we have what we need
+		// todo Remove those once we are sure we have what we need
 		//disgord.IntentDirectMessageReactions |
 		//disgord.IntentDirectMessageTyping |
 		//disgord.IntentDirectMessages |
@@ -174,11 +174,11 @@ func main() {
 	client.Gateway().BotReady(func() {
 		log.Info("Bot is ready!")
 		commands := cmd.GetCommands()
-		for i := range commands {
-			log.Info("Registering command /", commands[i].Name)
+		for _, command := range commands {
+			log.Info("Registering command /", command.Name)
 			// application command id is 0 here, it's OK.
 			// on a ready event, the client is updated to store the application id
-			if err = client.ApplicationCommand(0).Global().Create(commands[i]); err != nil {
+			if err = client.ApplicationCommand(0).Global().Create(command); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -193,26 +193,12 @@ func main() {
 		if h.Type == disgord.InteractionApplicationCommand {
 
 			if len(h.Data.Options) == 0 { // no subcommand was provided
-				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
-					Type: disgord.InteractionCallbackChannelMessageWithSource,
-					Data: &disgord.CreateInteractionResponseData{
-						Flags: disgord.MessageFlagEphemeral,
-						Content: "🤖 _Hello !_  Here are the available command:\n" +
-							"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
-							"⌨ `/mj help`\n" +
-							"\n" +
-							"> 🕵 For extra privacy; this modern bot is NOT allowed to read messages, " +
-							"only react to its own command and interactions.\n" +
-							//"\n" +
-							//"If \n" +
-							"",
-					},
-				})
-				checkErr(err, "SendInteractionResponse:Nothing")
+				err = cmd.HandleHelpCommand(noCtx, s, h)
+				checkErr(err, "HandleHelpCommand:NoSubcommand")
 				return
 			}
 
-			subCmdName := h.Data.Options[0].Name
+			subCmdName := h.Data.Options[0].Name // fixme
 
 			log.Debugln("Handling application command by", h.Member, subCmdName)
 
@@ -242,12 +228,12 @@ func main() {
 
 				// 8<-----
 
-				poll := db.Poll{
+				poll := &db.Poll{
 					Subject: subject,
 				}
-				_, err = db.Orm.InsertOne(&poll)
+				_, err = db.Orm.InsertOne(poll)
 				checkErr(err, "InsertOne:Poll")
-				log.Infoln("New Poll:", poll)
+				log.Infoln("New Poll: ", poll.Id, poll.Subject)
 
 				proposals := make([]*db.Proposal, 0)
 				for _, proposalName := range proposalsNames {
@@ -262,94 +248,8 @@ func main() {
 
 				// 8<-----
 
-				pollEmbedHero := &disgord.Embed{
-					Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject),
-				}
-				if len(proposals) > 0 {
-					description := ""
-					for i, proposal := range proposals {
-						if i > 0 {
-							description += ", "
-						}
-						description += proposal.Name
-					}
-					pollEmbedHero.Description = description
-				} else {
-					// nothing is cool for now
-				}
-
-				err = s.SendInteractionResponse(noCtx, h, &disgord.CreateInteractionResponse{
-					Type: disgord.InteractionCallbackChannelMessageWithSource,
-					Data: &disgord.CreateInteractionResponseData{
-						Embeds: []*disgord.Embed{
-							pollEmbedHero,
-						},
-						Components: []*disgord.MessageComponent{
-							{
-								Type:     disgord.MessageComponentActionRow,
-								CustomID: "poll_action_row",
-								Components: []*disgord.MessageComponent{
-									{
-										Type:     disgord.MessageComponentButton,
-										Style:    disgord.Success,
-										CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
-										Label:    "Participate",
-										Emoji: &disgord.Emoji{
-											Name: "📨",
-										},
-									},
-									{
-										Type:     disgord.MessageComponentButton,
-										Style:    disgord.Secondary,
-										CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
-										Label:    "View Results",
-										Emoji: &disgord.Emoji{
-											Name: "🔎",
-										},
-									},
-								},
-							},
-							//{
-							//	Type:     disgord.MessageComponentActionRow,
-							//	CustomID: "4",
-							//	Components: []*disgord.MessageComponent{
-							//		{
-							//			Type:        disgord.MessageComponentSelectMenu,
-							//			CustomID:    "5",
-							//			MinValues:   1,
-							//			MaxValues:   1,
-							//			Placeholder: "Monday",
-							//			Options: []*disgord.SelectMenuOption{
-							//				{
-							//					Label:       "Excellent",
-							//					Description: "I think Monday is Excellent for me",
-							//					Value:       "6",
-							//					Emoji: &disgord.Emoji{
-							//						Name: "🙂",
-							//					},
-							//				},
-							//				{
-							//					Label: "Acceptable",
-							//					Value: "3",
-							//					Emoji: &disgord.Emoji{
-							//						Name: "😐",
-							//					},
-							//				},
-							//				{
-							//					Label: "Reject",
-							//					Value: "0",
-							//					Emoji: &disgord.Emoji{
-							//						Name: "🙁",
-							//					},
-							//				},
-							//			},
-							//		},
-							//	},
-							//},
-						},
-					},
-				})
-				checkErr(err, "SendInteractionResponse:Select")
+				err = cmd.RespondWithPollUi(noCtx, s, h, poll, proposals, false)
+				checkErr(err, "RespondWithPollUi")
 
 				return
 			} else {
@@ -383,18 +283,13 @@ func main() {
 				if !handled {
 					log.Warnln("Unhandled button interaction", h, h.Data)
 					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
-					//err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
-					//	Type: disgord.InteractionCallbackChannelMessageWithSource,
-					//	Data: &disgord.CreateInteractionResponseData{
-					//		Flags:   disgord.MessageFlagEphemeral,
-					//		Content: "A Voté. (même pas vrai, c'est en chantier)",
-					//	},
-					//})
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")
 					return
 				}
 
 			} else if h.Data.ComponentType == disgord.MessageComponentSelectMenu {
+				// We have no more "select" interactions in the bot for now, but they may come back later.
+				// Let's keep this as snippet, it's harmless anyway.
 				log.Debugln("Handling interaction on select ", h, h.Data)
 
 				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
@@ -408,7 +303,7 @@ func main() {
 			}
 
 		} else if h.Type == disgord.InteractionPing {
-			log.Debugln("Unhandled ping interaction", h, h.Data)
+			log.Warningln("Unhandled ping interaction", h, h.Data)
 		} else {
 			log.Warningln("Unhandled interaction type", h, h.Data)
 		}
