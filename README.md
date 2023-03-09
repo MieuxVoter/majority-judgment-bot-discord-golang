@@ -1,5 +1,9 @@
 # Majority Judgment Bot for Discord
 
+> Helps create Majority Judgment polls in Discord.
+
+![](./doc/screen_00.png)
+
 
 ## Feature Wishlist
 
@@ -10,10 +14,14 @@
 - [x] Do not read messages
 - [x] Support multiple guilds
 - [ ] Quotas per guild
-- [ ] Clone past poll
+- [ ] Rerun past poll
 - [ ] Configure the bot per guild
+- [ ] Docker config
 - [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself
+
+
+![](./doc/screen_01.png)
 
 
 ## Usage
