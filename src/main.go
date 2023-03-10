@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	cmd "main/src/command"
+	"main/src/container"
 	db "main/src/database"
-	"main/src/logging"
 	"os"
 )
 
@@ -41,27 +40,17 @@ func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
 }
 
 func main() {
-	fmt.Println("fgdgfdsgdsgdfs== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version
-
-	// Load Environment variables from files, for convenience
-	err := godotenv.Load(".env.local")
-	if err != nil {
-		fmt.Println("No .env.local file found.  Best create one from .env with your DISCORD_TOKEN.")
-	}
-	err = godotenv.Load() // .env
-	if err != nil {
-		fmt.Println("No .env file found.  Ignore this message in builds?")
-	}
-
 	// Greet the dev
-	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version
+	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version (govvv?)
 
-	log = logging.BootLogger()
+	log = container.Get("logger").(*logrus.Logger)
+	//log = logging.BootLogger()
 
 	// Establish a database connection
-	_, err = db.Boot(log.Level)
-	checkErr(err, "db.Boot")
-	err = db.Sync()
+	//_, err = db.Boot(log.Level)
+	//checkErr(err, "db.Boot")
+	// Synchronize the database schema with the Go models
+	err := db.Sync()
 	checkErr(err, "db.Sync")
 
 	// Start the Discord client
@@ -216,4 +205,10 @@ func main() {
 
 	})
 
+}
+
+func init() {
+	// Each service registers into the container in their own init.
+	// init() of main is always last, so let's build the container.
+	container.Build()
 }

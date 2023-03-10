@@ -55,7 +55,7 @@ func HandleButtonParticipate(
 		return false, err
 	}
 	poll := db.Poll{Id: pollId}
-	found, err := db.Orm.Get(&poll)
+	found, err := db.Engine().Get(&poll)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -66,10 +66,10 @@ func HandleButtonParticipate(
 	}
 
 	// Get past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Orm, judge, &poll)
+	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Engine(), judge, &poll)
 
 	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Orm, &poll)
+	proposals, err := db.GetPollProposals(db.Engine(), &poll)
 	if err != nil {
 		return false, nil
 	}
@@ -127,7 +127,7 @@ func HandleButtonDeliberate(
 		return false, err
 	}
 	poll := &db.Poll{Id: pollId}
-	foundPoll, err := db.Orm.Get(poll)
+	foundPoll, err := db.Engine().Get(poll)
 	if !foundPoll {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -138,7 +138,7 @@ func HandleButtonDeliberate(
 	}
 
 	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Orm, poll)
+	proposals, err := db.GetPollProposals(db.Engine(), poll)
 	if err != nil {
 		return false, err
 	}
@@ -152,7 +152,7 @@ func HandleButtonDeliberate(
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
 		for gradeLevel, _ := range poll.GetGradingSlice() {
-			gradeAmount, errCount := db.CountGrades(db.Orm, poll, &proposal, uint8(gradeLevel))
+			gradeAmount, errCount := db.CountGrades(db.Engine(), poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
 			}
@@ -248,7 +248,7 @@ func HandleButtonDeliberate(
 	//imageUrl := "https://oas.mieuxvoter.fr/%s.png?subject=%s&proposals[]=HAHA&proposals[]=HIHI"
 
 	//// Get all judgments emitted on this poll
-	//judgments, err := db.GetJudgmentsOnPoll(db.Orm, poll)
+	//judgments, err := db.GetJudgmentsOnPoll(db.Engine(), poll)
 
 	// Shuffle proposals perhaps? todo
 	// Pick one proposal (the first)

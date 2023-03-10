@@ -2,16 +2,17 @@ package database
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/sirupsen/logrus"
-	"os"
+	"github.com/sarulabs/di"
+	"main/src/configuration"
+	"main/src/container"
 	"xorm.io/xorm"
 )
 
-var Orm *xorm.Engine
+var Orm *xorm.Engine // deprecated
 
 // Sync updates the database schema to mirror the models, if it can.
 func Sync() error {
-	return Orm.Sync(
+	return Engine().Sync(
 		// We need to curate this list manually for now, sorry
 		&Guild{},
 		&Poll{},
@@ -22,14 +23,14 @@ func Sync() error {
 
 // Boot the ORN, configure it, store it and return it.
 // Is idempotent, so it's safe to call this multiple times.
-func Boot(logLevel logrus.Level) (*xorm.Engine, error) {
+func Boot(config *configuration.Config) (*xorm.Engine, error) {
 	if Orm != nil {
 		return Orm, nil
 	}
 
-	databaseDriver := os.Getenv("DATABASE_DRIVER")
-	databaseUrl := os.Getenv("DATABASE_URL")
-	databaseCharset := os.Getenv("DATABASE_CHARSET")
+	databaseDriver := config.Get("DATABASE_DRIVER")
+	databaseUrl := config.Get("DATABASE_URL")
+	databaseCharset := config.Get("DATABASE_CHARSET")
 
 	orm, err := xorm.NewEngine(databaseDriver, databaseUrl)
 	if err != nil {
@@ -38,7 +39,7 @@ func Boot(logLevel logrus.Level) (*xorm.Engine, error) {
 
 	orm.Charset(databaseCharset)
 
-	if logLevel > logrus.InfoLevel {
+	if config.Get("APP_ENV") != "prod" {
 		orm.ShowSQL(true)
 	}
 
@@ -47,7 +48,29 @@ func Boot(logLevel logrus.Level) (*xorm.Engine, error) {
 	return orm, nil
 }
 
-// Get the currently booted ORM Engine, or nil
+// Engine gets the currently booted ORM Engine, or nil
 func Engine() *xorm.Engine {
-	return Orm
+	return container.Get("database.engine").(*xorm.Engine)
+}
+
+func init() {
+	err := container.GetBuilder().Add(di.Def{
+		Name:  "database.engine",
+		Scope: di.App, // default
+		Build: func(ctn di.Container) (interface{}, error) {
+			engine, err := Boot(
+				ctn.Get("config").(*configuration.Config),
+			)
+			if err != nil {
+				return nil, err
+			}
+			return engine, err
+		},
+		Close: func(obj interface{}) error {
+			return obj.(*xorm.Engine).Close()
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
 }

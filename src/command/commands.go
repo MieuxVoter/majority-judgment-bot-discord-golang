@@ -1,13 +1,10 @@
 package command
 
 import (
+	"context"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
 	"main/src/security"
-)
-
-import (
-	"context"
 )
 
 // We'll probably want the builder pattern here instead of this static def.  Where is it?
@@ -202,4 +199,8 @@ func HandleCreateCommand(
 	}
 
 	return nil
+}
+
+func init() {
+	//fmt.Println("init commands")
 }

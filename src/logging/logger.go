@@ -1,36 +1,44 @@
 package logging
 
 import (
+	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
+	"log"
+	"main/src/configuration"
+	"main/src/container"
 	"os"
 )
 
-var logger *logrus.Logger = nil
+// GetLogger returns the currently booted logger
+func GetLogger() *logrus.Logger {
+	return container.Get("logger").(*logrus.Logger)
+}
 
 // BootLogger creates a logger for the bot.
 // It should be ran AFTER we load .env and .env.local
-func BootLogger() *logrus.Logger {
-	if logger != nil {
-		return logger // idempotent
-	}
-
-	appEnv := os.Getenv("APP_ENV")
+func BootLogger(config *configuration.Config) *logrus.Logger {
+	appEnv := config.Get("APP_ENV")
 	logLevel := logrus.DebugLevel
 	if appEnv == "prod" {
 		logLevel = logrus.InfoLevel
 	}
 
-	logger = &logrus.Logger{
+	return &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
 		Level:     logLevel,
 	}
-
-	return logger
 }
 
-// GetLogger returns the currently booted logger
-func GetLogger() *logrus.Logger {
-	return logger
+func init() {
+	err := container.GetBuilder().Add(di.Def{
+		Name: "logger",
+		Build: func(ctn di.Container) (interface{}, error) {
+			return BootLogger(ctn.Get("config").(*configuration.Config)), nil
+		},
+	})
+	if err != nil {
+		log.Fatalln("logger failed to build", err)
+	}
 }

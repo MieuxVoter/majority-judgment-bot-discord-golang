@@ -7,6 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.9
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.1
+	github.com/sarulabs/di v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	xorm.io/xorm v1.3.2
 )
