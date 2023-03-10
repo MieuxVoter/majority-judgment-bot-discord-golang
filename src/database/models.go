@@ -4,14 +4,15 @@ import "time"
 
 type Poll struct {
 	Id       uint64 `xorm:"pk autoincr"`
-	AuthorId uint64 `xorm:"INDEX"`
+	AuthorId uint64 `xorm:"INDEX"` // todo: AuthorSnowflake ?
+	GuildId  uint64 `xorm:"INDEX"`
 	//Author   *disgord.User          `xorm:"-"`
 
 	// The Subject of the poll should be somewhat short.
 	Subject string
-	//Subject string `xorm:"name"`
+	//Subject string `xorm:"name"` // inquire: what's "name" ?
 
-	//Gradation string `xorm:"-"`
+	//Grading string `xorm:"-"`
 
 	CreatedUnix time.Time `xorm:"created"`
 	UpdatedUnix time.Time `xorm:"updated"`

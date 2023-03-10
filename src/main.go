@@ -40,38 +40,6 @@ func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
 	checkErr(err, "mentioning me")
 }
 
-func getSubcommandOptions(
-	options []*disgord.ApplicationCommandDataOption,
-	name string) ([]*disgord.ApplicationCommandDataOption, error) {
-
-	for _, option := range options {
-		if option.Name == name {
-			return option.Options, nil
-		}
-	}
-
-	return nil, fmt.Errorf("command subquery not found")
-}
-
-func getOptionStringByName(
-	options []*disgord.ApplicationCommandDataOption,
-	name string,
-	defaultValue string) string {
-
-	for _, option := range options {
-		if option.Name == name {
-			value := fmt.Sprintf("%s", option.Value)
-			if value == "" {
-				value = defaultValue
-			}
-
-			return value
-		}
-	}
-
-	return defaultValue
-}
-
 func main() {
 	// Load Environment variables from files, for convenience
 	err := godotenv.Load(".env.local")
@@ -198,63 +166,19 @@ func main() {
 				return
 			}
 
-			subCmdName := h.Data.Options[0].Name // fixme
+			// Assumes the subject is the first of our options in the definition, OK if the user changes order
+			subCmdName := h.Data.Options[0].Name
 
 			log.Debugln("Handling application command by", h.Member, subCmdName)
 
 			if subCmdName == "help" {
 				err = cmd.HandleHelpCommand(noCtx, s, h)
 				checkErr(err, "HandleHelpCommand")
-				return
 			} else if subCmdName == "create" {
-				subcommandOptions, err := getSubcommandOptions(h.Data.Options, "create")
-				checkErr(err, "getSubcommandOptions:create")
-
-				subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
-				proposalsNames := make([]string, 0)
-				for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
-					proposalName := getOptionStringByName(subcommandOptions, "proposal_"+v, "")
-					if proposalName == "" {
-						continue
-					}
-					proposalsNames = append(proposalsNames, proposalName)
-				}
-
-				if len(proposalsNames) == 0 {
-					err = cmd.RespondCommandFailure(noCtx, s, h, "A Poll needs at least two proposals.")
-					checkErr(err, "RespondCommandFailure:NoProposals")
-					return
-				}
-
-				// 8<-----
-
-				poll := &db.Poll{
-					Subject: subject,
-				}
-				_, err = db.Orm.InsertOne(poll)
-				checkErr(err, "InsertOne:Poll")
-				log.Infoln("New Poll: ", poll.Id, poll.Subject)
-
-				proposals := make([]*db.Proposal, 0)
-				for _, proposalName := range proposalsNames {
-					proposal := &db.Proposal{
-						Name:   proposalName,
-						PollId: poll.Id,
-					}
-					proposals = append(proposals, proposal)
-				}
-				_, err = db.Orm.Insert(&proposals)
-				checkErr(err, "Insert:Proposals")
-
-				// 8<-----
-
-				err = cmd.RespondWithPollUi(noCtx, s, h, poll, proposals, false)
-				checkErr(err, "RespondWithPollUi")
-
-				return
+				err = cmd.HandleCreateCommand(noCtx, s, h)
+				checkErr(err, "HandleCreateCommand")
 			} else {
 				log.Errorln("Unrecognized subcommand ", subCmdName)
-
 				return
 			}
 

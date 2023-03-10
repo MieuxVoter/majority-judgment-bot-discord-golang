@@ -2,6 +2,7 @@ package command
 
 import (
 	"github.com/andersfylling/disgord"
+	db "main/src/database"
 )
 
 import (
@@ -70,6 +71,7 @@ func GetCommands() []*disgord.CreateApplicationCommand {
 	return commands
 }
 
+// HandleHelpCommand is to refactor into a class
 func HandleHelpCommand(
 	ctx context.Context,
 	s disgord.Session,
@@ -108,4 +110,68 @@ func HandleHelpCommand(
 	})
 
 	return err
+}
+
+// HandleCreateCommand is to refactor into a class at some point
+func HandleCreateCommand(
+	ctx context.Context,
+	s disgord.Session,
+	h *disgord.InteractionCreate,
+) error {
+
+	subcommandOptions, err := getSubcommandOptions(h.Data.Options, "create")
+	if err != nil {
+		return err
+	}
+
+	subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
+	proposalsNames := make([]string, 0)
+	for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
+		proposalName := getOptionStringByName(subcommandOptions, "proposal_"+v, "")
+		if proposalName == "" {
+			continue
+		}
+		proposalsNames = append(proposalsNames, proposalName)
+	}
+
+	if len(proposalsNames) < 2 {
+		err = RespondCommandFailure(ctx, s, h, "A Poll needs at least two proposals.")
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// 8<-----
+
+	poll := &db.Poll{
+		Subject: subject,
+	}
+	_, err = db.Orm.InsertOne(poll)
+	if err != nil {
+		return err
+	}
+	//log.Infoln("New Poll: ", poll.Id, poll.Subject)
+
+	proposals := make([]*db.Proposal, 0)
+	for _, proposalName := range proposalsNames {
+		proposal := &db.Proposal{
+			Name:   proposalName,
+			PollId: poll.Id,
+		}
+		proposals = append(proposals, proposal)
+	}
+	_, err = db.Orm.Insert(&proposals)
+	if err != nil {
+		return err
+	}
+
+	// 8<-----
+
+	err = RespondWithPollUi(ctx, s, h, poll, proposals, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
