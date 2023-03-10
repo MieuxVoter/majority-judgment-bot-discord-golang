@@ -131,22 +131,24 @@ func main() {
 
 		if h.Type == disgord.InteractionApplicationCommand {
 
-			if len(h.Data.Options) == 0 { // no subcommand was provided
-				err = cmd.HandleHelpCommand(noCtx, s, h)
-				checkErr(err, "HandleHelpCommand:NoSubcommand")
-				return
-			}
-
-			// Assumes the subject is the first of our options in the definition, OK if the user changes order
-			subCmdName := h.Data.Options[0].Name
-
-			log.Debugln("Handling application command by", h.Member, subCmdName)
-
 			commandInput := &cmd.Input{
 				Context:     noCtx,
 				Session:     s,
 				Interaction: h,
 			}
+
+			if len(h.Data.Options) == 0 { // no subcommand was provided
+				_, err = container.Get("command.help").(*cmd.HelpCommand).Handle(commandInput)
+				if err != nil {
+					checkErr(err, "HandleHelpCommand:NoSubcommand")
+				}
+				return
+			}
+
+			subCmdName := h.Data.Options[0].Name
+
+			log.Debugln("Handling application command by", h.Member, subCmdName)
+
 			commands := container.GetCollection("command")
 			commandWasHandled := false
 			for _, commandGeneric := range commands {
@@ -160,12 +162,6 @@ func main() {
 						break
 					}
 				}
-			}
-
-			if subCmdName == "create" {
-				err = cmd.HandleCreateCommand(noCtx, s, h)
-				checkErr(err, "HandleCreateCommand")
-				commandWasHandled = true
 			}
 
 			if !commandWasHandled {
