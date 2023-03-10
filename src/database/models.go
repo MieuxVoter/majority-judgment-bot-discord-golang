@@ -3,9 +3,9 @@ package database
 import "time"
 
 type Poll struct {
-	Id       uint64 `xorm:"pk autoincr"`
-	AuthorId uint64 `xorm:"INDEX"` // todo: AuthorSnowflake ?
-	GuildId  uint64 `xorm:"INDEX"`
+	Id uint64 `xorm:"pk autoincr"`
+	//AuthorId uint64 `xorm:"INDEX"` // todo: AuthorSnowflake ?
+	GuildId uint64 `xorm:"INDEX"`
 	//Author   *disgord.User          `xorm:"-"`
 
 	// The Subject of the poll should be somewhat short.
@@ -59,4 +59,10 @@ type Judgment struct {
 	ProposalId     uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
 	PollId         uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
 	Grade          uint8
+}
+
+type Guild struct {
+	Id        uint64 `xorm:"pk autoincr"`
+	Snowflake string `xorm:"UNIQUE INDEX"`
+	Quota     uint64
 }

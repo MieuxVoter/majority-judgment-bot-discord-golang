@@ -6,6 +6,8 @@ import (
 	"github.com/andersfylling/disgord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	db "main/src/database"
+	"main/src/logging"
+	"main/src/security"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -289,13 +291,28 @@ func HandleButtonJudge(
 
 	// todo: check the judge's permissions to judge, somehow
 
+	// Get the guild this poll is for
+	guild, err := db.GetGuild(db.Engine(), h.GuildID)
+	if err != nil {
+		logging.GetLogger().Errorln(err)
+		err = RespondCommandFailure(ctx, s, h, "Oh snap!  This guild is not registered.")
+		return
+	}
+
+	// Check if the guild is banned or not
+	canParticipate, err := security.CanGuildParticipate(db.Engine(), guild)
+	if !canParticipate {
+		err = RespondCommandFailure(ctx, s, h, "Ouch!  This guild is banned.")
+		return
+	}
+
 	// Get the proposal this button is for
 	proposalId, err := strconv.ParseUint(proposalIdAsString, 10, 64)
 	if err != nil {
 		return false, err
 	}
 	proposal := db.Proposal{Id: proposalId}
-	found, err := db.Orm.Get(&proposal)
+	found, err := db.Engine().Get(&proposal)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This proposal was probably deleted.")
 		return
@@ -313,7 +330,7 @@ func HandleButtonJudge(
 
 	// Get the poll this proposal is attached to
 	poll := db.Poll{Id: proposal.PollId}
-	found, err = db.Orm.Get(&poll)
+	found, err = db.Engine().Get(&poll)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -324,9 +341,9 @@ func HandleButtonJudge(
 	}
 
 	// Get all past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Orm, judge, &poll)
+	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Engine(), judge, &poll)
 	if err != nil {
-		err = RespondCommandFailure(ctx, s, h, "Nein!.")
+		err = RespondCommandFailure(ctx, s, h, "Nein!")
 		return
 	}
 
@@ -345,7 +362,7 @@ func HandleButtonJudge(
 		// /!. This does not update when gradeLevel is zero, unless Cols() is specified
 		// > When this param is the pointer of struct, only non-empty and non-zero field will be updated to database.
 		// > from https://xorm.io/docs/chapter-06/readme/
-		updated, err := db.Orm.Cols("grade").Update(pastJudgment, &db.Judgment{
+		updated, err := db.Engine().Cols("grade").Update(pastJudgment, &db.Judgment{
 			JudgeSnowflake: pastJudgment.JudgeSnowflake,
 			ProposalId:     pastJudgment.ProposalId,
 			PollId:         pastJudgment.PollId,
@@ -364,14 +381,14 @@ func HandleButtonJudge(
 			PollId:         poll.Id,
 			Grade:          uint8(gradeLevel),
 		}
-		_, err = db.Orm.InsertOne(pastJudgment)
+		_, err = db.Engine().InsertOne(pastJudgment)
 		if err != nil {
 			return false, err
 		}
 	}
 
 	// Get all the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Orm, &poll)
+	proposals, err := db.GetPollProposals(db.Engine(), &poll)
 	if err != nil {
 		return false, err
 	}
@@ -424,19 +441,23 @@ func HandleButtonJudge(
 		err = s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
 			Type: disgord.InteractionCallbackUpdateMessage,
 			Data: &disgord.CreateInteractionResponseData{
-				Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
-				Content: fmt.Sprintf(
-					"✅ **WELL DONE!**"+
-						" "+
-						"%s\n"+
-						"",
-					message,
-				),
-				Embeds: []*disgord.Embed{},
+				//Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
+				Flags: disgord.MessageFlagEphemeral,
+				//Content: fmt.Sprintf(
+				//	"✅ **WELL DONE!**"+
+				//		" "+
+				//		"%s\n"+
+				//		"",
+				//	message,
+				//),
+				Embeds: []*disgord.Embed{
+					{
+						Title:       "✅ **WELL DONE!**",
+						Description: message,
+					},
+				},
 			},
 		})
-		return
-
 	}
 
 	return

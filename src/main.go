@@ -33,7 +33,7 @@ func checkErr(err error, trace string) {
 func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
 	msg := data.Message
 
-	log.Info("Bot has been mentioned: ", msg)
+	log.Info("Bot has been mentioned: ", msg.Member, msg.Content)
 
 	botUsage := "_I am ready to serve !_   Type `/mj` to start."
 	_, err := msg.Reply(noCtx, s, botUsage)
@@ -41,6 +41,8 @@ func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
 }
 
 func main() {
+	fmt.Println("fgdgfdsgdsgdfs== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version
+
 	// Load Environment variables from files, for convenience
 	err := godotenv.Load(".env.local")
 	if err != nil {
@@ -51,10 +53,10 @@ func main() {
 		fmt.Println("No .env file found.  Ignore this message in builds?")
 	}
 
-	log = logging.MakeLogger()
-
 	// Greet the dev
 	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version
+
+	log = logging.BootLogger()
 
 	// Establish a database connection
 	_, err = db.Boot(log.Level)
@@ -64,37 +66,17 @@ func main() {
 
 	// Start the Discord client
 	client := disgord.New(disgord.Config{
-		ProjectName: "Majority Judgment",
+		ProjectName: os.Getenv("DISCORD_NAME"),
 		BotToken:    os.Getenv("DISCORD_TOKEN"),
 		Logger:      log,
 		Intents:     disgord.IntentDirectMessages,
-		//Intents: disgord.IntentDirectMessages |
-		//	disgord.IntentGuildMessages |
-		//	disgord.IntentGuildMembers,
-		// todo Remove those once we are sure we have what we need
-		//disgord.IntentDirectMessageReactions |
-		//disgord.IntentDirectMessageTyping |
-		//disgord.IntentDirectMessages |
-		//disgord.IntentGuildBans |
-		//disgord.IntentGuildEmojisAndStickers |
-		//disgord.IntentGuildIntegrations |
-		//disgord.IntentGuildInvites |
-		//disgord.IntentGuildMembers |
-		//disgord.IntentGuildMessageReactions |
-		//disgord.IntentGuildMessageTyping |
-		//disgord.IntentGuildMessages |
-		//disgord.IntentGuildPresences |
-		//disgord.IntentGuildScheduledEvents |
-		//disgord.IntentGuildVoiceStates |
-		//disgord.IntentGuildWebhooks |
-		//disgord.IntentGuilds |
 
 		// ! Non-functional due to a current bug, will be fixed upstream someday.
-		//Presence: &disgord.UpdateStatusPayload{
-		//	Game: &disgord.Activity{
-		//		Name: "write " + prefix + "ping",
-		//	},
-		//},
+		Presence: &disgord.UpdateStatusPayload{
+			Game: &disgord.Activity{
+				Name: "Listening to /mj commands",
+			},
+		},
 	})
 
 	// Heartbeat

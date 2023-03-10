@@ -7,6 +7,48 @@ import (
 	"xorm.io/xorm"
 )
 
+func GetGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) {
+	guild := &Guild{
+		Snowflake: snowflake.String(),
+	}
+	has, err := orm.Get(guild)
+	if !has {
+		return nil, fmt.Errorf("no guild found for this snowflake")
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return guild, nil
+}
+
+func CreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) {
+	guild := &Guild{
+		Snowflake: snowflake.String(),
+		Quota:     42,
+	}
+	_, err := orm.InsertOne(guild)
+	if err != nil {
+		return nil, err
+	}
+
+	//logging.GetLogger().Warningln("New Guild !", guild.Snowflake)
+
+	return guild, nil
+}
+
+func GetOrCreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (guild *Guild, err error) {
+	guild, err = GetGuild(orm, snowflake)
+	if err != nil {
+		guild, err = CreateGuild(orm, snowflake)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
 func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {
 	var proposals []Proposal
 	err := e.Where("poll_id = ?", poll.Id).Find(&proposals)

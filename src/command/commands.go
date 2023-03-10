@@ -3,6 +3,7 @@ package command
 import (
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
+	"main/src/security"
 )
 
 import (
@@ -144,10 +145,37 @@ func HandleCreateCommand(
 
 	// 8<-----
 
+	guild, err := db.GetOrCreateGuild(db.Engine(), h.GuildID)
+	if err != nil {
+		return err
+	}
+
+	isAllowed, err := security.CanGuildCreatePoll(db.Engine(), guild)
+	if err != nil {
+		return err
+	}
+	if !isAllowed {
+		err = RespondCommandFailure(ctx, s, h, "This guild cannot create polls anymore.")
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// Decrement the guild's quota
+	if guild.Quota > 0 {
+		guild.Quota = guild.Quota - 1
+	}
+	_, err = db.Engine().Update(guild)
+	if err != nil {
+		return err
+	}
+
 	poll := &db.Poll{
 		Subject: subject,
+		GuildId: guild.Id,
 	}
-	_, err = db.Orm.InsertOne(poll)
+	_, err = db.Engine().InsertOne(poll)
 	if err != nil {
 		return err
 	}
@@ -161,7 +189,7 @@ func HandleCreateCommand(
 		}
 		proposals = append(proposals, proposal)
 	}
-	_, err = db.Orm.Insert(&proposals)
+	_, err = db.Engine().Insert(&proposals)
 	if err != nil {
 		return err
 	}

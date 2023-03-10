@@ -8,4 +8,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflag
 FROM gcr.io/distroless/base
 WORKDIR /bot
 COPY --from=builder /build/discordbot .
-CMD [\"/bot/discordbot\"]
+CMD ["/bot/discordbot"]

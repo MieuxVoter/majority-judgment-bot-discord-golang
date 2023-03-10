@@ -13,6 +13,7 @@ var Orm *xorm.Engine
 func Sync() error {
 	return Orm.Sync(
 		// We need to curate this list manually for now, sorry
+		&Guild{},
 		&Poll{},
 		&Proposal{},
 		&Judgment{},
@@ -47,6 +48,6 @@ func Boot(logLevel logrus.Level) (*xorm.Engine, error) {
 }
 
 // Get the currently booted ORM Engine, or nil
-func Get() *xorm.Engine {
+func Engine() *xorm.Engine {
 	return Orm
 }

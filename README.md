@@ -5,6 +5,15 @@
 ![](./doc/screen_00.png)
 
 
+[![MIT](https://img.shields.io/github/license/MieuxVoter/majority-judgment-bot-discord-golang?style=for-the-badge)](LICENSE.md)
+[![Release](https://img.shields.io/github/v/release/MieuxVoter/majority-judgment-bot-discord-golang?include_prereleases&style=for-the-badge)](https://github.com/MieuxVoter/majority-judgment-bot-discord-golang/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/MieuxVoter/majority-judgment-bot-discord-golang/go.yml?style=for-the-badge)](https://github.com/MieuxVoter/majority-judgment-bot-discord-golang/actions/workflows/go.yml)
+[![Coverage](https://img.shields.io/codecov/c/github/MieuxVoter/majority-judgment-bot-discord-golang?style=for-the-badge&token=FEUB64HRNM)](https://app.codecov.io/gh/MieuxVoter/majority-judgment-bot-discord-golang/)
+[![Code Quality](https://img.shields.io/codefactor/grade/github/MieuxVoter/majority-judgment-bot-discord-golang?style=for-the-badge)](https://www.codefactor.io/repository/github/mieuxvoter/majority-judgment-bot-discord-golang)
+[![A+](https://img.shields.io/badge/go%20report-A+-brightgreen.svg?style=for-the-badge)](https://goreportcard.com/report/github.com/mieuxvoter/majority-judgment-bot-discord-golang)
+[![Discord Chat https://discord.gg/rAAQG9S](https://img.shields.io/discord/705322981102190593.svg?style=for-the-badge)](https://discord.gg/rAAQG9S)
+
+
 ## Feature Wishlist
 
 - [x] Start a poll with `/mj create …`
@@ -13,7 +22,7 @@
 - [x] Use only `/` commands
 - [x] Do not read messages
 - [x] Support multiple guilds
-- [ ] Quotas per guild
+- [x] Quotas per guild
 - [ ] Daily Quotas per guild
 - [ ] Publish a poll's result using a button
 - [ ] Rerun past poll with `/mj rerun`
@@ -22,6 +31,7 @@
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
 - [ ] Choose a grading (ex: 👍👎) per poll
 - [ ] Docker config
+- [ ] Docker Compose config
 - [ ] Trim the database regularly (CRON)
 - [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself `/mj love`
@@ -33,12 +43,22 @@
 ## Usage
 
 1. Clone this repository.
-2. Configure your discord token in `.env.local`, copied from `.env`
-3. Run
+2. Create `.env.local`, copied from `.env`
    ```
-   go run src/main.go
+   $ cp .env .env.local
    ```
-4. Visit the OAuth URL that was printed in the output
+3. Configure your _discord token_ in `.env.local`
+4. Run
+   ```
+   $ go run src/main.go
+   ```
+5. Visit the OAuth URL that was printed in the output
+
+
+## Build
+
+   $ go build -o mjbot src/main.go
+   $ ./mjbot
 
 
 ## Built atop Disgord
