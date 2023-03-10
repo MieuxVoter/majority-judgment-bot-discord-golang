@@ -7,6 +7,7 @@ package container
 import (
 	"github.com/sarulabs/di"
 	"log"
+	"strings"
 )
 
 var builder *di.Builder
@@ -22,6 +23,17 @@ func Build() {
 
 func Get(name string) interface{} {
 	return container.Get(name)
+}
+
+func GetCollection(prefix string) []interface{} {
+	collection := make([]interface{}, 0)
+	for key, _ := range container.Definitions() {
+		if strings.HasPrefix(key, prefix+".") {
+			collection = append(collection, container.Get(key))
+		}
+	}
+
+	return collection
 }
 
 func init() {

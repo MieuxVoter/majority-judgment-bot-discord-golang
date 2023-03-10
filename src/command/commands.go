@@ -65,6 +65,18 @@ var commands = []*disgord.CreateApplicationCommand{
 	},
 }
 
+type Input struct {
+	Context     context.Context
+	Session     disgord.Session
+	Interaction *disgord.InteractionCreate
+}
+
+type Command interface {
+	Define() *disgord.ApplicationCommandOption
+	Matches(command string) bool
+	Handle(input *Input) (handled bool, err error)
+}
+
 func GetCommands() []*disgord.CreateApplicationCommand {
 	return commands
 }

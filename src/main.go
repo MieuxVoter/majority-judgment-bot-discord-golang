@@ -142,15 +142,34 @@ func main() {
 
 			log.Debugln("Handling application command by", h.Member, subCmdName)
 
-			if subCmdName == "help" {
-				err = cmd.HandleHelpCommand(noCtx, s, h)
-				checkErr(err, "HandleHelpCommand")
-			} else if subCmdName == "create" {
+			commandInput := &cmd.Input{
+				Context:     noCtx,
+				Session:     s,
+				Interaction: h,
+			}
+			commands := container.GetCollection("command")
+			commandWasHandled := false
+			for _, commandGeneric := range commands {
+				command := commandGeneric.(cmd.Command)
+				if command.Matches(subCmdName) {
+					commandWasHandled, err = command.Handle(commandInput)
+					if err != nil {
+						checkErr(err, "command "+subCmdName)
+					}
+					if commandWasHandled {
+						break
+					}
+				}
+			}
+
+			if subCmdName == "create" {
 				err = cmd.HandleCreateCommand(noCtx, s, h)
 				checkErr(err, "HandleCreateCommand")
-			} else {
+				commandWasHandled = true
+			}
+
+			if !commandWasHandled {
 				log.Errorln("Unrecognized subcommand ", subCmdName)
-				return
 			}
 
 		} else if h.Type == disgord.InteractionMessageComponent {
@@ -179,7 +198,6 @@ func main() {
 					log.Warnln("Unhandled button interaction", h, h.Data)
 					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")
-					return
 				}
 
 			} else if h.Data.ComponentType == disgord.MessageComponentSelectMenu {
