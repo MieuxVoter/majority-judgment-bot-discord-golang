@@ -7,18 +7,24 @@
 
 ## Feature Wishlist
 
-- [x] Start a poll
-- [x] Vote on a poll
-- [x] Display a poll's results
-- [x] Use only `/` commands 
+- [x] Start a poll with `/mj create …`
+- [x] Vote on a poll using buttons
+- [x] Look at a poll's result using a button
+- [x] Use only `/` commands
 - [x] Do not read messages
 - [x] Support multiple guilds
 - [ ] Quotas per guild
-- [ ] Rerun past poll
-- [ ] Configure the bot per guild
+- [ ] Daily Quotas per guild
+- [ ] Publish a poll's result using a button
+- [ ] Rerun past poll with `/mj rerun`
+- [ ] Display metrics with `/mj info`
+- [ ] Explain how Majority Judgment works `/mj explain`
+- [ ] Allow/Disallow judges, via nickname or roles, per guild
+- [ ] Choose a grading (ex: 👍👎) per poll
 - [ ] Docker config
+- [ ] Trim the database regularly (CRON)
 - [ ] Remove `bot` scope (if doable)
-- [ ] Pay for itself
+- [ ] Pay for itself `/mj love`
 
 
 ![](./doc/screen_01.png)
