@@ -101,6 +101,7 @@ func handleCreateCommand(
 		return err
 	}
 
+	// Check if the guild is allowed to create new polls
 	isAllowed, err := security.CanGuildCreatePoll(db.Engine(), guild)
 	if err != nil {
 		return err
@@ -130,7 +131,6 @@ func handleCreateCommand(
 	if err != nil {
 		return err
 	}
-	//log.Infoln("New Poll: ", poll.Id, poll.Subject)
 
 	proposals := make([]*db.Proposal, 0)
 	for _, proposalName := range proposalsNames {
