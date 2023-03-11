@@ -1,4 +1,4 @@
-package configuration
+package services
 
 // We load our configuration from environment variables.
 // They can be defined as usual, or using the .env.local file for convenience.
@@ -30,8 +30,8 @@ func (c *Config) Get(key string) string {
 	return value
 }
 
-// LoadDotEnv loads Environment variables from files, for convenience
-func LoadDotEnv() {
+// loadDotEnv loads Environment variables from files, for convenience
+func loadDotEnv() {
 	err := godotenv.Load(".env.local")
 	if err != nil {
 		fmt.Println("No .env.local file found.  Best create one from .env with your DISCORD_TOKEN.")
@@ -46,7 +46,7 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "config",
 		Build: func(container di.Container) (interface{}, error) {
-			LoadDotEnv()
+			loadDotEnv()
 			config := &Config{}
 
 			return config, nil

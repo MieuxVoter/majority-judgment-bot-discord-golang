@@ -171,7 +171,7 @@ func RespondCommandUserError(
 			Data: &disgord.CreateInteractionResponseData{
 				Flags: disgord.MessageFlagEphemeral,
 				Content: fmt.Sprintf(
-					"🔧 **Ooops**\n"+
+					"🍄 **Ooops**\n"+
 						"\n"+
 						"%s\n"+
 						"",

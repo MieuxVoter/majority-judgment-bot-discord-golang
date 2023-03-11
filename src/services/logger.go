@@ -1,10 +1,9 @@
-package logging
+package services
 
 import (
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
 	"log"
-	"main/src/configuration"
 	"main/src/container"
 	"os"
 )
@@ -16,7 +15,7 @@ func GetLogger() *logrus.Logger {
 
 // bootLogger creates a logger for the bot.
 // It should be ran AFTER we load .env and .env.local
-func bootLogger(config *configuration.Config) *logrus.Logger {
+func bootLogger(config *Config) *logrus.Logger {
 	appEnv := config.Get("APP_ENV")
 	logLevel := logrus.DebugLevel
 	if appEnv == "prod" {
@@ -35,7 +34,7 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "logger",
 		Build: func(ctn di.Container) (interface{}, error) {
-			return bootLogger(ctn.Get("config").(*configuration.Config)), nil
+			return bootLogger(ctn.Get("config").(*Config)), nil
 		},
 	})
 	if err != nil {

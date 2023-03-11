@@ -4,8 +4,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sarulabs/di"
 	"log"
-	"main/src/configuration"
 	"main/src/container"
+	"main/src/services"
 	"xorm.io/xorm"
 )
 
@@ -27,7 +27,7 @@ func Sync() error {
 }
 
 // bootEngine boots an ORM according to passed configuration, and returns it.
-func bootEngine(config *configuration.Config) (*xorm.Engine, error) {
+func bootEngine(config *services.Config) (*xorm.Engine, error) {
 	databaseDriver := config.Get("DATABASE_DRIVER")
 	databaseUrl := config.Get("DATABASE_URL")
 	databaseCharset := config.Get("DATABASE_CHARSET")
@@ -52,7 +52,7 @@ func init() {
 		Scope: di.App, // default
 		Build: func(ctn di.Container) (interface{}, error) {
 			engine, err := bootEngine(
-				ctn.Get("config").(*configuration.Config),
+				ctn.Get("config").(*services.Config),
 			)
 			if err != nil {
 				return nil, err

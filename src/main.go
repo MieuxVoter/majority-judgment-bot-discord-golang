@@ -10,9 +10,9 @@ import (
 	"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
 	cmd "main/src/command"
-	"main/src/configuration"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/services"
 )
 
 var logger *logrus.Logger
@@ -44,7 +44,7 @@ func main() {
 	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version (govvv?)
 
 	logger = container.Get("logger").(*logrus.Logger)
-	config := container.Get("config").(*configuration.Config)
+	config := container.Get("config").(*services.Config)
 
 	// Synchronize the database schema with the Go models
 	err := db.Sync()

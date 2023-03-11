@@ -6,8 +6,8 @@ import (
 	"github.com/andersfylling/disgord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	db "main/src/database"
-	"main/src/logging"
 	"main/src/security"
+	"main/src/services"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -151,7 +151,7 @@ func HandleButtonDeliberate(
 	proposalsTallies := make([]*judgment.ProposalTally, 0, len(proposals))
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
-		for gradeLevel, _ := range poll.GetGradingSlice() {
+		for gradeLevel := range poll.GetGradingSlice() {
 			gradeAmount, errCount := db.CountGrades(db.GetEngine(), poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
@@ -187,7 +187,7 @@ func HandleButtonDeliberate(
 		if proposalResultIndex > 0 {
 			fileNameNoExt += "_"
 		}
-		for gradeLevel, _ := range poll.GetGradingSlice() {
+		for gradeLevel := range poll.GetGradingSlice() {
 			gradeAmount := pollTally.Proposals[proposalResult.Index].Tally[gradeLevel]
 
 			if gradeLevel > 0 {
@@ -294,7 +294,7 @@ func HandleButtonJudge(
 	// Get the guild this poll is for
 	guild, err := db.GetGuild(db.GetEngine(), h.GuildID.String())
 	if err != nil {
-		logging.GetLogger().Errorln(err)
+		services.GetLogger().Errorln(err)
 		err = RespondCommandFailure(ctx, s, h, "Oh snap!  This guild is not registered.")
 		return
 	}
@@ -349,7 +349,7 @@ func HandleButtonJudge(
 
 	// Get past judgment of this judge on this proposal
 	var pastJudgment *db.Judgment = nil
-	for k, _ := range judgments {
+	for k := range judgments {
 		if judgments[k].ProposalId == proposalId {
 			pastJudgment = &(judgments[k])
 			break
@@ -429,7 +429,7 @@ func HandleButtonJudge(
 	} else {
 
 		summary := ""
-		for k, _ := range judgments {
+		for k := range judgments {
 			if k > 0 {
 				summary += "  —  "
 			}

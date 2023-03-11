@@ -2,7 +2,7 @@
 
 Create a new file with an object implementing `Command`,
 and register it to the container with a name prefixed by `command.`.
-It will be autoloaded when the bot starts.
+It will be auto-loaded when the bot starts.
 
 See the `command_create.go` file for an example of how to do that.
 

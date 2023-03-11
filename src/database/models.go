@@ -1,5 +1,6 @@
 package database
 
+//goland:noinspection Annotator
 import "time"
 
 type Poll struct {

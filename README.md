@@ -23,10 +23,10 @@
 - [x] Do not read messages
 - [x] Support multiple guilds
 - [x] Quotas per guild
-- [ ] Daily Quotas per guild
-- [ ] Publish a poll's result using a button
 - [x] Rerun past poll with `/mj rerun`
-- [ ] Display metrics with `/mj info`
+- [x] Display metrics with `/mj info`
+- [ ] Publish a poll's result using a button
+- [ ] Daily Quotas per guild
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
 - [ ] Choose a grading (ex: 👍👎) per poll
