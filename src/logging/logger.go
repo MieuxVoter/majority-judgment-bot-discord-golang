@@ -14,9 +14,9 @@ func GetLogger() *logrus.Logger {
 	return container.Get("logger").(*logrus.Logger)
 }
 
-// BootLogger creates a logger for the bot.
+// bootLogger creates a logger for the bot.
 // It should be ran AFTER we load .env and .env.local
-func BootLogger(config *configuration.Config) *logrus.Logger {
+func bootLogger(config *configuration.Config) *logrus.Logger {
 	appEnv := config.Get("APP_ENV")
 	logLevel := logrus.DebugLevel
 	if appEnv == "prod" {
@@ -35,7 +35,7 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "logger",
 		Build: func(ctn di.Container) (interface{}, error) {
-			return BootLogger(ctn.Get("config").(*configuration.Config)), nil
+			return bootLogger(ctn.Get("config").(*configuration.Config)), nil
 		},
 	})
 	if err != nil {

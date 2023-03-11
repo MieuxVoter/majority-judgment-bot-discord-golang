@@ -8,9 +8,12 @@ import (
 	"main/src/container"
 	db "main/src/database"
 	"main/src/security"
+	"xorm.io/xorm"
 )
 
-type CreateCommand struct{}
+type CreateCommand struct {
+	orm *xorm.Engine
+}
 
 func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
@@ -61,11 +64,17 @@ func (c CreateCommand) Matches(command string) bool {
 }
 
 func (c CreateCommand) Handle(input *Input) (handled bool, err error) {
-	return true, handleCreateCommand(input.Context, input.Session, input.Interaction)
+	return true, handleCreateCommand(
+		c.orm,
+		input.Context,
+		input.Session,
+		input.Interaction,
+	)
 }
 
 // handleCreateCommand is to refactor into a class at some point
 func handleCreateCommand(
+	x *xorm.Engine,
 	c context.Context,
 	s disgord.Session,
 	h *disgord.InteractionCreate,
@@ -94,15 +103,27 @@ func handleCreateCommand(
 		return nil
 	}
 
-	// 8<-----
+	err = doCreatePoll(x, c, s, h, subject, proposalsNames)
 
-	guild, err := db.GetOrCreateGuild(db.Engine(), h.GuildID)
+	return err
+}
+
+func doCreatePoll(
+	orm *xorm.Engine,
+	c context.Context,
+	s disgord.Session,
+	h *disgord.InteractionCreate,
+	subject string,
+	proposalsNames []string,
+) error {
+
+	guild, err := db.GetOrCreateGuild(orm, h.GuildID)
 	if err != nil {
 		return err
 	}
 
 	// Check if the guild is allowed to create new polls
-	isAllowed, err := security.CanGuildCreatePoll(db.Engine(), guild)
+	isAllowed, err := security.CanGuildCreatePoll(orm, guild)
 	if err != nil {
 		return err
 	}
@@ -118,7 +139,7 @@ func handleCreateCommand(
 	if guild.Quota > 0 {
 		guild.Quota = guild.Quota - 1
 	}
-	_, err = db.Engine().Update(guild)
+	_, err = orm.Update(guild)
 	if err != nil {
 		return err
 	}
@@ -127,7 +148,7 @@ func handleCreateCommand(
 		Subject: subject,
 		GuildId: guild.Id,
 	}
-	_, err = db.Engine().InsertOne(poll)
+	_, err = orm.InsertOne(poll)
 	if err != nil {
 		return err
 	}
@@ -140,12 +161,10 @@ func handleCreateCommand(
 		}
 		proposals = append(proposals, proposal)
 	}
-	_, err = db.Engine().Insert(&proposals)
+	_, err = orm.Insert(&proposals)
 	if err != nil {
 		return err
 	}
-
-	// 8<-----
 
 	err = RespondWithPollUi(c, s, h, poll, proposals, false)
 	if err != nil {
@@ -159,7 +178,9 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "command.create",
 		Build: func(ctn di.Container) (interface{}, error) {
-			cmd := &CreateCommand{}
+			cmd := &CreateCommand{
+				orm: ctn.Get("database.engine").(*xorm.Engine),
+			}
 			return cmd, nil
 		},
 	})

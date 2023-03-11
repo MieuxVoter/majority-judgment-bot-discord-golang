@@ -55,7 +55,7 @@ func HandleButtonParticipate(
 		return false, err
 	}
 	poll := db.Poll{Id: pollId}
-	found, err := db.Engine().Get(&poll)
+	found, err := db.GetEngine().Get(&poll)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -66,10 +66,10 @@ func HandleButtonParticipate(
 	}
 
 	// Get past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Engine(), judge, &poll)
+	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.GetEngine(), judge, &poll)
 
 	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Engine(), &poll)
+	proposals, err := db.GetPollProposals(db.GetEngine(), &poll)
 	if err != nil {
 		return false, nil
 	}
@@ -127,7 +127,7 @@ func HandleButtonDeliberate(
 		return false, err
 	}
 	poll := &db.Poll{Id: pollId}
-	foundPoll, err := db.Engine().Get(poll)
+	foundPoll, err := db.GetEngine().Get(poll)
 	if !foundPoll {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -138,7 +138,7 @@ func HandleButtonDeliberate(
 	}
 
 	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Engine(), poll)
+	proposals, err := db.GetPollProposals(db.GetEngine(), poll)
 	if err != nil {
 		return false, err
 	}
@@ -152,7 +152,7 @@ func HandleButtonDeliberate(
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
 		for gradeLevel, _ := range poll.GetGradingSlice() {
-			gradeAmount, errCount := db.CountGrades(db.Engine(), poll, &proposal, uint8(gradeLevel))
+			gradeAmount, errCount := db.CountGrades(db.GetEngine(), poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
 			}
@@ -248,7 +248,7 @@ func HandleButtonDeliberate(
 	//imageUrl := "https://oas.mieuxvoter.fr/%s.png?subject=%s&proposals[]=HAHA&proposals[]=HIHI"
 
 	//// Get all judgments emitted on this poll
-	//judgments, err := db.GetJudgmentsOnPoll(db.Engine(), poll)
+	//judgments, err := db.GetJudgmentsOnPoll(db.GetEngine(), poll)
 
 	// Shuffle proposals perhaps? todo
 	// Pick one proposal (the first)
@@ -292,7 +292,7 @@ func HandleButtonJudge(
 	// todo: check the judge's permissions to judge, somehow
 
 	// Get the guild this poll is for
-	guild, err := db.GetGuild(db.Engine(), h.GuildID)
+	guild, err := db.GetGuild(db.GetEngine(), h.GuildID)
 	if err != nil {
 		logging.GetLogger().Errorln(err)
 		err = RespondCommandFailure(ctx, s, h, "Oh snap!  This guild is not registered.")
@@ -300,7 +300,7 @@ func HandleButtonJudge(
 	}
 
 	// Check if the guild is banned or not
-	canParticipate, err := security.CanGuildParticipate(db.Engine(), guild)
+	canParticipate, err := security.CanGuildParticipate(db.GetEngine(), guild)
 	if !canParticipate {
 		err = RespondCommandFailure(ctx, s, h, "Ouch!  This guild is banned.")
 		return
@@ -312,7 +312,7 @@ func HandleButtonJudge(
 		return false, err
 	}
 	proposal := db.Proposal{Id: proposalId}
-	found, err := db.Engine().Get(&proposal)
+	found, err := db.GetEngine().Get(&proposal)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This proposal was probably deleted.")
 		return
@@ -330,7 +330,7 @@ func HandleButtonJudge(
 
 	// Get the poll this proposal is attached to
 	poll := db.Poll{Id: proposal.PollId}
-	found, err = db.Engine().Get(&poll)
+	found, err = db.GetEngine().Get(&poll)
 	if !found {
 		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
 		return
@@ -341,7 +341,7 @@ func HandleButtonJudge(
 	}
 
 	// Get all past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.Engine(), judge, &poll)
+	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.GetEngine(), judge, &poll)
 	if err != nil {
 		err = RespondCommandFailure(ctx, s, h, "Nein!")
 		return
@@ -362,7 +362,7 @@ func HandleButtonJudge(
 		// /!. This does not update when gradeLevel is zero, unless Cols() is specified
 		// > When this param is the pointer of struct, only non-empty and non-zero field will be updated to database.
 		// > from https://xorm.io/docs/chapter-06/readme/
-		updated, err := db.Engine().Cols("grade").Update(pastJudgment, &db.Judgment{
+		updated, err := db.GetEngine().Cols("grade").Update(pastJudgment, &db.Judgment{
 			JudgeSnowflake: pastJudgment.JudgeSnowflake,
 			ProposalId:     pastJudgment.ProposalId,
 			PollId:         pastJudgment.PollId,
@@ -381,14 +381,14 @@ func HandleButtonJudge(
 			PollId:         poll.Id,
 			Grade:          uint8(gradeLevel),
 		}
-		_, err = db.Engine().InsertOne(pastJudgment)
+		_, err = db.GetEngine().InsertOne(pastJudgment)
 		if err != nil {
 			return false, err
 		}
 	}
 
 	// Get all the proposals of the poll
-	proposals, err := db.GetPollProposals(db.Engine(), &poll)
+	proposals, err := db.GetPollProposals(db.GetEngine(), &poll)
 	if err != nil {
 		return false, err
 	}

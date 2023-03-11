@@ -49,6 +49,19 @@ func GetOrCreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (guild *Gui
 	return
 }
 
+func GetPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
+	guild := &Poll{Id: id}
+	has, err := orm.Get(guild)
+	if !has {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return guild, nil
+}
+
 func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {
 	var proposals []Proposal
 	err := e.Where("poll_id = ?", poll.Id).Find(&proposals)

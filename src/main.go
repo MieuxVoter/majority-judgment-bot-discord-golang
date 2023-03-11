@@ -10,19 +10,19 @@ import (
 	"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
 	cmd "main/src/command"
+	"main/src/configuration"
 	"main/src/container"
 	db "main/src/database"
-	"os"
 )
 
-var log *logrus.Logger
+var logger *logrus.Logger
 
 var noCtx = context.Background()
 
 // checkErr logs errors if not nil, along with a user-specified trace
 func checkErr(err error, trace string) {
 	if err != nil {
-		log.WithFields(logrus.Fields{
+		logger.WithFields(logrus.Fields{
 			"trace": trace,
 		}).Error(err)
 	}
@@ -32,7 +32,7 @@ func checkErr(err error, trace string) {
 func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
 	msg := data.Message
 
-	log.Info("Bot has been mentioned: ", msg.Member, msg.Content)
+	logger.Info("Bot has been mentioned: ", msg.Member, msg.Content)
 
 	botUsage := "_I am ready to serve !_   Type `/mj` to start."
 	_, err := msg.Reply(noCtx, s, botUsage)
@@ -43,21 +43,18 @@ func main() {
 	// Greet the dev
 	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version (govvv?)
 
-	log = container.Get("logger").(*logrus.Logger)
-	//log = logging.BootLogger()
+	logger = container.Get("logger").(*logrus.Logger)
+	config := container.Get("config").(*configuration.Config)
 
-	// Establish a database connection
-	//_, err = db.Boot(log.Level)
-	//checkErr(err, "db.Boot")
 	// Synchronize the database schema with the Go models
 	err := db.Sync()
 	checkErr(err, "db.Sync")
 
 	// Start the Discord client
 	client := disgord.New(disgord.Config{
-		ProjectName: os.Getenv("DISCORD_NAME"),
-		BotToken:    os.Getenv("DISCORD_TOKEN"),
-		Logger:      log,
+		ProjectName: config.Get("DISCORD_NAME"),
+		BotToken:    config.Get("DISCORD_TOKEN"),
+		Logger:      logger,
 		Intents:     disgord.IntentDirectMessages,
 
 		// ! Non-functional due to a current bug, will be fixed upstream someday.
@@ -77,16 +74,15 @@ func main() {
 		disgord.PermissionSendMessagesInThreads |
 		disgord.PermissionAttachFiles |
 		disgord.PermissionEmbedLinks
-	//var permissions disgord.PermissionBit
-	u, err := client.BotAuthorizeURL(permissions, []string{
-		//"bot", // we're try our best to remove this bot scope, and only use applications.commands
+	authorizeURL, err := client.BotAuthorizeURL(permissions, []string{
+		//"bot", // we're trying our best to remove this bot scope, and only use applications.commands
 		"applications.commands",
 	})
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	fmt.Println("\nFollow this URL to authorize the bot on your server:")
-	fmt.Println(u)
+	fmt.Println(authorizeURL)
 	fmt.Println("")
 
 	//logFilter, _ := std.NewLogFilter(client)
@@ -97,7 +93,7 @@ func main() {
 	//client.Gateway().WithMiddleware(
 	//	filter.NotByBot,  // ignore bot messages
 	//	filter.HasPrefix, // message must have the given prefix
-	//	logFilter.LogMsg,   // log command message
+	//	logFilter.LogMsg,   // logger command message
 	//	filter.StripPrefix, // remove the command prefix from the message
 	//).MessageCreate(handleCommand)
 
@@ -111,14 +107,14 @@ func main() {
 	// Register slash command once the bot is ready
 	//client.Gateway().Ready(func(s disgord.Session, h *disgord.Ready) { // too soon
 	client.Gateway().BotReady(func() {
-		log.Info("Bot is ready!")
+		logger.Info("Bot is ready!")
 		commands := cmd.GetCommands()
 		for _, command := range commands {
-			log.Info("Registering command /", command.Name)
+			logger.Info("Registering command /", command.Name)
 			// application command id is 0 here, it's OK.
 			// on a ready event, the client is updated to store the application id
 			if err = client.ApplicationCommand(0).Global().Create(command); err != nil {
-				log.Fatal(err)
+				logger.Fatal(err)
 			}
 		}
 	})
@@ -147,7 +143,7 @@ func main() {
 
 			subCmdName := h.Data.Options[0].Name
 
-			log.Debugln("Handling application command by", h.Member, subCmdName)
+			logger.Debugln("Handling application command by", h.Member, subCmdName)
 
 			commands := container.GetCollection("command")
 			commandWasHandled := false
@@ -165,13 +161,13 @@ func main() {
 			}
 
 			if !commandWasHandled {
-				log.Errorln("Unrecognized subcommand ", subCmdName)
+				logger.Errorln("Unrecognized subcommand ", subCmdName)
 			}
 
 		} else if h.Type == disgord.InteractionMessageComponent {
 
 			if h.Data.ComponentType == disgord.MessageComponentButton {
-				log.Debugln("Handling interaction on button", h.Member, h.GuildID)
+				logger.Debugln("Handling interaction on button", h.Member, h.GuildID)
 
 				var handled = false
 
@@ -191,7 +187,7 @@ func main() {
 				}
 
 				if !handled {
-					log.Warnln("Unhandled button interaction", h, h.Data)
+					logger.Warnln("Unhandled button interaction", h, h.Data)
 					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")
 				}
@@ -199,7 +195,7 @@ func main() {
 			} else if h.Data.ComponentType == disgord.MessageComponentSelectMenu {
 				// We have no more "select" interactions in the bot for now, but they may come back later.
 				// Let's keep this as snippet, it's harmless anyway.
-				log.Debugln("Handling interaction on select ", h, h.Data)
+				logger.Debugln("Handling interaction on select ", h, h.Data)
 
 				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
 					Type: disgord.InteractionCallbackDeferredUpdateMessage,
@@ -208,13 +204,13 @@ func main() {
 				checkErr(err, "SendInteractionResponse:Select")
 
 			} else {
-				log.Warningln("Unhandled interaction on message component ", h, h.Data)
+				logger.Warningln("Unhandled interaction on message component ", h, h.Data)
 			}
 
 		} else if h.Type == disgord.InteractionPing {
-			log.Warningln("Unhandled ping interaction", h, h.Data)
+			logger.Warningln("Unhandled ping interaction", h, h.Data)
 		} else {
-			log.Warningln("Unhandled interaction type", h, h.Data)
+			logger.Warningln("Unhandled interaction type", h, h.Data)
 		}
 
 	})
