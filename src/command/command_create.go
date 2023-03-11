@@ -139,7 +139,10 @@ func doCreatePoll(
 	if guild.Quota > 0 {
 		guild.Quota = guild.Quota - 1
 	}
-	_, err = orm.Update(guild)
+	_, err = orm.
+		Cols("quota").
+		Where("snowflake = ?", guild.Snowflake).
+		Update(guild)
 	if err != nil {
 		return err
 	}
