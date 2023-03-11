@@ -292,7 +292,7 @@ func HandleButtonJudge(
 	// todo: check the judge's permissions to judge, somehow
 
 	// Get the guild this poll is for
-	guild, err := db.GetGuild(db.GetEngine(), h.GuildID)
+	guild, err := db.GetGuild(db.GetEngine(), h.GuildID.String())
 	if err != nil {
 		logging.GetLogger().Errorln(err)
 		err = RespondCommandFailure(ctx, s, h, "Oh snap!  This guild is not registered.")

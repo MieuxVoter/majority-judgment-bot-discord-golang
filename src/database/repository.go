@@ -7,9 +7,9 @@ import (
 	"xorm.io/xorm"
 )
 
-func GetGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) {
+func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
-		Snowflake: snowflake.String(),
+		Snowflake: snowflake,
 	}
 	has, err := orm.Get(guild)
 	if !has {
@@ -22,9 +22,9 @@ func GetGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) {
 	return guild, nil
 }
 
-func CreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) {
+func CreateGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
-		Snowflake: snowflake.String(),
+		Snowflake: snowflake,
 		Quota:     42,
 	}
 	_, err := orm.InsertOne(guild)
@@ -37,7 +37,7 @@ func CreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (*Guild, error) 
 	return guild, nil
 }
 
-func GetOrCreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (guild *Guild, err error) {
+func GetOrCreateGuild(orm *xorm.Engine, snowflake string) (guild *Guild, err error) {
 	guild, err = GetGuild(orm, snowflake)
 	if err != nil {
 		guild, err = CreateGuild(orm, snowflake)
@@ -49,7 +49,7 @@ func GetOrCreateGuild(orm *xorm.Engine, snowflake disgord.Snowflake) (guild *Gui
 	return
 }
 
-func GetPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
+func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	guild := &Poll{Id: id}
 	has, err := orm.Get(guild)
 	if !has {

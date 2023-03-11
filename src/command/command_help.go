@@ -1,7 +1,7 @@
 package command
 
 import (
-	"context"
+	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
@@ -22,16 +22,17 @@ func (c HelpCommand) Matches(command string) bool {
 	return command == "help"
 }
 
-func (c HelpCommand) Handle(input *Input) (handled bool, err error) {
-	return true, handleHelpCommand(input.Context, input.Session, input.Interaction)
+func (c HelpCommand) Handle(input Input) (handled bool, err error) {
+	if d, ok := (input).(DiscordInput); ok {
+		return true, handleHelpCommand(d)
+	}
+	return false, fmt.Errorf("unknown vendor")
 }
 
 func handleHelpCommand(
-	c context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
+	input DiscordInput,
 ) error {
-	err := s.SendInteractionResponse(c, h, &disgord.CreateInteractionResponse{
+	err := input.Session.SendInteractionResponse(input.Context, input.Interaction, &disgord.CreateInteractionResponse{
 		Type: disgord.InteractionCallbackChannelMessageWithSource,
 		Data: &disgord.CreateInteractionResponseData{
 			Flags: disgord.MessageFlagEphemeral,

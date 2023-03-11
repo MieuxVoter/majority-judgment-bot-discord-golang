@@ -1,7 +1,6 @@
 package command
 
 import (
-	"context"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
@@ -63,32 +62,23 @@ func (c CreateCommand) Matches(command string) bool {
 	return command == "create"
 }
 
-func (c CreateCommand) Handle(input *Input) (handled bool, err error) {
+func (c CreateCommand) Handle(input Input) (handled bool, err error) {
 	return true, handleCreateCommand(
 		c.orm,
-		input.Context,
-		input.Session,
-		input.Interaction,
+		input,
 	)
 }
 
 // handleCreateCommand is to refactor into a class at some point
 func handleCreateCommand(
 	x *xorm.Engine,
-	c context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
+	input Input,
 ) error {
 
-	subcommandOptions, err := getSubcommandOptions(h.Data.Options, "create")
-	if err != nil {
-		return err
-	}
-
-	subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
+	subject, err := input.GetOption("create", "subject", "Poll")
 	proposalsNames := make([]string, 0)
 	for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
-		proposalName := getOptionStringByName(subcommandOptions, "proposal_"+v, "")
+		proposalName, _ := input.GetOption("create", "proposal_"+v, "")
 		if proposalName == "" {
 			continue
 		}
@@ -96,28 +86,27 @@ func handleCreateCommand(
 	}
 
 	if len(proposalsNames) < 2 {
-		err = RespondCommandFailure(c, s, h, "A Poll needs at least two proposals.")
+		err = RespondCommandUserError(input, "A Poll needs at least two proposals.")
 		if err != nil {
 			return err
 		}
 		return nil
 	}
 
-	err = doCreatePoll(x, c, s, h, subject, proposalsNames)
+	err = doCreatePoll(x, input, subject, proposalsNames)
 
 	return err
 }
 
 func doCreatePoll(
 	orm *xorm.Engine,
-	c context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
+	input Input,
 	subject string,
 	proposalsNames []string,
 ) error {
 
-	guild, err := db.GetOrCreateGuild(orm, h.GuildID)
+	guildVendorId, _ := input.GetGuildVendorId()
+	guild, err := db.GetGuild(orm, guildVendorId)
 	if err != nil {
 		return err
 	}
@@ -128,7 +117,7 @@ func doCreatePoll(
 		return err
 	}
 	if !isAllowed {
-		err = RespondCommandFailure(c, s, h, "This guild cannot create polls anymore.")
+		err = RespondCommandUserError(input, "This guild cannot create polls anymore.")
 		if err != nil {
 			return err
 		}
@@ -169,7 +158,7 @@ func doCreatePoll(
 		return err
 	}
 
-	err = RespondWithPollUi(c, s, h, poll, proposals, false)
+	err = RespondWithPollUi(input, poll, proposals, false)
 	if err != nil {
 		return err
 	}

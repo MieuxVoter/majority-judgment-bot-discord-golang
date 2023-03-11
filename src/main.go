@@ -127,7 +127,7 @@ func main() {
 
 		if h.Type == disgord.InteractionApplicationCommand {
 
-			commandInput := &cmd.Input{
+			commandInput := cmd.DiscordInput{
 				Context:     noCtx,
 				Session:     s,
 				Interaction: h,

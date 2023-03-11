@@ -1,7 +1,6 @@
 package command
 
 import (
-	"context"
 	"github.com/andersfylling/disgord"
 	"main/src/container"
 )
@@ -18,20 +17,14 @@ var commands = []*disgord.CreateApplicationCommand{
 }
 var areCommandsDefined = false
 
-// Input wrapper for data coming from userland
-type Input struct {
-	Context     context.Context
-	Session     disgord.Session
-	Interaction *disgord.InteractionCreate
-}
-
-// Command interface to implement in services declaring commands
+// Command interface to implement in services declaring commands.
 type Command interface {
 	Define() *disgord.ApplicationCommandOption
 	Matches(command string) bool
-	Handle(input *Input) (handled bool, err error)
+	Handle(input Input) (handled bool, err error)
 }
 
+// GetCommands lists all commands services available in the container.
 func GetCommands() []*disgord.CreateApplicationCommand {
 	if !areCommandsDefined {
 		commandsServices := container.GetCollection("command")
@@ -43,8 +36,4 @@ func GetCommands() []*disgord.CreateApplicationCommand {
 	}
 
 	return commands
-}
-
-func init() {
-	//fmt.Println("init commands")
 }

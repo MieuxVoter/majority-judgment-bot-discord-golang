@@ -1,7 +1,6 @@
 package command
 
 import (
-	"context"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
@@ -35,64 +34,54 @@ func (c RerunCommand) Matches(command string) bool {
 	return command == "rerun"
 }
 
-func (c RerunCommand) Handle(input *Input) (handled bool, err error) {
+func (c RerunCommand) Handle(input Input) (handled bool, err error) {
 	return true, handleRerunCommand(
 		c.orm,
-		input.Context,
-		input.Session,
-		input.Interaction,
+		input,
 	)
 }
 
 func handleRerunCommand(
 	orm *xorm.Engine,
-	c context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
+	input Input,
 ) error {
 
-	subcommandOptions, err := getSubcommandOptions(h.Data.Options, "rerun")
+	guildVendorId, _ := input.GetGuildVendorId()
+	guild, err := db.GetGuild(orm, guildVendorId)
 	if err != nil {
-		return err
+		message := "This guild has no polls to rerun, and is not even registered yet.  " +
+			"Please create a poll first, using `/mj create …`."
+		return RespondCommandUserError(input, message)
 	}
 
-	//subject := getOptionStringByName(subcommandOptions, "subject", "Poll")
-	//proposalsNames := make([]string, 0)
-	//for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
-	//	proposalName := getOptionStringByName(subcommandOptions, "proposal_"+v, "")
-	//	if proposalName == "" {
-	//		continue
-	//	}
-	//	proposalsNames = append(proposalsNames, proposalName)
-	//}
-	//if len(proposalsNames) < 2 {
-	//	err = RespondCommandFailure(c, s, h, "A Poll needs at least two proposals.")
-	//	if err != nil {
-	//		return err
-	//	}
-	//	return nil
-	//}
-
-	pollIdString := getOptionStringByName(subcommandOptions, "poll", "")
+	pollIdString, _ := input.GetOption("rerun", "poll", "")
 	if pollIdString == "" {
 		// TODO: fetch most recent poll on this guild
-		return RespondCommandFailure(c, s, h, "Fetching most recent poll is not implemented yet.  "+
+		return RespondCommandUserError(input, "Fetching most recent poll is not implemented yet.  "+
 			"Please provide a poll identifier.")
 	}
 	pollIdString = strings.Trim(pollIdString, "#")
 
 	pollId, errConv := strconv.Atoi(pollIdString)
 	if errConv != nil {
-		return errConv
+		message := "🐉 The specified poll identifier is not a number.  " +
+			"Please use the _numerical_ identifier of the poll you want to rerun, " +
+			"like so `/mj rerun poll:42`."
+		return RespondCommandUserError(input, message)
 	}
-	poll, errPoll := db.GetPoll(orm, uint64(pollId))
+	poll, errPoll := db.FindPoll(orm, uint64(pollId))
 	if errPoll != nil {
 		return errPoll
 	}
 	if poll == nil {
 		message := "The specified poll was not found.  " +
 			"Sorry.  _Here, have a banana instead : 🍌_"
-		return RespondCommandFailure(c, s, h, message)
+		return RespondCommandUserError(input, message)
+	}
+	if poll.GuildId != guild.Id {
+		message := "The specified poll belongs to another community.  " +
+			"No can do!  _Dura lex, sed lex 🏛_"
+		return RespondCommandUserError(input, message)
 	}
 
 	proposals, errProp := db.GetPollProposals(orm, poll)
@@ -106,7 +95,7 @@ func handleRerunCommand(
 		proposalsNames = append(proposalsNames, proposal.Name)
 	}
 
-	err = doCreatePoll(orm, c, s, h, subject, proposalsNames)
+	err = doCreatePoll(orm, input, subject, proposalsNames)
 
 	return err
 }

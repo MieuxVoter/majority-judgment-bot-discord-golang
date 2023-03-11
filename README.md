@@ -25,7 +25,7 @@
 - [x] Quotas per guild
 - [ ] Daily Quotas per guild
 - [ ] Publish a poll's result using a button
-- [ ] Rerun past poll with `/mj rerun`
+- [x] Rerun past poll with `/mj rerun`
 - [ ] Display metrics with `/mj info`
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
