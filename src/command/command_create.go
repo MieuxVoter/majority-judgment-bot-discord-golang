@@ -86,7 +86,7 @@ func handleCreateCommand(
 	}
 
 	if len(proposalsNames) < 2 {
-		err = RespondCommandUserError(input, "A Poll needs at least two proposals.")
+		err = RespondUserError(input, "A Poll needs at least two proposals.")
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func doCreatePoll(
 		return err
 	}
 	if !isAllowed {
-		err = RespondCommandUserError(input, "This guild cannot create polls anymore.")
+		err = RespondUserError(input, "This guild cannot create polls anymore.")
 		if err != nil {
 			return err
 		}

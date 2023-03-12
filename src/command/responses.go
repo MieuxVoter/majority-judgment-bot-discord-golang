@@ -79,63 +79,65 @@ func RespondWithPollUi(
 }
 
 func RespondWithJudgmentUi(
-	ctx context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
-	judge *disgord.Member,
+	input Input,
+	judgeSnowflake string,
 	proposal *db.Proposal,
 	poll *db.Poll,
 	previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
-	messageType := disgord.InteractionCallbackChannelMessageWithSource
-	if replaceMessage {
-		messageType = disgord.InteractionCallbackUpdateMessage
-	}
-	interactionResponse := &disgord.CreateInteractionResponse{
-		Type: messageType,
-		Data: &disgord.CreateInteractionResponseData{
-			Flags: disgord.MessageFlagEphemeral,
-			Embeds: []*disgord.Embed{
-				{
-					Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
-					Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
-				},
-			},
-			Components: []*disgord.MessageComponent{
-				{
-					Type:       disgord.MessageComponentActionRow,
-					CustomID:   "poll_action_row",
-					Components: []*disgord.MessageComponent{}, // filled below
-				},
-			},
-		},
-	}
+	if d, isDiscord := input.(DiscordInput); isDiscord {
 
-	for gradeLevel, grade := range poll.GetGradingSlice() {
-
-		previouslySelectedMarker := ""
-		if previousJudgment != nil {
-			if uint8(gradeLevel) == previousJudgment.Grade {
-				previouslySelectedMarker = " ✅"
-			}
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		if replaceMessage {
+			messageType = disgord.InteractionCallbackUpdateMessage
 		}
-		interactionResponse.Data.Components[0].Components = append(
-			interactionResponse.Data.Components[0].Components,
-			&disgord.MessageComponent{
-				Type:     disgord.MessageComponentButton,
-				Style:    disgord.Primary,
-				CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
-				Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
+		interactionResponse := &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Embeds: []*disgord.Embed{
+					{
+						Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
+						Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
+					},
+				},
+				Components: []*disgord.MessageComponent{
+					{
+						Type:       disgord.MessageComponentActionRow,
+						CustomID:   "poll_action_row",
+						Components: []*disgord.MessageComponent{}, // filled below
+					},
+				},
 			},
-		)
+		}
+
+		for gradeLevel, grade := range poll.GetGradingSlice() {
+
+			previouslySelectedMarker := ""
+			if previousJudgment != nil {
+				if uint8(gradeLevel) == previousJudgment.Grade {
+					previouslySelectedMarker = " ✅"
+				}
+			}
+			interactionResponse.Data.Components[0].Components = append(
+				interactionResponse.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:     disgord.MessageComponentButton,
+					Style:    disgord.Primary,
+					CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
+					Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
+				},
+			)
+		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
 	}
 
-	err := s.SendInteractionResponse(ctx, h, interactionResponse)
-
-	return err
+	return fmt.Errorf("unsupported vendor")
 }
 
+// deprecated
 func RespondCommandFailure(
 	ctx context.Context,
 	s disgord.Session,
@@ -160,11 +162,37 @@ func RespondCommandFailure(
 	return err
 }
 
-func RespondCommandUserError(
+func RespondServerError(
 	input Input,
 	message string,
 ) error {
-	if d, ok := input.(DiscordInput); ok {
+	if d, isDiscord := input.(DiscordInput); isDiscord {
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Content: fmt.Sprintf(
+					"💥 **BOOM !**\n"+
+						"\n"+
+						"%s\n"+
+						"",
+					message,
+				),
+			},
+		})
+
+		return err
+	}
+
+	return fmt.Errorf("unsupported vendor")
+}
+
+func RespondUserError(
+	input Input,
+	message string,
+) error {
+	if d, isDiscord := input.(DiscordInput); isDiscord {
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
 			Type: messageType,

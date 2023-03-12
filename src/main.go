@@ -9,7 +9,7 @@ import (
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
-	cmd "main/src/command"
+	domain "main/src/command"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/services"
@@ -87,28 +87,19 @@ func main() {
 
 	//logFilter, _ := std.NewLogFilter(client)
 	filter, _ := std.NewMsgFilter(context.Background(), client)
-	//filter.SetPrefix(prefix)
 
-	// Create a handler and bind it to new message events  (no!  use command!)
-	//client.Gateway().WithMiddleware(
-	//	filter.NotByBot,  // ignore bot messages
-	//	filter.HasPrefix, // message must have the given prefix
-	//	logFilter.LogMsg,   // logger command message
-	//	filter.StripPrefix, // remove the command prefix from the message
-	//).MessageCreate(handleCommand)
-
-	// Create a handler and bind it to new messages where the bot is mentioned
-	// FIXME: check if this still works, and if we can read private direct messages
+	// Create a handler and bind it to new (direct) messages
 	client.Gateway().WithMiddleware(
-		filter.NotByBot,           // ignore bot messages
-		filter.ContainsBotMention, // message must mention this bot
+		filter.NotByBot, // ignore bot messages
+	//	logFilter.LogMsg,   // logger command message
+	//	filter.ContainsBotMention, // message must mention this bot
 	).MessageCreate(handleMessageMentioningMe)
 
 	// Register slash command once the bot is ready
 	//client.Gateway().Ready(func(s disgord.Session, h *disgord.Ready) { // too soon
 	client.Gateway().BotReady(func() {
 		logger.Info("Bot is ready!")
-		commands := cmd.GetCommands()
+		commands := domain.GetCommands()
 		for _, command := range commands {
 			logger.Info("Registering command /", command.Name)
 			// application command id is 0 here, it's OK.
@@ -125,16 +116,16 @@ func main() {
 		//fmt.Printf("Data %+v\n", *h.Data)
 		//fmt.Printf("Options %+q\n", (*h.Data).Options)
 
+		commandInput := domain.DiscordInput{
+			Context:     noCtx,
+			Session:     s,
+			Interaction: h,
+		}
+
 		if h.Type == disgord.InteractionApplicationCommand {
 
-			commandInput := cmd.DiscordInput{
-				Context:     noCtx,
-				Session:     s,
-				Interaction: h,
-			}
-
 			if len(h.Data.Options) == 0 { // no subcommand was provided
-				_, err = container.Get("command.help").(*cmd.HelpCommand).Handle(commandInput)
+				_, err = container.Get("command.help").(*domain.HelpCommand).Handle(commandInput)
 				if err != nil {
 					checkErr(err, "HandleHelpCommand:NoSubcommand")
 				}
@@ -148,7 +139,7 @@ func main() {
 			commands := container.GetCollection("command")
 			commandWasHandled := false
 			for _, commandGeneric := range commands {
-				command := commandGeneric.(cmd.Command)
+				command := commandGeneric.(domain.Command)
 				if command.Matches(subCmdName) {
 					commandWasHandled, err = command.Handle(commandInput)
 					if err != nil {
@@ -167,28 +158,43 @@ func main() {
 		} else if h.Type == disgord.InteractionMessageComponent {
 
 			if h.Data.ComponentType == disgord.MessageComponentButton {
+
 				logger.Debugln("Handling interaction on button", h.Member, h.GuildID)
 
-				var handled = false
-
-				if !handled {
-					handled, err = cmd.HandleButtonParticipate(noCtx, s, h)
-					checkErr(err, "HandleButtonParticipate")
+				buttons := container.GetCollection("button")
+				buttonWasHandled := false
+				for _, buttonGeneric := range buttons {
+					button := buttonGeneric.(domain.Button)
+					buttonWasHandled, err = button.Handle(commandInput)
+					if err != nil {
+						checkErr(err, "button handle")
+					}
+					if buttonWasHandled {
+						break
+					}
 				}
 
+				// TODO: alchemical refactor ; like above, so below
+				var handled = buttonWasHandled
+
+				//if !handled {
+				//	handled, err = domain.HandleButtonParticipate(noCtx, s, h)
+				//	checkErr(err, "HandleButtonParticipate")
+				//}
+
 				if !handled {
-					handled, err = cmd.HandleButtonDeliberate(noCtx, s, h)
+					handled, err = domain.HandleButtonDeliberate(noCtx, s, h)
 					checkErr(err, "HandleButtonDeliberate")
 				}
 
 				if !handled {
-					handled, err = cmd.HandleButtonJudge(noCtx, s, h)
+					handled, err = domain.HandleButtonJudge(noCtx, s, h)
 					checkErr(err, "HandleButtonJudge")
 				}
 
 				if !handled {
 					logger.Warnln("Unhandled button interaction", h, h.Data)
-					err = cmd.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
+					err = domain.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")
 				}
 

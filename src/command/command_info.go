@@ -41,7 +41,7 @@ func handleInfoCommand(
 	guild, err := db.GetOrCreateGuild(command.orm, guildVendorId)
 	if err != nil {
 		message := "Could not access the guild.  _Suddenly, everything is on fire. 🔥_"
-		return RespondCommandUserError(input, message)
+		return RespondUserError(input, message)
 	}
 
 	err = input.Session.SendInteractionResponse(input.Context, input.Interaction, &disgord.CreateInteractionResponse{

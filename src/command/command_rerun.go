@@ -51,13 +51,13 @@ func handleRerunCommand(
 	if err != nil {
 		message := "This guild has no polls to rerun, and is not even registered yet.  " +
 			"Please create a poll first, using `/mj create …`."
-		return RespondCommandUserError(input, message)
+		return RespondUserError(input, message)
 	}
 
 	pollIdString, _ := input.GetOption("rerun", "poll", "")
 	if pollIdString == "" {
 		// TODO: fetch most recent poll on this guild
-		return RespondCommandUserError(input, "Fetching most recent poll is not implemented yet.  "+
+		return RespondUserError(input, "Fetching most recent poll is not implemented yet.  "+
 			"Please provide a poll identifier.")
 	}
 	pollIdString = strings.Trim(pollIdString, "#")
@@ -67,7 +67,7 @@ func handleRerunCommand(
 		message := "🐉 The specified poll identifier is not a number.  " +
 			"Please use the _numerical_ identifier of the poll you want to rerun, " +
 			"like so `/mj rerun poll:42`."
-		return RespondCommandUserError(input, message)
+		return RespondUserError(input, message)
 	}
 	poll, errPoll := db.FindPoll(orm, uint64(pollId))
 	if errPoll != nil {
@@ -76,12 +76,12 @@ func handleRerunCommand(
 	if poll == nil {
 		message := "The specified poll was not found.  " +
 			"Sorry.  _Here, have a banana instead : 🍌_"
-		return RespondCommandUserError(input, message)
+		return RespondUserError(input, message)
 	}
 	if poll.GuildId != guild.Id {
 		message := "The specified poll belongs to another community.  " +
 			"No can do!  _Dura lex, sed lex 🏛_"
-		return RespondCommandUserError(input, message)
+		return RespondUserError(input, message)
 	}
 
 	proposals, errProp := db.GetPollProposals(orm, poll)

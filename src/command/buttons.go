@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-var pollParticipationRegex = regexp.MustCompile("^button_participate:(?P<pollId>\\d+)$")
+// var pollParticipationRegex = regexp.MustCompile("^button_participate:(?P<pollId>\\d+)$")
 var pollDeliberationRegex = regexp.MustCompile("^button_deliberate:(?P<pollId>\\d+)$")
 var pollJudgmentRegex = regexp.MustCompile("^button_judge:(?P<proposalId>\\d+):(?P<gradeLevel>\\d+)$")
 
@@ -27,77 +27,75 @@ func findNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 	return results
 }
 
-func HandleButtonParticipate(
-	ctx context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
-) (handled bool, err error) {
-	handled = false
-	err = nil
-
-	matches := findNamedMatches(pollParticipationRegex, h.Data.CustomID)
-	pollIdAsString, isMatchFound := matches["pollId"]
-
-	if !isMatchFound {
-		return
-	}
-
-	handled = true
-
-	// Get the judge that clicked the button to participate
-	judge := h.Member
-
-	// todo: check the judge's permissions to vote, somehow
-
-	// Get the poll this button is for
-	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
-	if err != nil {
-		return false, err
-	}
-	poll := db.Poll{Id: pollId}
-	found, err := db.GetEngine().Get(&poll)
-	if !found {
-		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
-		return
-	}
-	if err != nil {
-		err = RespondCommandFailure(ctx, s, h, "Ooops.  This poll was probably deleted.")
-		return
-	}
-
-	// Get past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.GetEngine(), judge, &poll)
-
-	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.GetEngine(), &poll)
-	if err != nil {
-		return false, nil
-	}
-
-	if len(proposals) == 0 {
-		err = RespondCommandFailure(ctx, s, h, "Wait a minute…  This poll has no proposals !?")
-		return
-	}
-
-	// Shuffle proposals perhaps?
-
-	// Pick one proposal (the first)
-	proposal := proposals[0]
-
-	// Collect the past judgment (if any) on this proposal by this judge
-	var pastJudgment *db.Judgment = nil
-	for _, j := range judgments {
-		if j.ProposalId == proposal.Id {
-			pastJudgment = &j
-			break
-		}
-	}
-
-	// Show the UI to judge that proposal
-	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, pastJudgment, false)
-
-	return
-}
+//func HandleButtonParticipate(
+//	ctx context.Context,
+//	s disgord.Session,
+//	h *disgord.InteractionCreate,
+//) (handled bool, err error) {
+//	handled = false
+//	err = nil
+//
+//	matches := findNamedMatches(pollParticipationRegex, h.Data.CustomID)
+//	pollIdAsString, isMatchFound := matches["pollId"]
+//
+//	if !isMatchFound {
+//		return
+//	}
+//
+//	handled = true
+//
+//	// Get the judge that clicked the button to participate
+//	judge := h.Member
+//
+//	// Get the poll this button is for
+//	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
+//	if err != nil {
+//		return false, err
+//	}
+//	poll := db.Poll{Id: pollId}
+//	found, err := db.GetEngine().Get(&poll)
+//	if !found {
+//		err = RespondCommandFailure(ctx, s, h, "Oh noes!  This poll was probably deleted.")
+//		return
+//	}
+//	if err != nil {
+//		err = RespondCommandFailure(ctx, s, h, "Ooops.  This poll was probably deleted.")
+//		return
+//	}
+//
+//	// Get past judgments of the judge on this poll
+//	judgments, err := db.GetJudgmentsByJudgeOnPoll(db.GetEngine(), judge, &poll)
+//
+//	// Get the proposals of the poll
+//	proposals, err := db.GetPollProposals(db.GetEngine(), &poll)
+//	if err != nil {
+//		return false, nil
+//	}
+//
+//	if len(proposals) == 0 {
+//		err = RespondCommandFailure(ctx, s, h, "Wait a minute…  This poll has no proposals !?")
+//		return
+//	}
+//
+//	// Shuffle proposals perhaps?
+//
+//	// Pick one proposal (the first)
+//	proposal := proposals[0]
+//
+//	// Collect the past judgment (if any) on this proposal by this judge
+//	var pastJudgment *db.Judgment = nil
+//	for _, j := range judgments {
+//		if j.ProposalId == proposal.Id {
+//			pastJudgment = &j
+//			break
+//		}
+//	}
+//
+//	// Show the UI to judge that proposal
+//	err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, pastJudgment, false)
+//
+//	return
+//}
 
 func HandleButtonDeliberate(
 	ctx context.Context,
@@ -287,7 +285,7 @@ func HandleButtonJudge(
 	handled = true
 
 	// Get the judge that clicked the button in order to judge
-	judge := h.Member
+	judge := h.Member.UserID.String()
 
 	// todo: check the judge's permissions to judge, somehow
 
@@ -376,7 +374,7 @@ func HandleButtonJudge(
 
 	} else {
 		pastJudgment = &db.Judgment{
-			JudgeSnowflake: judge.UserID.String(),
+			JudgeSnowflake: judge,
 			ProposalId:     proposalId,
 			PollId:         poll.Id,
 			Grade:          uint8(gradeLevel),
@@ -423,8 +421,13 @@ func HandleButtonJudge(
 			}
 		}
 
+		commandInput := DiscordInput{
+			Context:     ctx,
+			Session:     s,
+			Interaction: h,
+		}
 		// Show the UI to judge the next proposal
-		err = RespondWithJudgmentUi(ctx, s, h, judge, nextProposal, &poll, nextJudgment, true)
+		err = RespondWithJudgmentUi(commandInput, judge, nextProposal, &poll, nextJudgment, true)
 
 	} else {
 
@@ -443,13 +446,6 @@ func HandleButtonJudge(
 			Data: &disgord.CreateInteractionResponseData{
 				//Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
 				Flags: disgord.MessageFlagEphemeral,
-				//Content: fmt.Sprintf(
-				//	"✅ **WELL DONE!**"+
-				//		" "+
-				//		"%s\n"+
-				//		"",
-				//	message,
-				//),
 				Embeds: []*disgord.Embed{
 					{
 						Title:       "✅ **WELL DONE!**",

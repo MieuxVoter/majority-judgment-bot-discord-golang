@@ -7,13 +7,16 @@ import (
 )
 
 // Input holds data coming from userland through the vendor.
-// Trying to be generic so as to add other platforms than Discord at some point.
+// Trying to be generic so as to add other platforms/vendors than Discord at some point.
+// This might not work, or might become troublesome, but let's strive for vendor abstraction anyway.
 type Input interface {
 	GetOption(command string, name string, defaultValue string) (string, error)
+	GetActorVendorId() (string, error)
 	GetGuildVendorId() (string, error)
+	GetButtonName() (string, error)
 }
 
-// DiscordInput wrapper for data coming from userland.
+// DiscordInput wrapper for data coming from Discord's userland.
 type DiscordInput struct {
 	Context     context.Context
 	Session     disgord.Session
@@ -47,6 +50,14 @@ func (d DiscordInput) GetOption(command string, name string, defaultValue string
 	return defaultValue, nil
 }
 
+func (d DiscordInput) GetActorVendorId() (string, error) {
+	return d.Interaction.Member.UserID.String(), nil
+}
+
 func (d DiscordInput) GetGuildVendorId() (string, error) {
 	return d.Interaction.GuildID.String(), nil
+}
+
+func (d DiscordInput) GetButtonName() (string, error) {
+	return d.Interaction.Data.CustomID, nil
 }
