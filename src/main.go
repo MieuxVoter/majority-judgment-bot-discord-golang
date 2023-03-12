@@ -187,10 +187,10 @@ func main() {
 					checkErr(err, "HandleButtonDeliberate")
 				}
 
-				if !handled {
-					handled, err = domain.HandleButtonJudge(noCtx, s, h)
-					checkErr(err, "HandleButtonJudge")
-				}
+				//if !handled {
+				//	handled, err = domain.HandleButtonJudge(noCtx, s, h)
+				//	checkErr(err, "HandleButtonJudge")
+				//}
 
 				if !handled {
 					logger.Warnln("Unhandled button interaction", h, h.Data)
@@ -203,7 +203,7 @@ func main() {
 				// Let's keep this as snippet, it's harmless anyway.
 				logger.Debugln("Handling interaction on select ", h, h.Data)
 
-				err = s.SendInteractionResponse(context.Background(), h, &disgord.CreateInteractionResponse{
+				err = s.SendInteractionResponse(noCtx, h, &disgord.CreateInteractionResponse{
 					Type: disgord.InteractionCallbackDeferredUpdateMessage,
 					Data: &disgord.CreateInteractionResponseData{},
 				})

@@ -10,10 +10,6 @@ import (
 	"xorm.io/xorm"
 )
 
-type Button interface {
-	Handle(input Input) (bool, error)
-}
-
 type ParticipateButton struct {
 	orm *xorm.Engine
 }
