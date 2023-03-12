@@ -182,10 +182,10 @@ func main() {
 				//	checkErr(err, "HandleButtonParticipate")
 				//}
 
-				if !handled {
-					handled, err = domain.HandleButtonDeliberate(noCtx, s, h)
-					checkErr(err, "HandleButtonDeliberate")
-				}
+				//if !handled {
+				//	handled, err = domain.HandleButtonDeliberate(noCtx, s, h)
+				//	checkErr(err, "HandleButtonDeliberate")
+				//}
 
 				//if !handled {
 				//	handled, err = domain.HandleButtonJudge(noCtx, s, h)
