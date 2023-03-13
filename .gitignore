@@ -1,2 +1,3 @@
 .env.local
-./docker/volumes/
+docker/volumes/
+mjbot
