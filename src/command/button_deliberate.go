@@ -37,17 +37,30 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 		return
 	}
 
+	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
+	if err != nil {
+		return false, err
+	}
+
+	handled, err = handleDeliberation(service.orm, input, pollId, true)
+
+	return
+}
+
+func handleDeliberation(
+	orm *xorm.Engine,
+	input Input,
+	pollId uint64,
+	asPrivateMessage bool,
+) (handled bool, err error) {
+
 	handled = true
 
 	// todo: perhaps check the actor's permissions to deliberate?
 
 	// Get the poll this button is for
-	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
-	if err != nil {
-		return false, err
-	}
 	poll := &db.Poll{Id: pollId}
-	foundPoll, err := service.orm.Get(poll)
+	foundPoll, err := orm.Get(poll)
 	if !foundPoll {
 		err = RespondServerError(input, "Oh noes!  This poll was probably deleted.")
 		return
@@ -58,7 +71,7 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 	}
 
 	// Get the proposals of the poll
-	proposals, err := db.GetPollProposals(db.GetEngine(), poll)
+	proposals, err := db.GetPollProposals(orm, poll)
 	if err != nil {
 		return false, err
 	}
@@ -72,7 +85,7 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
 		for gradeLevel := range poll.GetGradingSlice() {
-			gradeAmount, errCount := db.CountGrades(db.GetEngine(), poll, &proposal, uint8(gradeLevel))
+			gradeAmount, errCount := db.CountGrades(orm, poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
 			}
@@ -96,6 +109,12 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 
 	if nil != err {
 		return
+	}
+
+	// GTFO if there are no judgments
+	if pollTally.AmountOfJudges == 0 {
+		message := "There are no participants to this poll.  Please try again when the poll has had participants."
+		err = RespondUserError(input, message)
 	}
 
 	// Build the path to the merit profile image
@@ -125,6 +144,7 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 	)
 
 	winners := ""
+	winnersSlice := make([]string, 0)
 	for proposalResultIndex, proposalResult := range result.ProposalsSorted {
 		if proposalResult.Rank > 1 {
 			break
@@ -135,83 +155,76 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 		}
 		// fixme: strip markdown from proposal names?
 		winners += fmt.Sprintf("**%s**", proposal.Name)
+		winnersSlice = append(winnersSlice, proposal.Name)
+	}
+
+	title := fmt.Sprintf("%d participant", pollTally.AmountOfJudges)
+	if pollTally.AmountOfJudges > 1 {
+		title += "s"
+	}
+
+	content := fmt.Sprintf("🤖⚖  ")
+	if len(winnersSlice) > 1 {
+		content += fmt.Sprintf(
+			"_Here are the most plebiscited proposals:_ %s",
+			winners,
+		)
+	} else {
+		content += fmt.Sprintf(
+			"_Here is the most plebiscited proposal:_ %s",
+			winners,
+		)
 	}
 
 	if d, isDiscord := input.(DiscordInput); isDiscord {
 
-		content := fmt.Sprintf(
-			"🤖 _Here are the most plebiscited proposals:_ %s",
-			winners,
-		)
-		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+		response := &disgord.CreateInteractionResponse{
 			Type: disgord.InteractionCallbackChannelMessageWithSource,
 			Data: &disgord.CreateInteractionResponseData{
-				Flags:   disgord.MessageFlagEphemeral,
 				Content: content,
-
+				Flags:   0,
 				Embeds: []*disgord.Embed{
 					{
-						//Title:       "",
-						Type: disgord.EmbedTypeImage,
-						//Description: "",
-						//URL:         "",
-						//Timestamp:   disgord.Time{},
-						//Color:       0,
-						//Footer:      nil,
+						Type:  disgord.EmbedTypeImage,
+						Title: title,
 						Image: &disgord.EmbedImage{
 							URL: imageUrl,
-							//ProxyURL: "",
-							//Height:   0,
-							//Width:    0,
 						},
-						//Thumbnail:   nil,
-						//Video:       nil,
-						//Provider:    nil,
-						//Author:      nil,
-						//Fields:      nil,
 					},
 				},
-
-				//Attachments: []*disgord.Attachment{
-				//	{
-				//		ID:         0,
-				//		Filename:   imageUrl,
-				//		//Size:       0,
-				//		URL:        imageUrl,
-				//		//ProxyURL:   "",
-				//		//Height:     0,
-				//		//Width:      0,
-				//		//SpoilerTag: true,
-				//	},
-				//},
 			},
-		})
+		}
+		if asPrivateMessage {
+			//response.Type = disgord.InteractionCallbackChannelMessageWithSource
+			response.Data.Flags |= disgord.MessageFlagEphemeral
+			response.Data.Components = []*disgord.MessageComponent{
+				{
+					Type:     disgord.MessageComponentActionRow,
+					CustomID: "deliberate_action_row",
+					Components: []*disgord.MessageComponent{
+						{
+							Type:  disgord.MessageComponentButton,
+							Style: disgord.Primary,
+							Label: "Publish",
+							Emoji: &disgord.Emoji{
+								Name: "📢",
+							},
+							CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
+						},
+					},
+				},
+			}
+		} else {
+			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
+		}
+
+		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
 		if err != nil {
 			return
 		}
 	} else {
 		log.Fatalln("vendor not supported")
 	}
-
-	//imageUrl := "https://oas.mieuxvoter.fr/%s.png?subject=%s&proposals[]=HAHA&proposals[]=HIHI"
-
-	//// Get all judgments emitted on this poll
-	//judgments, err := db.GetJudgmentsOnPoll(db.GetEngine(), poll)
-
-	// Shuffle proposals perhaps? todo
-	// Pick one proposal (the first)
-	//proposal := proposals[0]
-
-	//var judgment *db.Judgment = nil
-	//for _, j := range judgments {
-	//	if j.ProposalId == proposal.Id {
-	//		judgment = &j
-	//		break
-	//	}
-	//}
-
-	// Show the UI to judge that proposal
-	//err = RespondWithJudgmentUi(ctx, s, h, judge, &proposal, &poll, judgment, false)
 
 	return
 }

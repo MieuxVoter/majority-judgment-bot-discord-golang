@@ -9,10 +9,8 @@ import (
 
 func RespondWithPollUi(
 	input Input,
-	//judge *disgord.Member,
 	poll *db.Poll,
 	proposals []*db.Proposal,
-	//previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
 	if d, ok := input.(DiscordInput); ok {
