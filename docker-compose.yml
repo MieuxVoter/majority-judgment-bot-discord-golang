@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: mjbot
+    volumes:
+    - "./docker/volumes/var:/bot/var"

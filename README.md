@@ -26,13 +26,13 @@
 - [x] Rerun past poll with `/mj rerun`
 - [x] Display metrics with `/mj info`
 - [x] Publish a poll's result using a button
-- [ ] Daily Quotas per guild
+- [x] Docker config
+- [x] Docker Compose config
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
 - [ ] Choose a grading (ex: 👍👎) per poll
-- [ ] Docker config
-- [ ] Docker Compose config
 - [ ] Trim the database regularly (CRON)
+- [ ] Daily Quotas per guild
 - [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself `/mj love`
 
@@ -61,7 +61,18 @@
    $ ./mjbot
 
 
-## Built atop Disgord
+## Using docker
 
-This leverages the project https://github.com/andersfylling/disgord
+Configure the bot in `.env.local`, and run `docker compose`. 
 
+   ```
+   $ cp .env .env.local
+   $ docker compose up
+   ```
+
+## Dev Notes
+
+- This leverages the excellent `disgord` https://github.com/andersfylling/disgord
+- Trying out Go's dependency injection with `di`.
+- Using gateways to communicate with Discord.
+- Will probably deploy a simple http server at some point, for webhooks.
