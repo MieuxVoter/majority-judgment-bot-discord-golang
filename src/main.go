@@ -9,9 +9,9 @@ import (
 	"github.com/andersfylling/disgord"
 	"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
-	domain "main/src/command"
 	"main/src/container"
-	db "main/src/database"
+	"main/src/database"
+	"main/src/domain"
 	"main/src/services"
 )
 
@@ -47,7 +47,7 @@ func main() {
 	config := container.Get("config").(*services.Config)
 
 	// Synchronize the database schema with the Go models
-	err := db.Sync()
+	err := database.Sync()
 	checkErr(err, "db.Sync")
 
 	// Start the Discord client
@@ -174,25 +174,7 @@ func main() {
 					}
 				}
 
-				// TODO: alchemical refactor ; like above, so below
-				var handled = buttonWasHandled
-
-				//if !handled {
-				//	handled, err = domain.HandleButtonParticipate(noCtx, s, h)
-				//	checkErr(err, "HandleButtonParticipate")
-				//}
-
-				//if !handled {
-				//	handled, err = domain.HandleButtonDeliberate(noCtx, s, h)
-				//	checkErr(err, "HandleButtonDeliberate")
-				//}
-
-				//if !handled {
-				//	handled, err = domain.HandleButtonJudge(noCtx, s, h)
-				//	checkErr(err, "HandleButtonJudge")
-				//}
-
-				if !handled {
+				if !buttonWasHandled {
 					logger.Warnln("Unhandled button interaction", h, h.Data)
 					err = domain.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")

@@ -57,18 +57,21 @@
 
 ## Build
 
+```
    $ go build -o mjbot src/main.go
    $ ./mjbot
+```
 
 
 ## Using docker
 
-Configure the bot in `.env.local`, and run `docker compose`. 
+Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, and run `docker compose`: 
 
    ```
    $ cp .env .env.local
    $ docker compose up
    ```
+
 
 ## Dev Notes
 

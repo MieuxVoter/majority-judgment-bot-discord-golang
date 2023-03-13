@@ -14,6 +14,13 @@ var builder *di.Builder
 var container di.Container
 
 func GetBuilder() *di.Builder {
+	if builder == nil {
+		var err error
+		builder, err = di.NewBuilder()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 	return builder
 }
 
@@ -34,13 +41,4 @@ func GetCollection(prefix string) []interface{} {
 	}
 
 	return collection
-}
-
-func init() {
-	//fmt.Println("init() container")
-	var err error
-	builder, err = di.NewBuilder()
-	if err != nil {
-		log.Fatalln(err)
-	}
 }

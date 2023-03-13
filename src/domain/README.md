@@ -9,6 +9,11 @@ See the `command_create.go` file for an example of how to do that.
 > That's it.
 
 
+## Buttons
+
+Same goes for buttons.
+
+
 ### Wait, you're using `init()` ?
 
 We register the service to the container in the `init()`.
