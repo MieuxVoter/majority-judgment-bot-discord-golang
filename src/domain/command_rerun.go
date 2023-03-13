@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
@@ -56,9 +57,13 @@ func handleRerunCommand(
 
 	pollIdString, _ := input.GetOption("rerun", "poll", "")
 	if pollIdString == "" {
-		// TODO: fetch most recent poll on this guild
-		return RespondUserError(input, "Fetching most recent poll is not implemented yet.  "+
-			"Please provide a poll identifier.")
+		mostRecentPoll, errMrp := db.GetLastPollOfGuild(orm, guild)
+		if errMrp != nil {
+			message := "Fetching the most recent poll failed.  " +
+				"Please provide a poll identifier, or make sure you do have a poll to rerun."
+			return RespondUserError(input, message)
+		}
+		pollIdString = fmt.Sprint(mostRecentPoll.Id)
 	}
 	pollIdString = strings.Trim(pollIdString, "#")
 

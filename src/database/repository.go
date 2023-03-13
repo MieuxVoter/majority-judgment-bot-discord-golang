@@ -24,7 +24,7 @@ func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 func CreateGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
 		Snowflake: snowflake,
-		Quota:     42,
+		Quota:     111,
 	}
 	_, err := orm.InsertOne(guild)
 	if err != nil {
@@ -48,6 +48,7 @@ func GetOrCreateGuild(orm *xorm.Engine, snowflake string) (guild *Guild, err err
 	return
 }
 
+// FindPoll returns nil if the poll was not found
 func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	guild := &Poll{Id: id}
 	has, err := orm.Get(guild)
@@ -59,6 +60,24 @@ func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	}
 
 	return guild, nil
+}
+
+// GetLastPollOfGuild returns the most recent poll of the specified guild, or fails.
+func GetLastPollOfGuild(orm *xorm.Engine, guild *Guild) (*Poll, error) {
+	poll := &Poll{}
+	has, err := orm.
+		Where("guild_id = ?", guild.Id).
+		OrderBy("created_unix", "DESC").
+		Limit(1).
+		Get(poll)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, fmt.Errorf("no last poll found")
+	}
+
+	return poll, nil
 }
 
 func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {

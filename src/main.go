@@ -86,7 +86,7 @@ func main() {
 	fmt.Println("")
 
 	//logFilter, _ := std.NewLogFilter(client)
-	filter, _ := std.NewMsgFilter(context.Background(), client)
+	filter, _ := std.NewMsgFilter(noCtx, client)
 
 	// Create a handler and bind it to new (direct) messages
 	client.Gateway().WithMiddleware(
@@ -96,7 +96,6 @@ func main() {
 	).MessageCreate(handleMessageMentioningMe)
 
 	// Register slash command once the bot is ready
-	//client.Gateway().Ready(func(s disgord.Session, h *disgord.Ready) { // too soon
 	client.Gateway().BotReady(func() {
 		logger.Info("Bot is ready!")
 		commands := domain.GetCommands()
@@ -112,6 +111,7 @@ func main() {
 
 	// Respond to discord slash command and other interactions
 	client.Gateway().InteractionCreate(func(s disgord.Session, h *disgord.InteractionCreate) {
+		// Handy debug/exploration snippets
 		//fmt.Printf("Interaction: %+v\n", *h)
 		//fmt.Printf("Data %+v\n", *h.Data)
 		//fmt.Printf("Options %+q\n", (*h.Data).Options)
