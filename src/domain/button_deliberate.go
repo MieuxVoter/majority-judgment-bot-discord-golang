@@ -8,6 +8,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/security"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -46,6 +47,8 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 
 	return
 }
+
+//title := "Details of the ballots"
 
 func handleDeliberation(
 	orm *xorm.Engine,
@@ -216,6 +219,23 @@ func handleDeliberation(
 			}
 		} else {
 			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
+		}
+
+		judgeVendorId, _ := input.GetActorVendorId()
+		canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
+		if canInspect {
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Secondary,
+					Label: "Inspect Ballots",
+					Emoji: &disgord.Emoji{
+						Name: "🕵",
+					},
+					CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
+				},
+			)
 		}
 
 		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, response)

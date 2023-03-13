@@ -124,3 +124,22 @@ func CountGrades(e *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint
 
 	return uint64(rows[0]), nil
 }
+
+func CollectAllJudgmentsOnPoll(e *xorm.Engine, poll *Poll, proposals []Proposal) ([]Judgment, error) {
+	var proposalsIds = make([]uint64, 0)
+	for _, proposal := range proposals {
+		proposalsIds = append(proposalsIds, proposal.Id)
+	}
+
+	var judgments []Judgment
+	err := e.
+		In("proposal_id", proposalsIds).
+		OrderBy("judge_snowflake", "ASC").
+		OrderBy("proposal_id", "ASC").
+		Find(&judgments)
+	if err != nil {
+		return nil, err
+	}
+
+	return judgments, nil
+}

@@ -1,40 +1,42 @@
 package database
 
-//goland:noinspection Annotator
-import "time"
+import (
+	"fmt"
+	"time" // annoying error, but benign
+)
 
 type Poll struct {
-	Id uint64 `xorm:"pk autoincr"`
-	//AuthorId uint64 `xorm:"INDEX"` // todo: AuthorSnowflake ?
-	GuildId uint64 `xorm:"INDEX"`
-	//Author   *disgord.User          `xorm:"-"`
+	Id              uint64 `xorm:"pk autoincr"`
+	GuildId         uint64 `xorm:"INDEX"`
+	AuthorSnowflake string `xorm:"INDEX"`
 
-	// The Subject of the poll should be somewhat short.
 	Subject string
-	//Subject string `xorm:"name"` // inquire: what's "name" ?
-
-	//Grading string `xorm:"-"`
+	// Grading is a slice of unicode runes
+	Grading string
+	// Secrecy is either "public", "admin", or "secret"
+	Secrecy string
 
 	CreatedUnix time.Time `xorm:"created"`
 	UpdatedUnix time.Time `xorm:"updated"`
-	//DeadlineUnix timeutil.TimeStamp `xorm:"INDEX"`
-	//ClosedUnix   timeutil.TimeStamp `xorm:"INDEX"`
+}
+
+func (poll *Poll) getDefaultGrading() string {
+	return "🤮😐😌😀🤩"
+}
+
+func (poll *Poll) GetGrading() string {
+	if poll.Grading != "" {
+		return poll.Grading
+	}
+	return poll.getDefaultGrading()
 }
 
 func (poll *Poll) GetGradingSlice() []string {
-	list := make([]string, 0, 5)
+	list := make([]string, 0)
 
-	// Placeholder shim until user customization somehow (poll.Grading?)
-	// Careful: for now only 5 grades max are supported.  (amount of buttons per action row)
-	// - 🤮😒😐🙂😀🤩
-	// - 😫😒😐😌😀😍
-	// - …
-	list = append(list, "🤮")
-	//list = append(list, "😒")
-	list = append(list, "😐")
-	list = append(list, "😌")
-	list = append(list, "😀")
-	list = append(list, "😍")
+	for _, grade := range poll.GetGrading() {
+		list = append(list, fmt.Sprintf("%c", grade))
+	}
 
 	return list
 }

@@ -43,7 +43,7 @@ func handleHelpCommand(
 				"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
 				"\n" +
 				"⚖ **What is Majority Judgment?**\n" +
-				"> A pretty rad **polling system.**  It is used in french :flag_fr: wine 🍷 contests. " +
+				"> A pretty rad **voting system.**  It is used in french :flag_fr: wine 🍷 contests. " +
 				"It is simple, subtle and fair.\n" +
 				"\n" +
 				"🕵 **Can this bot read our messages?**\n" +

@@ -23,16 +23,17 @@
 - [x] Do not read messages
 - [x] Support multiple guilds
 - [x] Quotas per guild
+- [x] Daily Quotas per guild (Discord handles it)
 - [x] Rerun past poll with `/mj rerun`
 - [x] Display metrics with `/mj info`
 - [x] Publish a poll's result using a button
 - [x] Docker config
 - [x] Docker Compose config
+- [x] Choose a grading (ex: 👍👎) per poll
+- [x] Add a `secrecy` scope to allow public ballots
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
-- [ ] Choose a grading (ex: 👍👎) per poll
 - [ ] Trim the database regularly (CRON)
-- [ ] Daily Quotas per guild
 - [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself `/mj love`
 
@@ -67,10 +68,10 @@
 
 Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, and run `docker compose`: 
 
-   ```
+```
    $ cp .env .env.local
    $ docker compose up
-   ```
+```
 
 
 ## Dev Notes

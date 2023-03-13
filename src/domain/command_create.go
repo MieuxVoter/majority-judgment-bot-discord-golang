@@ -21,39 +21,80 @@ func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 		Type:        disgord.OptionTypeSubCommand,
 		Options: []*disgord.ApplicationCommandOption{
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "subject",
 				Description: "The poll's subject, such as \"When should we meet?\"",
-				Type:        disgord.OptionTypeString,
 			},
+			// How to get variadism here, for proposals?
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "proposal_a",
 				Description: "The name of the first proposal, like Friday",
-				Type:        disgord.OptionTypeString,
 			},
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "proposal_b",
 				Description: "The name of the second proposal, like Pizza",
-				Type:        disgord.OptionTypeString,
 			},
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "proposal_c",
 				Description: "The name of the third proposal, like Beaujolais",
-				Type:        disgord.OptionTypeString,
 			},
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "proposal_d",
 				Description: "The name of the fourth proposal, like Michel",
-				Type:        disgord.OptionTypeString,
 			},
 			{
+				Type:        disgord.OptionTypeString,
 				Name:        "proposal_e",
 				Description: "The name of the fifth element, like Moultipass",
-				Type:        disgord.OptionTypeString,
 			},
-			// /!. Discord limits messages integrations to 5 action rows,
-			//     so we'd need multiple messages to handle more than 5 proposals.
-			//     No point in adding proposal_f here for now, it won't work as-is.
-			// > Well, now we use one message per proposal, but how to get variadism here?
+			{
+				Type:        disgord.OptionTypeString,
+				Name:        "grading",
+				Description: "The grades to use in this poll",
+				Choices: []*disgord.ApplicationCommandOptionChoice{
+					{
+						Name:  "👎👍",
+						Value: "👎👍",
+					},
+					{
+						Name:  "👎👊👍",
+						Value: "👎👊👍",
+					},
+					{
+						Name:  "🤮😐😀🤩",
+						Value: "🤮😐😀🤩",
+					},
+					{
+						Name:  "🤮😐😌😀🤩 (default)",
+						Value: "🤮😐😌😀🤩",
+					},
+					// Discord only supports at most 5 buttons per action row,
+					// so to add more of those we need to tweak our judgment UI.
+				},
+			},
+			{
+				Type:        disgord.OptionTypeString,
+				Name:        "secrecy",
+				Description: "Whether individual votes are kept secret or not. (default is secret)",
+				Choices: []*disgord.ApplicationCommandOptionChoice{
+					{
+						Name:  "secret for all (default)",
+						Value: "secret",
+					},
+					//{
+					//	Name:  "poll author can see",
+					//	Value: "admin",
+					//},
+					{
+						Name:  "anyone can see",
+						Value: "public",
+					},
+				},
+			},
 		},
 	}
 }
@@ -64,19 +105,15 @@ func (c CreateCommand) Matches(command string) bool {
 
 func (c CreateCommand) Handle(input Input) (handled bool, err error) {
 	if input.IsDirectMessage() {
-		message := "I can't create a poll just for you and I.  🤷  Try again in a channel with other people."
+		message := "I can't create a poll just for you and I.  🤷  Try again in a channel with other people?"
 		return true, RespondUserError(input, message)
 	}
 
-	return true, handleCreateCommand(
-		c.orm,
-		input,
-	)
+	return true, handleCreateCommand(c.orm, input)
 }
 
-// handleCreateCommand is to refactor into a class at some point
 func handleCreateCommand(
-	x *xorm.Engine,
+	orm *xorm.Engine,
 	input Input,
 ) error {
 
@@ -98,7 +135,10 @@ func handleCreateCommand(
 		return nil
 	}
 
-	err = doCreatePoll(x, input, subject, proposalsNames)
+	grading, _ := input.GetOption("create", "grading", "🤮😐😌😀🤩")
+	secrecy, _ := input.GetOption("create", "secrecy", "secret")
+
+	err = doCreatePoll(orm, input, subject, proposalsNames, grading, secrecy)
 
 	return err
 }
@@ -108,6 +148,8 @@ func doCreatePoll(
 	input Input,
 	subject string,
 	proposalsNames []string,
+	grading string,
+	secrecy string,
 ) error {
 
 	guildVendorId, _ := input.GetGuildVendorId()
@@ -144,6 +186,8 @@ func doCreatePoll(
 	poll := &db.Poll{
 		Subject: subject,
 		GuildId: guild.Id,
+		Grading: grading,
+		Secrecy: secrecy,
 	}
 	_, err = orm.InsertOne(poll)
 	if err != nil {

@@ -98,8 +98,10 @@ func handleRerunCommand(
 	for _, proposal := range proposals {
 		proposalsNames = append(proposalsNames, proposal.Name)
 	}
+	grading := poll.Grading
+	secrecy := poll.Secrecy
 
-	err = doCreatePoll(orm, input, subject, proposalsNames)
+	err = doCreatePoll(orm, input, subject, proposalsNames, grading, secrecy)
 
 	return err
 }

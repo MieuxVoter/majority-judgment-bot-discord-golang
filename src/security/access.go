@@ -5,7 +5,6 @@ import (
 	"xorm.io/xorm"
 )
 
-// CanGuildCreatePoll should be refactored as a service using DI
 func CanGuildCreatePoll(_ *xorm.Engine, guild *db.Guild) (bool, error) {
 	if guild == nil {
 		return false, nil
@@ -18,8 +17,14 @@ func CanGuildCreatePoll(_ *xorm.Engine, guild *db.Guild) (bool, error) {
 	return true, nil
 }
 
-// CanGuildParticipate is a security bouncer
 func CanGuildParticipate(_ *xorm.Engine, _ *db.Guild) (bool, error) {
 	// No bans for now
 	return true, nil
+}
+
+func CanUserInspectBallots(_ *xorm.Engine, userVendorId string, poll *db.Poll) (bool, error) {
+	if poll.Secrecy == "public" {
+		return true, nil
+	}
+	return false, nil
 }

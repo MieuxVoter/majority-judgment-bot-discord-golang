@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
+	"strings"
 )
 
 func RespondWithPollUi(
@@ -128,6 +129,95 @@ func RespondWithJudgmentUi(
 				},
 			)
 		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
+	}
+
+	return fmt.Errorf("unsupported vendor")
+}
+
+func escapeCsvValue(value string) string {
+	return strings.ReplaceAll(value, "\"", "")
+}
+
+func RespondBallotsInspection(
+	input Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	judgments []db.Judgment,
+) error {
+
+	csvString := "judge_id"
+	for _, proposal := range proposals {
+		csvString += fmt.Sprintf(", \"%s\"", escapeCsvValue(proposal.Name))
+	}
+
+	currentJudge := ""
+	for _, judgment := range judgments {
+		if judgment.JudgeSnowflake != currentJudge {
+			currentJudge = judgment.JudgeSnowflake
+			csvString += "\n"
+			csvString += currentJudge
+		}
+		csvString += ", "
+		csvString += escapeCsvValue(fmt.Sprint(judgment.Grade))
+	}
+
+	if d, isDiscord := input.(DiscordInput); isDiscord {
+
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		//if replaceMessage {
+		//	messageType = disgord.InteractionCallbackUpdateMessage
+		//}
+		csvFile := disgord.CreateMessageFile{
+			Reader:   strings.NewReader(csvString),
+			FileName: fmt.Sprintf("poll_%d.csv", poll.Id),
+		}
+		content := "🏛 Here are the individual ballots for this poll:"
+		interactionResponse := &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Files: []disgord.CreateMessageFile{
+					csvFile,
+				},
+				Content: content,
+				//Embeds: []*disgord.Embed{
+				//	{
+				//		Title:  title,
+				//		Footer: &disgord.EmbedFooter{
+				//			Text:         "footer, oh oui wiwiwi…",
+				//		},
+				//	},
+				//},
+				//Components: []*disgord.MessageComponent{
+				//	{
+				//		Type:       disgord.MessageComponentActionRow,
+				//		CustomID:   "poll_action_row",
+				//		Components: []*disgord.MessageComponent{}, // filled below
+				//	},
+				//},
+			},
+		}
+
+		//for gradeLevel, grade := range poll.GetGradingSlice() {
+		//
+		//	previouslySelectedMarker := ""
+		//	if previousJudgment != nil {
+		//		if uint8(gradeLevel) == previousJudgment.Grade {
+		//			previouslySelectedMarker = " ✅"
+		//		}
+		//	}
+		//	interactionResponse.Data.Components[0].Components = append(
+		//		interactionResponse.Data.Components[0].Components,
+		//		&disgord.MessageComponent{
+		//			Type:     disgord.MessageComponentButton,
+		//			Style:    disgord.Primary,
+		//			CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
+		//			Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
+		//		},
+		//	)
+		//}
 
 		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
 	}
