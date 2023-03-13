@@ -79,8 +79,7 @@ func handleRerunCommand(
 		return RespondUserError(input, message)
 	}
 	if poll.GuildId != guild.Id {
-		message := "The specified poll belongs to another community.  " +
-			"No can do!  _Dura lex, sed lex 🏛_"
+		message := "The specified poll is in another castle. ⭐"
 		return RespondUserError(input, message)
 	}
 

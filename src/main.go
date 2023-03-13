@@ -115,6 +115,8 @@ func main() {
 		//fmt.Printf("Interaction: %+v\n", *h)
 		//fmt.Printf("Data %+v\n", *h.Data)
 		//fmt.Printf("Options %+q\n", (*h.Data).Options)
+		//fmt.Printf("%+q\n", h.GuildID)
+		//fmt.Printf("%+q\n", h.ChannelID)
 
 		commandInput := domain.DiscordInput{
 			Context:     noCtx,

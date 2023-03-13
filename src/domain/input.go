@@ -14,7 +14,14 @@ type Input interface {
 	GetActorVendorId() (string, error)
 	GetGuildVendorId() (string, error)
 	GetButtonName() (string, error)
+	IsDirectMessage() bool
 }
+
+//  ___  _                   _
+// |   \(_)___ __ ___ _ _ __| |
+// | |) | (_-</ _/ _ \ '_/ _` |
+// |___/|_/__/\__\___/_| \__,_|
+//
 
 // DiscordInput wrapper for data coming from Discord's userland.
 type DiscordInput struct {
@@ -60,4 +67,8 @@ func (d DiscordInput) GetGuildVendorId() (string, error) {
 
 func (d DiscordInput) GetButtonName() (string, error) {
 	return d.Interaction.Data.CustomID, nil
+}
+
+func (d DiscordInput) IsDirectMessage() bool {
+	return d.Interaction.GuildID.IsZero()
 }

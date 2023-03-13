@@ -63,6 +63,11 @@ func (c CreateCommand) Matches(command string) bool {
 }
 
 func (c CreateCommand) Handle(input Input) (handled bool, err error) {
+	if input.IsDirectMessage() {
+		message := "I can't create a poll just for you and I.  🤷  Try again in a channel with other people."
+		return true, RespondUserError(input, message)
+	}
+
 	return true, handleCreateCommand(
 		c.orm,
 		input,
