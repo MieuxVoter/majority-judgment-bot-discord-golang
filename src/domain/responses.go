@@ -153,27 +153,34 @@ func RespondBallotsInspection(
 	}
 
 	currentJudge := ""
-	for _, judgment := range judgments {
-		if judgment.JudgeSnowflake != currentJudge {
-			currentJudge = judgment.JudgeSnowflake
-			csvString += "\n"
-			csvString += currentJudge
+	for k, judgment := range judgments {
+		if judgment.JudgeSnowflake == currentJudge {
+			continue
 		}
-		csvString += ", "
-		csvString += escapeCsvValue(fmt.Sprint(judgment.Grade))
+		currentJudge = judgment.JudgeSnowflake
+		csvString += "\n" + currentJudge
+
+		// Extra complexity is to handle missing judgments
+		pk := 0
+		for _, proposal := range proposals {
+			judgmentOfJudge := judgments[k+pk]
+			val := "0"
+			if judgmentOfJudge.ProposalId == proposal.Id {
+				val = fmt.Sprint(judgmentOfJudge.Grade)
+				pk += 1
+			}
+			csvString += ", " + escapeCsvValue(val)
+		}
 	}
 
 	if d, isDiscord := input.(DiscordInput); isDiscord {
 
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
-		//if replaceMessage {
-		//	messageType = disgord.InteractionCallbackUpdateMessage
-		//}
 		csvFile := disgord.CreateMessageFile{
 			Reader:   strings.NewReader(csvString),
 			FileName: fmt.Sprintf("poll_%d.csv", poll.Id),
 		}
-		content := "🏛 Here are the individual ballots for this poll:"
+		content := fmt.Sprintf("🏛 Here are the individual ballots for the poll **%s** :", poll.Subject)
 		interactionResponse := &disgord.CreateInteractionResponse{
 			Type: messageType,
 			Data: &disgord.CreateInteractionResponseData{
@@ -182,42 +189,8 @@ func RespondBallotsInspection(
 					csvFile,
 				},
 				Content: content,
-				//Embeds: []*disgord.Embed{
-				//	{
-				//		Title:  title,
-				//		Footer: &disgord.EmbedFooter{
-				//			Text:         "footer, oh oui wiwiwi…",
-				//		},
-				//	},
-				//},
-				//Components: []*disgord.MessageComponent{
-				//	{
-				//		Type:       disgord.MessageComponentActionRow,
-				//		CustomID:   "poll_action_row",
-				//		Components: []*disgord.MessageComponent{}, // filled below
-				//	},
-				//},
 			},
 		}
-
-		//for gradeLevel, grade := range poll.GetGradingSlice() {
-		//
-		//	previouslySelectedMarker := ""
-		//	if previousJudgment != nil {
-		//		if uint8(gradeLevel) == previousJudgment.Grade {
-		//			previouslySelectedMarker = " ✅"
-		//		}
-		//	}
-		//	interactionResponse.Data.Components[0].Components = append(
-		//		interactionResponse.Data.Components[0].Components,
-		//		&disgord.MessageComponent{
-		//			Type:     disgord.MessageComponentButton,
-		//			Style:    disgord.Primary,
-		//			CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
-		//			Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
-		//		},
-		//	)
-		//}
 
 		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
 	}
