@@ -153,7 +153,7 @@ func doCreatePoll(
 ) error {
 
 	guildVendorId, _ := input.GetGuildVendorId()
-	guild, err := db.GetGuild(orm, guildVendorId)
+	guild, err := db.GetOrCreateGuild(orm, guildVendorId)
 	if err != nil {
 		return err
 	}
