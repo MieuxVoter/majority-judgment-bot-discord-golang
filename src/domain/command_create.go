@@ -120,11 +120,18 @@ func handleCreateCommand(
 	subject, err := input.GetOption("create", "subject", "Poll")
 	proposalsNames := make([]string, 0)
 	for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
-		proposalName, _ := input.GetOption("create", "proposal_"+v, "")
-		if proposalName == "" {
+		rawProposalName, _ := input.GetOption("create", "proposal_"+v, "")
+		if rawProposalName == "" {
 			continue
 		}
-		proposalsNames = append(proposalsNames, proposalName)
+		// Discord does not accept variadic commands yet, so we're accepting multiple proposals
+		// in each of the proposal_x fields, using the character | as separator.
+		// To use the | character in your proposal names, double it.
+		compoundProposalsNames := security.ExtractProposalsNames(rawProposalName)
+
+		for _, proposalName := range compoundProposalsNames {
+			proposalsNames = append(proposalsNames, proposalName)
+		}
 	}
 
 	if len(proposalsNames) < 2 {
