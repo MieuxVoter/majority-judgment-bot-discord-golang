@@ -62,6 +62,28 @@ func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	return guild, nil
 }
 
+// CountPolls counts all the polls this bot is responsible for
+func CountPolls(orm *xorm.Engine) (int64, error) {
+	poll := &Poll{}
+	count, err := orm.Count(poll)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+// CountGuildPolls counts all the polls this bot is responsible for
+func CountGuildPolls(orm *xorm.Engine, guild *Guild) (int64, error) {
+	poll := &Poll{}
+	count, err := orm.Where("guild_id = ?", guild.Id).Count(poll)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // GetLastPollOfGuild returns the most recent poll of the specified guild, or fails.
 func GetLastPollOfGuild(orm *xorm.Engine, guild *Guild) (*Poll, error) {
 	poll := &Poll{}

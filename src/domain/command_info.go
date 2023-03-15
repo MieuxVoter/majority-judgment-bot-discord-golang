@@ -41,13 +41,25 @@ func handleInfoCommand(
 		message := "Could not access the guild.  _Suddenly, everything is on fire._ 🔥"
 		return RespondUserError(input, message)
 	}
+	allPollsAmount, errCountAll := db.CountPolls(command.orm)
+	if errCountAll != nil {
+		message := "Could not count the polls.  _Suddenly, Notre-Dame is on fire._ 🔥"
+		return RespondUserError(input, message)
+	}
+	guildPollsAmount, errCountGuildPolls := db.CountGuildPolls(command.orm, guild)
+	if errCountGuildPolls != nil {
+		message := "Could not count this guild's polls.  _Suddenly, Australia is on fire._ 🔥"
+		return RespondUserError(input, message)
+	}
 
 	message := "" +
-		"🤖🗩 _Here is some information about myself on this server._\n" +
+		"🤖🗩 _Here is some information about myself._\n" +
 		"\n" +
-		"Polls remaining: " + fmt.Sprintf("%d", guild.Quota) +
-		"\n" +
-		"Version" + " : " + security.GetVersion() + "\n" +
+		"Total amount of polls on this server" + fmt.Sprintf(" : `%d`\n", guildPollsAmount) +
+		"Total amount of polls across all servers" + fmt.Sprintf(" : `%d`\n", allPollsAmount) +
+		"Remaining polls' quota on this server" + fmt.Sprintf(" : `%d`\n", guild.Quota) +
+		"Version" + fmt.Sprintf(" : `%s`\n", security.GetVersion()) +
+		"Guild Identifier" + fmt.Sprintf(" : `%s`\n", guild.Snowflake) +
 		"\n" +
 		""
 
