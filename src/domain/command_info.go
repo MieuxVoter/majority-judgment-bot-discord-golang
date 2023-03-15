@@ -7,6 +7,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/security"
 	"xorm.io/xorm"
 )
 
@@ -27,37 +28,42 @@ func (c InfoCommand) Matches(command string) bool {
 }
 
 func (c InfoCommand) Handle(input Input) (handled bool, err error) {
-	if d, ok := (input).(DiscordInput); ok {
-		return true, handleInfoCommand(c, d)
-	}
-	return false, fmt.Errorf("unknown vendor")
+	return true, handleInfoCommand(c, input)
 }
 
 func handleInfoCommand(
 	command InfoCommand,
-	input DiscordInput,
+	input Input,
 ) error {
 	guildVendorId, _ := input.GetGuildVendorId()
 	guild, err := db.GetOrCreateGuild(command.orm, guildVendorId)
 	if err != nil {
-		message := "Could not access the guild.  _Suddenly, everything is on fire. 🔥_"
+		message := "Could not access the guild.  _Suddenly, everything is on fire._ 🔥"
 		return RespondUserError(input, message)
 	}
 
-	err = input.Session.SendInteractionResponse(input.Context, input.Interaction, &disgord.CreateInteractionResponse{
-		Type: disgord.InteractionCallbackChannelMessageWithSource,
-		Data: &disgord.CreateInteractionResponseData{
-			Flags: disgord.MessageFlagEphemeral,
-			Content: "" +
-				"🤖🗩 _Here is some information about myself on this server._\n" +
-				"\n" +
-				"Polls remaining: " + fmt.Sprintf("%d", guild.Quota) +
-				"\n" +
-				"",
-		},
-	})
+	message := "" +
+		"🤖🗩 _Here is some information about myself on this server._\n" +
+		"\n" +
+		"Polls remaining: " + fmt.Sprintf("%d", guild.Quota) +
+		"\n" +
+		"Version" + " : " + security.GetVersion() + "\n" +
+		"\n" +
+		""
 
-	return err
+	if d, isDiscord := (input).(DiscordInput); isDiscord {
+		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackChannelMessageWithSource,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags:   disgord.MessageFlagEphemeral,
+				Content: message,
+			},
+		})
+		return err
+	}
+
+	return fmt.Errorf("unknown vendor")
+
 }
 
 func init() {

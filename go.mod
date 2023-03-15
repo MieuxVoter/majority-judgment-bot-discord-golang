@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/andersfylling/disgord v0.35.1
+	//github.com/dlclark/regexp2 v1.8.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.9
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.1

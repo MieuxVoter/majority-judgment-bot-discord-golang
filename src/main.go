@@ -12,12 +12,13 @@ import (
 	"main/src/container"
 	"main/src/database"
 	"main/src/domain"
+	"main/src/security"
 	"main/src/services"
 )
 
 var logger *logrus.Logger
-
 var noCtx = context.Background()
+var discordClient *disgord.Client
 
 // checkErr logs errors if not nil, along with a user-specified trace
 func checkErr(err error, trace string) {
@@ -28,20 +29,33 @@ func checkErr(err error, trace string) {
 	}
 }
 
-// handleMessageMentioningMe reacts when the bot is @ in a channel message
-func handleMessageMentioningMe(s disgord.Session, data *disgord.MessageCreate) {
+// handleDirectMessageToMe reacts when the bot is @ in a channel message
+func handleDirectMessageToMe(s disgord.Session, data *disgord.MessageCreate) {
 	msg := data.Message
 
-	logger.Info("Bot has been mentioned: ", msg.Member, msg.Content)
+	logger.Info("Bot has been talked to: ", msg.Member, msg.Content)
 
-	botUsage := "_I am ready to serve !_   Type `/mj` to start."
+	botUsage := "🤖 _I am ready to assist._   Type `/mj` to start."
 	_, err := msg.Reply(noCtx, s, botUsage)
 	checkErr(err, "mentioning me")
 }
 
+func onDiscordBotReady() {
+	logger.Info("Bot is ready!")
+	commands := domain.GetCommands()
+	for _, command := range commands {
+		logger.Info("Registering command /", command.Name)
+		// application command id is 0 here, it's OK.
+		// on a ready event, the client is updated to store the application id
+		if err := discordClient.ApplicationCommand(0).Global().Create(command); err != nil {
+			logger.Fatal(err)
+		}
+	}
+}
+
 func main() {
 	// Greet the dev
-	fmt.Println("== MAJORITY JUDGMENT BOT v0.0.0 ==") // todo: handle version (govvv?)
+	fmt.Printf("=== ⚖  MAJORITY JUDGMENT BOT 🤖 v%s ===\n", security.GetVersion())
 
 	logger = container.Get("logger").(*logrus.Logger)
 	config := container.Get("config").(*services.Config)
@@ -51,7 +65,7 @@ func main() {
 	checkErr(err, "db.Sync")
 
 	// Start the Discord client
-	client := disgord.New(disgord.Config{
+	discordClient = disgord.New(disgord.Config{
 		ProjectName: config.Get("DISCORD_NAME"),
 		BotToken:    config.Get("DISCORD_TOKEN"),
 		Logger:      logger,
@@ -60,13 +74,13 @@ func main() {
 		// ! Non-functional due to a current bug, will be fixed upstream someday.
 		Presence: &disgord.UpdateStatusPayload{
 			Game: &disgord.Activity{
-				Name: "Listening to /mj commands",
+				Name: "Ranking proposals (`/mj`)",
 			},
 		},
 	})
 
 	// Heartbeat
-	defer client.Gateway().StayConnectedUntilInterrupted()
+	defer discordClient.Gateway().StayConnectedUntilInterrupted()
 
 	// Print the link one needs to invite/authorize the bot on their server
 	permissions := disgord.PermissionSendMessages |
@@ -74,43 +88,32 @@ func main() {
 		disgord.PermissionSendMessagesInThreads |
 		disgord.PermissionAttachFiles |
 		disgord.PermissionEmbedLinks
-	authorizeURL, err := client.BotAuthorizeURL(permissions, []string{
+	authorizeURL, err := discordClient.BotAuthorizeURL(permissions, []string{
 		//"bot", // we're trying our best to remove this bot scope, and only use applications.commands
 		"applications.commands",
 	})
 	if err != nil {
 		logger.Fatal(err)
 	}
+
 	fmt.Println("\nFollow this URL to authorize the bot on your server:")
 	fmt.Println(authorizeURL)
 	fmt.Println("")
 
-	//logFilter, _ := std.NewLogFilter(client)
-	filter, _ := std.NewMsgFilter(noCtx, client)
+	filter, _ := std.NewMsgFilter(noCtx, discordClient)
+	//logFilter, _ := std.NewLogFilter(discordClient)
 
 	// Create a handler and bind it to new (direct) messages
-	client.Gateway().WithMiddleware(
+	discordClient.Gateway().WithMiddleware(
 		filter.NotByBot, // ignore bot messages
 	//	logFilter.LogMsg,   // logger command message
-	//	filter.ContainsBotMention, // message must mention this bot
-	).MessageCreate(handleMessageMentioningMe)
+	).MessageCreate(handleDirectMessageToMe)
 
 	// Register slash command once the bot is ready
-	client.Gateway().BotReady(func() {
-		logger.Info("Bot is ready!")
-		commands := domain.GetCommands()
-		for _, command := range commands {
-			logger.Info("Registering command /", command.Name)
-			// application command id is 0 here, it's OK.
-			// on a ready event, the client is updated to store the application id
-			if err = client.ApplicationCommand(0).Global().Create(command); err != nil {
-				logger.Fatal(err)
-			}
-		}
-	})
+	discordClient.Gateway().BotReady(onDiscordBotReady)
 
 	// Respond to discord slash command and other interactions
-	client.Gateway().InteractionCreate(func(s disgord.Session, h *disgord.InteractionCreate) {
+	discordClient.Gateway().InteractionCreate(func(s disgord.Session, h *disgord.InteractionCreate) {
 		// Handy debug/exploration snippets
 		//fmt.Printf("Interaction: %+v\n", *h)
 		//fmt.Printf("Data %+v\n", *h.Data)

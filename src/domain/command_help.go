@@ -55,11 +55,9 @@ func handleHelpCommand(
 				"so we'll need more wit to support more grades.\n" +
 				"\n" +
 				"❺ **Can I use more than 5 proposals?**\n" +
-				"> **Yes.**  Discord does not allow variadic application commands, for now. " +
-				"You may specify multiple proposals per field, using `|` as separator.\n" +
+				"> **Yes.**  Discord does not allow variadic application commands, for now, " +
+				"but as a workaround may specify multiple proposals per field, using `|` as separator.\n" +
 				"\n" +
-				//"\n" +
-				//"If \n" +
 				"",
 		},
 	})

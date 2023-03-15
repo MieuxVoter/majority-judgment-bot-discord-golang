@@ -59,7 +59,7 @@
 ## Build
 
 ```
-   $ go build -o mjbot src/main.go
+   $ make
    $ ./mjbot
 ```
 
