@@ -112,13 +112,13 @@ func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {
 	return proposals, nil
 }
 
-func GetJudgmentsByJudgeOnPoll(e *xorm.Engine, judge string, poll *Poll) ([]Judgment, error) {
+func GetJudgmentsByJudgeOnPoll(orm *xorm.Engine, judge string, poll *Poll) ([]Judgment, error) {
 	if judge == "" {
 		return nil, fmt.Errorf("no judge is defined")
 	}
 
 	var judgments []Judgment
-	err := e.
+	err := orm.
 		Where("judge_snowflake = ?", judge).
 		Where("poll_id = ?", poll.Id).
 		OrderBy("proposal_id", "ASC").
@@ -130,9 +130,9 @@ func GetJudgmentsByJudgeOnPoll(e *xorm.Engine, judge string, poll *Poll) ([]Judg
 	return judgments, nil
 }
 
-func CountGrades(e *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
+func CountGrades(orm *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
 	rows := make([]int64, 0, 2)
-	if err := e.Table("judgment").
+	if err := orm.Table("judgment").
 		Select("COUNT(*) as amount").
 		Where("`judgment`.`poll_id` = ?", poll.Id).
 		And("`judgment`.`proposal_id` = ?", proposal.Id).

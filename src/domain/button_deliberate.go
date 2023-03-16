@@ -38,17 +38,15 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 		return
 	}
 
-	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
-	if err != nil {
-		return false, err
+	pollId, errParse := strconv.ParseUint(pollIdAsString, 10, 64)
+	if errParse != nil {
+		return false, errParse
 	}
 
 	handled, err = handleDeliberation(service.orm, input, pollId, true)
 
 	return
 }
-
-//title := "Details of the ballots"
 
 func handleDeliberation(
 	orm *xorm.Engine,
@@ -63,8 +61,8 @@ func handleDeliberation(
 
 	// Get the poll this button is for
 	poll := &db.Poll{Id: pollId}
-	foundPoll, err := orm.Get(poll)
-	if !foundPoll {
+	hasFoundPoll, err := orm.Get(poll)
+	if !hasFoundPoll {
 		err = RespondServerError(input, "Oh noes!  This poll was probably deleted.")
 		return
 	}
@@ -181,6 +179,9 @@ func handleDeliberation(
 
 	if d, isDiscord := input.(DiscordInput); isDiscord {
 
+		judgeVendorId, _ := input.GetActorVendorId()
+		canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
+
 		response := &disgord.CreateInteractionResponse{
 			Type: disgord.InteractionCallbackChannelMessageWithSource,
 			Data: &disgord.CreateInteractionResponseData{
@@ -197,32 +198,35 @@ func handleDeliberation(
 				},
 			},
 		}
+		if asPrivateMessage || canInspect {
+			response.Data.Components = []*disgord.MessageComponent{
+				{
+					Type:       disgord.MessageComponentActionRow,
+					CustomID:   "deliberate_action_row",
+					Components: []*disgord.MessageComponent{},
+				},
+			}
+		}
 		if asPrivateMessage {
 			//response.Type = disgord.InteractionCallbackChannelMessageWithSource
 			response.Data.Flags |= disgord.MessageFlagEphemeral
-			response.Data.Components = []*disgord.MessageComponent{
-				{
-					Type:     disgord.MessageComponentActionRow,
-					CustomID: "deliberate_action_row",
-					Components: []*disgord.MessageComponent{
-						{
-							Type:  disgord.MessageComponentButton,
-							Style: disgord.Primary,
-							Label: "Publish",
-							Emoji: &disgord.Emoji{
-								Name: "📢",
-							},
-							CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
-						},
+
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Primary,
+					Label: "Publish",
+					Emoji: &disgord.Emoji{
+						Name: "📢",
 					},
+					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
 				},
-			}
+			)
 		} else {
 			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
 		}
 
-		judgeVendorId, _ := input.GetActorVendorId()
-		canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
 		if canInspect {
 			response.Data.Components[0].Components = append(
 				response.Data.Components[0].Components,

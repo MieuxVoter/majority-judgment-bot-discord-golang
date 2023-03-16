@@ -158,7 +158,7 @@ func RespondBallotsInspection(
 			continue
 		}
 		currentJudge = judgment.JudgeSnowflake
-		csvString += "\n" + currentJudge
+		csvString += fmt.Sprintf("\n\"%s\"", currentJudge)
 
 		// Extra complexity is to handle missing judgments
 		pk := 0
