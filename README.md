@@ -33,8 +33,6 @@
 - [x] Add a `secrecy` scope to allow public ballots
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Allow/Disallow judges, via nickname or roles, per guild
-- [ ] Trim the database regularly (CRON)
-- [ ] Remove `bot` scope (if doable)
 - [ ] Pay for itself `/mj love`
 
 

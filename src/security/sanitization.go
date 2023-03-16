@@ -2,6 +2,7 @@ package security
 
 import (
 	"regexp"
+	"strings"
 )
 
 const NoLimit = -1
@@ -19,4 +20,10 @@ func ExtractProposalsNames(rawName string) []string {
 	//	rawNames[k] = strings.Replace(rawNames[k], "||", "|", NoLimit)
 	//}
 	return rawNames
+}
+
+var markdownFontStyle = regexp.MustCompile("[*_`]")
+
+func RemoveMarkdown(raw string) string {
+	return strings.TrimSpace(markdownFontStyle.ReplaceAllString(raw, " "))
 }

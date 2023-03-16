@@ -130,7 +130,7 @@ func handleCreateCommand(
 		compoundProposalsNames := security.ExtractProposalsNames(rawProposalName)
 
 		for _, proposalName := range compoundProposalsNames {
-			proposalsNames = append(proposalsNames, proposalName)
+			proposalsNames = append(proposalsNames, security.RemoveMarkdown(proposalName))
 		}
 	}
 

@@ -121,7 +121,7 @@ func main() {
 		//fmt.Printf("%+q\n", h.GuildID)
 		//fmt.Printf("%+q\n", h.ChannelID)
 
-		commandInput := domain.DiscordInput{
+		vendorInput := domain.DiscordInput{
 			Context:     noCtx,
 			Session:     s,
 			Interaction: h,
@@ -130,7 +130,7 @@ func main() {
 		if h.Type == disgord.InteractionApplicationCommand {
 
 			if len(h.Data.Options) == 0 { // no subcommand was provided
-				_, err = container.Get("command.help").(*domain.HelpCommand).Handle(commandInput)
+				_, err = container.Get("command.help").(*domain.HelpCommand).Handle(vendorInput)
 				if err != nil {
 					checkErr(err, "HandleHelpCommand:NoSubcommand")
 				}
@@ -146,7 +146,7 @@ func main() {
 			for _, commandGeneric := range commands {
 				command := commandGeneric.(domain.Command)
 				if command.Matches(subCmdName) {
-					commandWasHandled, err = command.Handle(commandInput)
+					commandWasHandled, err = command.Handle(vendorInput)
 					if err != nil {
 						checkErr(err, "command "+subCmdName)
 					}
@@ -170,7 +170,7 @@ func main() {
 				buttonWasHandled := false
 				for _, buttonGeneric := range buttons {
 					button := buttonGeneric.(domain.Button)
-					buttonWasHandled, err = button.Handle(commandInput)
+					buttonWasHandled, err = button.Handle(vendorInput)
 					if err != nil {
 						checkErr(err, "button handle")
 					}
@@ -181,7 +181,7 @@ func main() {
 
 				if !buttonWasHandled {
 					logger.Warnln("Unhandled button interaction", h, h.Data)
-					err = domain.RespondCommandFailure(noCtx, s, h, "This button does nothing.")
+					err = domain.RespondServerError(vendorInput, "This button does nothing.")
 					checkErr(err, "RespondCommandFailure:ButtonUnknown")
 				}
 
