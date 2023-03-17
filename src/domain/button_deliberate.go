@@ -8,8 +8,8 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/network"
 	"main/src/security"
-	"net/url"
 	"regexp"
 	"strconv"
 	"xorm.io/xorm"
@@ -105,10 +105,10 @@ func handleDeliberation(
 	if err != nil {
 		return
 	}
-	deliberator := &judgment.MajorityJudgment{}
-	result, err := deliberator.Deliberate(pollTally)
 
-	if nil != err {
+	deliberator := &judgment.MajorityJudgment{}
+	pollResult, errDelib := deliberator.Deliberate(pollTally)
+	if nil != errDelib {
 		return
 	}
 
@@ -118,35 +118,21 @@ func handleDeliberation(
 		err = RespondUserError(input, message)
 	}
 
-	// Build the path to the merit profile image
-	fileNameNoExt := ""
-	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
-	for proposalResultIndex, proposalResult := range result.ProposalsSorted {
-		proposal := proposals[proposalResult.Index]
-
-		if proposalResultIndex > 0 {
-			fileNameNoExt += "_"
-		}
-		for gradeLevel := range poll.GetGradingSlice() {
-			gradeAmount := pollTally.Proposals[proposalResult.Index].Tally[gradeLevel]
-
-			if gradeLevel > 0 {
-				fileNameNoExt += "-"
-			}
-			fileNameNoExt += fmt.Sprintf("%d", gradeAmount)
-		}
-		query += fmt.Sprintf("&proposals[]=%s", url.QueryEscape(proposal.Name))
-	}
-
-	oasDomain := "https://oas.mieuxvoter.fr"
-	imageUrl := fmt.Sprintf(
-		"%s/%s.png%s",
-		oasDomain, fileNameNoExt, query,
+	// Generate the merit profile image URL
+	imageUrl, errImg := network.GetOas().GetMeritProfileUrl(
+		poll,
+		proposals,
+		pollTally,
+		pollResult,
+		"png", // so far, no SVG support on Discord
 	)
+	if errImg != nil {
+		imageUrl = ""
+	}
 
 	winners := ""
 	winnersSlice := make([]string, 0)
-	for proposalResultIndex, proposalResult := range result.ProposalsSorted {
+	for proposalResultIndex, proposalResult := range pollResult.ProposalsSorted {
 		if proposalResult.Rank > 1 {
 			break
 		}
