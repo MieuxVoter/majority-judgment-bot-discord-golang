@@ -27,3 +27,7 @@ var markdownFontStyle = regexp.MustCompile("[*_`]")
 func RemoveMarkdown(raw string) string {
 	return strings.TrimSpace(markdownFontStyle.ReplaceAllString(raw, " "))
 }
+
+func EscapeCsvValue(value string) string {
+	return strings.ReplaceAll(value, "\"", "")
+}

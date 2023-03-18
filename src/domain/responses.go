@@ -1,10 +1,10 @@
 package domain
 
 import (
-	"context"
 	"fmt"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
+	"main/src/security"
 	"strings"
 )
 
@@ -136,10 +136,6 @@ func RespondWithJudgmentUi(
 	return fmt.Errorf("unsupported vendor")
 }
 
-func escapeCsvValue(value string) string {
-	return strings.ReplaceAll(value, "\"", "")
-}
-
 func RespondBallotsInspection(
 	input Input,
 	poll *db.Poll,
@@ -149,7 +145,7 @@ func RespondBallotsInspection(
 
 	csvString := "judge_id"
 	for _, proposal := range proposals {
-		csvString += fmt.Sprintf(", \"%s\"", escapeCsvValue(proposal.Name))
+		csvString += fmt.Sprintf(", \"%s\"", security.EscapeCsvValue(proposal.Name))
 	}
 
 	currentJudge := ""
@@ -169,7 +165,7 @@ func RespondBallotsInspection(
 				val = fmt.Sprint(judgmentOfJudge.Grade)
 				pk += 1
 			}
-			csvString += ", " + escapeCsvValue(val)
+			csvString += ", " + security.EscapeCsvValue(val)
 		}
 	}
 
@@ -196,31 +192,6 @@ func RespondBallotsInspection(
 	}
 
 	return fmt.Errorf("unsupported vendor")
-}
-
-// deprecated
-func RespondCommandFailure(
-	ctx context.Context,
-	s disgord.Session,
-	h *disgord.InteractionCreate,
-	message string,
-) error {
-	messageType := disgord.InteractionCallbackChannelMessageWithSource
-	err := s.SendInteractionResponse(ctx, h, &disgord.CreateInteractionResponse{
-		Type: messageType,
-		Data: &disgord.CreateInteractionResponseData{
-			Flags: disgord.MessageFlagEphemeral,
-			Content: fmt.Sprintf(
-				"💥 **BOOM !**\n"+
-					"\n"+
-					"%s\n"+
-					"",
-				message,
-			),
-		},
-	})
-
-	return err
 }
 
 func RespondServerError(

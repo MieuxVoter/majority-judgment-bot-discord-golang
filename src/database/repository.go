@@ -3,9 +3,11 @@ package database
 import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"xorm.io/builder"
 	"xorm.io/xorm"
 )
 
+// GetGuild returns the found guild, or fails
 func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
 		Snowflake: snowflake,
@@ -21,6 +23,7 @@ func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	return guild, nil
 }
 
+// CreateGuild creates a new Guild in the database
 func CreateGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
 		Snowflake: snowflake,
@@ -31,11 +34,12 @@ func CreateGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 		return nil, err
 	}
 
-	//logging.GetLogger().Warningln("New Guild !", guild.Snowflake)
+	//services.GetLogger().Infoln("New Guild !", guild.Snowflake)
 
 	return guild, nil
 }
 
+// GetOrCreateGuild returns the found Guild, or creates one.
 func GetOrCreateGuild(orm *xorm.Engine, snowflake string) (guild *Guild, err error) {
 	guild, err = GetGuild(orm, snowflake)
 	if err != nil {
@@ -102,9 +106,12 @@ func GetLastPollOfGuild(orm *xorm.Engine, guild *Guild) (*Poll, error) {
 	return poll, nil
 }
 
-func GetPollProposals(e *xorm.Engine, poll *Poll) ([]Proposal, error) {
+// GetPollProposals returns the specified poll's proposals
+func GetPollProposals(orm *xorm.Engine, poll *Poll) ([]Proposal, error) {
 	var proposals []Proposal
-	err := e.Where("poll_id = ?", poll.Id).Find(&proposals)
+	err := orm.
+		Where("poll_id = ?", poll.Id).
+		Find(&proposals)
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +127,14 @@ func GetJudgmentsByJudgeOnPoll(orm *xorm.Engine, judge string, poll *Poll) ([]Ju
 	var judgments []Judgment
 	err := orm.
 		Where("judge_snowflake = ?", judge).
-		Where("poll_id = ?", poll.Id).
-		OrderBy("proposal_id", "ASC").
+		In(
+			"proposal_id",
+			builder.
+				Select("id").
+				From("proposal").
+				Where(builder.Eq{"poll_id": poll.Id}),
+		).
+		Asc("proposal_id").
 		Find(&judgments)
 	if err != nil {
 		return nil, err

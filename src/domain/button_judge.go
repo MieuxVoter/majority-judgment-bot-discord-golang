@@ -87,8 +87,8 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 	}
 
 	// Get the poll this proposal is attached to
-	poll := db.Poll{Id: proposal.PollId}
-	found, err = service.orm.Get(&poll)
+	poll := &db.Poll{Id: proposal.PollId}
+	found, err = service.orm.Get(poll)
 	if !found {
 		err = RespondUserError(input, "Oh noes!  This poll was probably deleted.")
 		return
@@ -99,7 +99,7 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 	}
 
 	// Get all past judgments of the judge on this poll
-	judgments, err := db.GetJudgmentsByJudgeOnPoll(service.orm, judgeVendorId, &poll)
+	judgments, err := db.GetJudgmentsByJudgeOnPoll(service.orm, judgeVendorId, poll)
 	if err != nil {
 		err = RespondServerError(input, "_Nein!_ "+err.Error())
 		return
@@ -123,7 +123,7 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 		updated, err := service.orm.Cols("grade").Update(pastJudgment, &db.Judgment{
 			JudgeSnowflake: pastJudgment.JudgeSnowflake,
 			ProposalId:     pastJudgment.ProposalId,
-			PollId:         pastJudgment.PollId,
+			//PollId:         pastJudgment.PollId,
 		})
 		if updated == 0 {
 			return false, fmt.Errorf("did not find a judgment to update")
@@ -136,8 +136,8 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 		newJudgment := &db.Judgment{
 			JudgeSnowflake: judgeVendorId,
 			ProposalId:     proposalId,
-			PollId:         poll.Id,
-			Grade:          uint8(gradeLevel),
+			//PollId:         poll.Id,
+			Grade: uint8(gradeLevel),
 		}
 		_, err = service.orm.InsertOne(newJudgment)
 		if err != nil {
@@ -147,7 +147,7 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 	}
 
 	// Get all the proposals of the poll
-	proposals, err := db.GetPollProposals(service.orm, &poll)
+	proposals, err := db.GetPollProposals(service.orm, poll)
 	if err != nil {
 		return false, err
 	}
@@ -184,7 +184,7 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 		}
 
 		// Show the UI to judge the next proposal
-		err = RespondWithJudgmentUi(input, judgeVendorId, nextProposal, &poll, nextJudgment, true)
+		err = RespondWithJudgmentUi(input, judgeVendorId, nextProposal, poll, nextJudgment, true)
 
 	} else {
 
