@@ -33,7 +33,6 @@ func (poll *Poll) GetGrading() string {
 
 func (poll *Poll) GetGradingSlice() []string {
 	list := make([]string, 0)
-
 	for _, grade := range poll.GetGrading() {
 		list = append(list, fmt.Sprintf("%c", grade))
 	}

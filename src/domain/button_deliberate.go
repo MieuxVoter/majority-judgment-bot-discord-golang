@@ -124,9 +124,19 @@ func handleDeliberation(
 		proposals,
 		pollTally,
 		pollResult,
-		"png", // so far, no SVG support on Discord
+		"png",
 	)
 	if errImg != nil {
+		imageUrl = ""
+	}
+	imageUrlSvg, errImgSvg := network.GetOas().GetMeritProfileUrl(
+		poll,
+		proposals,
+		pollTally,
+		pollResult,
+		"svg",
+	)
+	if errImgSvg != nil {
 		imageUrl = ""
 	}
 
@@ -140,7 +150,6 @@ func handleDeliberation(
 		if proposalResultIndex > 0 {
 			winners += fmt.Sprintf(", ")
 		}
-		// fixme: strip markdown from proposal names?
 		winners += fmt.Sprintf("**%s**", proposal.Name)
 		winnersSlice = append(winnersSlice, proposal.Name)
 	}
@@ -178,7 +187,7 @@ func handleDeliberation(
 						Type:  disgord.EmbedTypeImage,
 						Title: title,
 						Image: &disgord.EmbedImage{
-							URL: imageUrl,
+							URL: imageUrl, // no SVG here for now, it appears
 						},
 					},
 				},
@@ -207,6 +216,18 @@ func handleDeliberation(
 						Name: "📢",
 					},
 					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
+				},
+			)
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Link,
+					Label: "As SVG",
+					Emoji: &disgord.Emoji{
+						Name: "✨",
+					},
+					Url: imageUrlSvg,
 				},
 			)
 		} else {

@@ -13,6 +13,7 @@ import (
 var builder *di.Builder
 var container di.Container
 
+// GetBuilder returns the container builder, to which we can add new services
 func GetBuilder() *di.Builder {
 	if builder == nil {
 		var err error
@@ -24,14 +25,17 @@ func GetBuilder() *di.Builder {
 	return builder
 }
 
+// Build the container ; done in main's init(), which is always ran last.
 func Build() {
 	container = GetBuilder().Build()
 }
 
+// Get a service, by name
 func Get(name string) interface{} {
 	return container.Get(name)
 }
 
+// GetCollection of services, by name prefix
 func GetCollection(prefix string) []interface{} {
 	collection := make([]interface{}, 0)
 	for key := range container.Definitions() {
