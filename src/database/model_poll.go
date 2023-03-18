@@ -2,18 +2,22 @@ package database
 
 import (
 	"fmt"
-	"time" // annoying error, but benign
+	"time" // annoying IDE error, but benign
 )
 
+// Poll is our main (toplevel) model.
 type Poll struct {
-	Id              uint64 `xorm:"pk autoincr"`
+	Id              uint64 `xorm:"PK AUTOINCR"`
 	GuildId         uint64 `xorm:"INDEX"`
 	AuthorSnowflake string `xorm:"INDEX"`
 
+	// Subject holds the purpose of the poll, to which proposals offer answers.
+	// Eg: "The Next Meeting Date"
+	// > What do you think of <Proposal> as <Subject> ?
 	Subject string
-	// Grading is a slice of unicode runes
+	// Grading is a slice of unicode runes, as string.
 	Grading string
-	// Secrecy is either "public", "admin", or "secret"
+	// Secrecy is either "public", "admin", or "secret".
 	Secrecy string
 
 	CreatedUnix time.Time `xorm:"created"`
@@ -48,23 +52,4 @@ func (poll *Poll) GetGradeIcon(gradeLevel uint8) string {
 	}
 
 	return icons[gradeLevelInt]
-}
-
-type Proposal struct {
-	Id     uint64 `xorm:"pk autoincr"`
-	Name   string
-	PollId uint64 `xorm:"INDEX"`
-}
-
-type Judgment struct {
-	JudgeSnowflake string `xorm:"INDEX(JX) UNIQUE(JU)"`
-	ProposalId     uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
-	//PollId         uint64 `xorm:"INDEX(JX) UNIQUE(JU)"`
-	Grade uint8
-}
-
-type Guild struct {
-	Id        uint64 `xorm:"pk autoincr"`
-	Snowflake string `xorm:"UNIQUE INDEX"`
-	Quota     uint64
 }

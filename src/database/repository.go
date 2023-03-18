@@ -147,8 +147,7 @@ func CountGrades(orm *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel ui
 	rows := make([]int64, 0, 2)
 	if err := orm.Table("judgment").
 		Select("COUNT(*) as amount").
-		Where("`judgment`.`poll_id` = ?", poll.Id).
-		And("`judgment`.`proposal_id` = ?", proposal.Id).
+		Where("`judgment`.`proposal_id` = ?", proposal.Id).
 		And("`judgment`.`grade` = ?", gradeLevel).
 		Find(&rows); err != nil {
 		return 0, err
