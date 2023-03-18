@@ -1,5 +1,12 @@
 version: "3.9"
 
+# Usage
+# -----
+#
+# Make sure you created and configured your .env.local, and then run:
+#     docker compose up
+#
+
 services:
   bot:
     build: .

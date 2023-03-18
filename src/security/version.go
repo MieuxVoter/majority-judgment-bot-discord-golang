@@ -7,6 +7,7 @@ var (
 	GitSummary string
 )
 
+// GetVersion returns the fully described git version of this bot.
 func GetVersion() string {
 	if GitSummary == "" {
 		return "N/A"
