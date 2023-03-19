@@ -1,5 +1,7 @@
 # Majority Judgment Bot for Discord
 
+![](./doc/mjbot_logo_00.png)
+
 > Helps create Majority Judgment polls in Discord.
 
 ![](./doc/screen_00.png)
