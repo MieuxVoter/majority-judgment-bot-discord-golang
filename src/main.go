@@ -4,11 +4,15 @@ package main
 // Usage:   /mj create <subject> <proposalA> <proposalB> …
 
 import (
+	"fmt"
 	"main/src/container"
 	"main/src/provider/discord"
+	"main/src/security"
 )
 
 func main() {
+	fmt.Printf("=== ⚖  MAJORITY JUDGMENT BOT 🤖 v%s ===\n", security.GetVersion())
+
 	discord.Run()
 }
 
