@@ -7,12 +7,11 @@ import (
 	"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
 	"main/src/container"
-	"main/src/database"
 	"main/src/domain"
 	"main/src/services"
 )
 
-var logger *logrus.Logger
+var logger = services.GetLogger()
 var noCtx = context.Background()
 var discordClient *disgord.Client
 
@@ -141,17 +140,12 @@ func onDirectMessageToMe(s disgord.Session, data *disgord.MessageCreate) {
 
 	botUsage := "🤖 _I am ready to assist._   Type `/mj` to start."
 	_, err := msg.Reply(noCtx, s, botUsage)
-	checkErr(err, "mentioning me")
+	checkErr(err, "onDirectMessageToMe")
 }
 
 func Run() {
 
-	logger = container.Get("logger").(*logrus.Logger)
 	config := container.Get("config").(*services.Config)
-
-	// Synchronize the database schema with the Go models
-	err := database.Sync()
-	checkErr(err, "db.Sync")
 
 	// Start the Discord client
 	discordClient = disgord.New(disgord.Config{
