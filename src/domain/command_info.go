@@ -7,6 +7,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"main/src/security"
 	"xorm.io/xorm"
 )
@@ -27,13 +28,13 @@ func (c InfoCommand) Matches(command string) bool {
 	return command == "info"
 }
 
-func (c InfoCommand) Handle(input Input) (handled bool, err error) {
+func (c InfoCommand) Handle(input provider.Input) (handled bool, err error) {
 	return true, handleInfoCommand(c, input)
 }
 
 func handleInfoCommand(
 	command InfoCommand,
-	input Input,
+	input provider.Input,
 ) error {
 	guildVendorId, _ := input.GetGuildVendorId()
 	guild, err := db.GetOrCreateGuild(command.orm, guildVendorId)
@@ -63,7 +64,7 @@ func handleInfoCommand(
 		"\n" +
 		""
 
-	if d, isDiscord := (input).(DiscordInput); isDiscord {
+	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
 		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
 			Type: disgord.InteractionCallbackChannelMessageWithSource,
 			Data: &disgord.CreateInteractionResponseData{

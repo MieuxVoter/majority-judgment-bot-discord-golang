@@ -7,6 +7,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"main/src/security"
 	"main/src/services"
 	"regexp"
@@ -20,7 +21,7 @@ type JudgeButton struct {
 	orm *xorm.Engine
 }
 
-func (service JudgeButton) Handle(input Input) (handled bool, err error) {
+func (service JudgeButton) Handle(input provider.Input) (handled bool, err error) {
 
 	handled = false
 	err = nil
@@ -188,7 +189,7 @@ func (service JudgeButton) Handle(input Input) (handled bool, err error) {
 
 	} else {
 
-		if d, isDiscord := input.(DiscordInput); isDiscord {
+		if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 
 			summary := ""
 			for k := range judgments {

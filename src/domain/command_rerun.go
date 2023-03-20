@@ -7,6 +7,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"strconv"
 	"strings"
 	"xorm.io/xorm"
@@ -35,7 +36,7 @@ func (c RerunCommand) Matches(command string) bool {
 	return command == "rerun"
 }
 
-func (c RerunCommand) Handle(input Input) (handled bool, err error) {
+func (c RerunCommand) Handle(input provider.Input) (handled bool, err error) {
 	return true, handleRerunCommand(
 		c.orm,
 		input,
@@ -44,7 +45,7 @@ func (c RerunCommand) Handle(input Input) (handled bool, err error) {
 
 func handleRerunCommand(
 	orm *xorm.Engine,
-	input Input,
+	input provider.Input,
 ) error {
 
 	guildVendorId, _ := input.GetGuildVendorId()

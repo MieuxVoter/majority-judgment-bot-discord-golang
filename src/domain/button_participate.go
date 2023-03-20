@@ -5,6 +5,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"regexp"
 	"strconv"
 	"xorm.io/xorm"
@@ -14,7 +15,7 @@ type ParticipateButton struct {
 	orm *xorm.Engine
 }
 
-func (b ParticipateButton) Handle(input Input) (bool, error) {
+func (b ParticipateButton) Handle(input provider.Input) (bool, error) {
 	return handleButtonParticipate(&b, input)
 }
 
@@ -22,7 +23,7 @@ var pollParticipationRegex = regexp.MustCompile("^button_participate:(?P<pollId>
 
 func handleButtonParticipate(
 	button *ParticipateButton,
-	input Input,
+	input provider.Input,
 ) (handled bool, err error) {
 	handled = false
 	err = nil

@@ -5,6 +5,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"regexp"
 	"strconv"
 	"xorm.io/xorm"
@@ -16,7 +17,7 @@ type InspectButton struct {
 	orm *xorm.Engine
 }
 
-func (service InspectButton) Handle(input Input) (handled bool, err error) {
+func (service InspectButton) Handle(input provider.Input) (handled bool, err error) {
 
 	handled = false
 	err = nil

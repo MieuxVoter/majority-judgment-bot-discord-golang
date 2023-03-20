@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"main/src/provider"
 	"regexp"
 )
 
@@ -15,7 +16,7 @@ func findNamedMatches(regex *regexp.Regexp, str string) map[string]string {
 }
 
 type Button interface {
-	Handle(input Input) (bool, error)
+	Handle(input provider.Input) (bool, error)
 }
 
 //func HandleButtonDeliberate(

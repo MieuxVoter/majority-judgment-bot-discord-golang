@@ -9,6 +9,7 @@ import (
 	"main/src/container"
 	db "main/src/database"
 	"main/src/network"
+	"main/src/provider"
 	"main/src/security"
 	"regexp"
 	"strconv"
@@ -21,7 +22,7 @@ type DeliberateButton struct {
 	orm *xorm.Engine
 }
 
-func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
+func (service DeliberateButton) Handle(input provider.Input) (handled bool, err error) {
 
 	handled = false
 	err = nil
@@ -50,7 +51,7 @@ func (service DeliberateButton) Handle(input Input) (handled bool, err error) {
 
 func handleDeliberation(
 	orm *xorm.Engine,
-	input Input,
+	input provider.Input,
 	pollId uint64,
 	asPrivateMessage bool,
 ) (handled bool, err error) {
@@ -172,7 +173,7 @@ func handleDeliberation(
 		)
 	}
 
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 
 		judgeVendorId, _ := input.GetActorVendorId()
 		canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)

@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	db "main/src/database"
+	"main/src/provider"
 	"main/src/security"
 	"strings"
 )
 
 func RespondWithPollUi(
-	input Input,
+	input provider.Input,
 	poll *db.Poll,
 	proposals []*db.Proposal,
 	replaceMessage bool,
 ) error {
-	if d, ok := input.(DiscordInput); ok {
+	if d, ok := input.(provider.DiscordInput); ok {
 
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		if replaceMessage {
@@ -78,14 +79,14 @@ func RespondWithPollUi(
 }
 
 func RespondWithJudgmentUi(
-	input Input,
+	input provider.Input,
 	judgeSnowflake string,
 	proposal *db.Proposal,
 	poll *db.Poll,
 	previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		if replaceMessage {
@@ -137,7 +138,7 @@ func RespondWithJudgmentUi(
 }
 
 func RespondBallotsInspection(
-	input Input,
+	input provider.Input,
 	poll *db.Poll,
 	proposals []db.Proposal,
 	judgments []db.Judgment,
@@ -169,7 +170,7 @@ func RespondBallotsInspection(
 		}
 	}
 
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		csvFile := disgord.CreateMessageFile{
@@ -195,10 +196,10 @@ func RespondBallotsInspection(
 }
 
 func RespondServerError(
-	input Input,
+	input provider.Input,
 	message string,
 ) error {
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
 			Type: messageType,
@@ -221,10 +222,10 @@ func RespondServerError(
 }
 
 func RespondUserError(
-	input Input,
+	input provider.Input,
 	message string,
 ) error {
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
 			Type: messageType,

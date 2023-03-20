@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/andersfylling/disgord"
 	"main/src/container"
+	"main/src/provider"
 )
 
 // We'll probably want the builder pattern here instead of this static def.  Where is it?
@@ -21,7 +22,7 @@ var areCommandsDefined = false
 type Command interface {
 	Define() *disgord.ApplicationCommandOption
 	Matches(command string) bool
-	Handle(input Input) (handled bool, err error)
+	Handle(input provider.Input) (handled bool, err error)
 }
 
 // GetCommands lists all commands services available in the container.

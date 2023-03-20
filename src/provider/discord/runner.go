@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"main/src/container"
 	"main/src/domain"
+	"main/src/provider"
 	"main/src/services"
 )
 
@@ -48,7 +49,7 @@ func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
 	//fmt.Printf("%+q\n", h.ChannelID)
 
 	var err error
-	vendorInput := domain.DiscordInput{
+	vendorInput := provider.DiscordInput{
 		Context:     noCtx,
 		Session:     s,
 		Interaction: h,

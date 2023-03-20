@@ -6,6 +6,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/provider"
 	"main/src/security"
 	"xorm.io/xorm"
 )
@@ -103,7 +104,7 @@ func (c CreateCommand) Matches(command string) bool {
 	return command == "create"
 }
 
-func (c CreateCommand) Handle(input Input) (handled bool, err error) {
+func (c CreateCommand) Handle(input provider.Input) (handled bool, err error) {
 	if input.IsDirectMessage() {
 		message := "I can't create a poll just for you and I.  🤷  Try again in a channel with other people?"
 		return true, RespondUserError(input, message)
@@ -114,7 +115,7 @@ func (c CreateCommand) Handle(input Input) (handled bool, err error) {
 
 func handleCreateCommand(
 	orm *xorm.Engine,
-	input Input,
+	input provider.Input,
 ) error {
 
 	subject, err := input.GetOption("create", "subject", "Poll")
@@ -152,7 +153,7 @@ func handleCreateCommand(
 
 func doCreatePoll(
 	orm *xorm.Engine,
-	input Input,
+	input provider.Input,
 	subject string,
 	proposalsNames []string,
 	grading string,

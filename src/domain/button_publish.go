@@ -4,6 +4,7 @@ import (
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
+	"main/src/provider"
 	"regexp"
 	"strconv"
 	"xorm.io/xorm"
@@ -15,7 +16,7 @@ type PublishButton struct {
 	orm *xorm.Engine
 }
 
-func (service PublishButton) Handle(input Input) (handled bool, err error) {
+func (service PublishButton) Handle(input provider.Input) (handled bool, err error) {
 
 	handled = false
 	err = nil
