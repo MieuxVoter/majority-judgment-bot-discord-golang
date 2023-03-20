@@ -195,54 +195,10 @@ func RespondBallotsInspection(
 	return fmt.Errorf("unsupported vendor")
 }
 
-func RespondServerError(
-	input provider.Input,
-	message string,
-) error {
-	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-		messageType := disgord.InteractionCallbackChannelMessageWithSource
-		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-			Type: messageType,
-			Data: &disgord.CreateInteractionResponseData{
-				Flags: disgord.MessageFlagEphemeral,
-				Content: fmt.Sprintf(
-					"💥 **BOOM !**\n"+
-						"\n"+
-						"%s\n"+
-						"",
-					message,
-				),
-			},
-		})
-
-		return err
-	}
-
-	return fmt.Errorf("unsupported vendor")
+func RespondServerError(input provider.Input, message string) error {
+	return provider.GetResponder(input).RespondServerError(input, message)
 }
 
-func RespondUserError(
-	input provider.Input,
-	message string,
-) error {
-	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-		messageType := disgord.InteractionCallbackChannelMessageWithSource
-		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-			Type: messageType,
-			Data: &disgord.CreateInteractionResponseData{
-				Flags: disgord.MessageFlagEphemeral,
-				Content: fmt.Sprintf(
-					"🍄 **Ooops**\n"+
-						"\n"+
-						"%s\n"+
-						"",
-					message,
-				),
-			},
-		})
-
-		return err
-	}
-
-	return fmt.Errorf("unsupported vendor")
+func RespondUserError(input provider.Input, message string) error {
+	return provider.GetResponder(input).RespondUserError(input, message)
 }

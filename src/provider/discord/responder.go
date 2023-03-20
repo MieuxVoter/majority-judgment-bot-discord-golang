@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
@@ -8,7 +9,7 @@ import (
 	"main/src/provider"
 )
 
-// Responder implements provider.ResponderInterface
+// Responder implements provider.ResponderInterface for Discord
 type Responder struct{}
 
 func (r Responder) Matches(input provider.Input) bool {
@@ -32,6 +33,58 @@ func (r Responder) RespondWithMessage(input provider.Input, message string, ephe
 	}
 
 	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
+}
+
+func (r Responder) RespondServerError(
+	input provider.Input,
+	message string,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Content: fmt.Sprintf(
+					"💥 **BOOM !**\n"+
+						"\n"+
+						"%s\n"+
+						"",
+					message,
+				),
+			},
+		})
+
+		return err
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondServerError")
+}
+
+func (r Responder) RespondUserError(
+	input provider.Input,
+	message string,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Content: fmt.Sprintf(
+					"🍄 **Ooops**\n"+
+						"\n"+
+						"%s\n"+
+						"",
+					message,
+				),
+			},
+		})
+
+		return err
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondUserError")
 }
 
 func init() {

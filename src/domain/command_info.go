@@ -12,6 +12,7 @@ import (
 	"xorm.io/xorm"
 )
 
+// InfoCommand displays miscellaneous information about the bot
 type InfoCommand struct {
 	orm *xorm.Engine
 }
@@ -56,27 +57,15 @@ func handleInfoCommand(
 	message := "" +
 		"🤖🗩 _Here is some information about myself._\n" +
 		"\n" +
-		"Total amount of polls on this server" + fmt.Sprintf(" : `%d`\n", guildPollsAmount) +
-		"Total amount of polls across all servers" + fmt.Sprintf(" : `%d`\n", allPollsAmount) +
-		"Remaining polls' quota on this server" + fmt.Sprintf(" : `%d`\n", guild.Quota) +
+		"Total amount of polls by this community" + fmt.Sprintf(" : `%d`\n", guildPollsAmount) +
+		"Total amount of polls across all communities" + fmt.Sprintf(" : `%d`\n", allPollsAmount) +
+		"Remaining polls' quota of this community" + fmt.Sprintf(" : `%d`\n", guild.Quota) +
 		"Version" + fmt.Sprintf(" : `%s`\n", security.GetVersion()) +
 		"Guild Identifier" + fmt.Sprintf(" : `%s`\n", guild.Snowflake) +
 		"\n" +
 		""
 
-	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
-		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-			Type: disgord.InteractionCallbackChannelMessageWithSource,
-			Data: &disgord.CreateInteractionResponseData{
-				Flags:   disgord.MessageFlagEphemeral,
-				Content: message,
-			},
-		})
-		return err
-	}
-
-	return fmt.Errorf("unknown vendor")
-
+	return provider.GetResponder(input).RespondWithMessage(input, message, true)
 }
 
 func init() {
