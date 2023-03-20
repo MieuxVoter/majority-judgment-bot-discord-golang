@@ -11,20 +11,30 @@ import (
 	"xorm.io/xorm"
 )
 
+const CreateCommandSlug = "create"
+
 type CreateCommand struct {
 	orm *xorm.Engine
 }
 
+func (c CreateCommand) GetName() string {
+	return CreateCommandSlug
+}
+
+func (c CreateCommand) GetDescription() string {
+	return "Create a new poll"
+}
+
 func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
-		Name:        "create",
-		Description: "Create a new poll",
+		Name:        c.GetName(),
+		Description: c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 		Options: []*disgord.ApplicationCommandOption{
 			{
 				Type:        disgord.OptionTypeString,
 				Name:        "subject",
-				Description: "The poll's subject, such as \"When should we meet?\"",
+				Description: "The poll's subject, such as \"Meeting date\"",
 			},
 			// How to get variadism here, for proposals?
 			{
@@ -74,7 +84,7 @@ func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 						Value: "🤮😐😌😀🤩",
 					},
 					// Discord only supports at most 5 buttons per action row,
-					// so to add more of those we need to tweak our judgment UI.
+					// so to add more than 5 grades we need to tweak our judgment UI.
 				},
 			},
 			{
@@ -101,7 +111,7 @@ func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 }
 
 func (c CreateCommand) Matches(command string) bool {
-	return command == "create"
+	return command == c.GetName()
 }
 
 func (c CreateCommand) Handle(input provider.Input) (handled bool, err error) {
@@ -225,7 +235,7 @@ func doCreatePoll(
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "command.create",
+		Name: "command." + CreateCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &CreateCommand{
 				orm: ctn.Get("database.engine").(*xorm.Engine),
@@ -234,6 +244,6 @@ func init() {
 		},
 	})
 	if err != nil {
-		log.Fatalln("command.create failed to build", err)
+		log.Fatalf("command.%s failed to build : %s\n", CreateCommandSlug, err)
 	}
 }

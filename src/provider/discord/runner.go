@@ -131,7 +131,6 @@ func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
 	} else {
 		logger.Warningln("Unhandled interaction type", h, h.Data)
 	}
-
 }
 
 // onDirectMessageToMe reacts when the bot is @ in a channel message
@@ -147,8 +146,8 @@ func onDirectMessageToMe(s disgord.Session, data *disgord.MessageCreate) {
 
 func Run() {
 
-	logger = services.GetLogger()
 	config = services.GetConfig()
+	logger = services.GetLogger()
 
 	// Start the Discord client
 	discordClient = disgord.New(disgord.Config{

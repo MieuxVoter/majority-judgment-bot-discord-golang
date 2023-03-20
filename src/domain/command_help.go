@@ -8,12 +8,22 @@ import (
 	"main/src/provider"
 )
 
+const HelpCommandSlug = "help"
+
 type HelpCommand struct{}
+
+func (c HelpCommand) GetName() string {
+	return "help"
+}
+
+func (c HelpCommand) GetDescription() string {
+	return "Send an SOS: ... --- ..."
+}
 
 func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
-		Name:        "help",
-		Description: "Send an SOS: ... --- ...",
+		Name:        c.GetName(),
+		Description: c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 	}
 }
@@ -57,13 +67,14 @@ func handleHelpCommand(input provider.Input) error {
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "command.help",
+		Name: "command." + HelpCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &HelpCommand{}
 			return cmd, nil
 		},
 	})
+
 	if err != nil {
-		log.Fatalln("command.help failed to build", err)
+		log.Fatalf("command.%s failed to build : %s\n", HelpCommandSlug, err)
 	}
 }

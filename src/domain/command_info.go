@@ -12,21 +12,31 @@ import (
 	"xorm.io/xorm"
 )
 
+const InfoCommandSlug = "info"
+
 // InfoCommand displays miscellaneous information about the bot
 type InfoCommand struct {
 	orm *xorm.Engine
 }
 
+func (c InfoCommand) GetName() string {
+	return InfoCommandSlug
+}
+
+func (c InfoCommand) GetDescription() string {
+	return "Display miscellaneous information about this bot on this server"
+}
+
 func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
-		Name:        "info",
-		Description: "Display miscellaneous information about this bot on this server",
+		Name:        c.GetName(),
+		Description: c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 	}
 }
 
 func (c InfoCommand) Matches(command string) bool {
-	return command == "info"
+	return command == c.GetName()
 }
 
 func (c InfoCommand) Handle(input provider.Input) (handled bool, err error) {
@@ -46,12 +56,12 @@ func handleInfoCommand(
 	allPollsAmount, errCountAll := db.CountPolls(command.orm)
 	if errCountAll != nil {
 		message := "Could not count the polls.  _Suddenly, Notre-Dame is on fire._ 🔥"
-		return RespondUserError(input, message)
+		return RespondServerError(input, message)
 	}
 	guildPollsAmount, errCountGuildPolls := db.CountGuildPolls(command.orm, guild)
 	if errCountGuildPolls != nil {
 		message := "Could not count this guild's polls.  _Suddenly, Australia is on fire._ 🔥"
-		return RespondUserError(input, message)
+		return RespondServerError(input, message)
 	}
 
 	message := "" +
@@ -70,7 +80,7 @@ func handleInfoCommand(
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "command.info",
+		Name: "command." + InfoCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &InfoCommand{
 				orm: ctn.Get("database.engine").(*xorm.Engine),
@@ -79,6 +89,6 @@ func init() {
 		},
 	})
 	if err != nil {
-		log.Fatalln("command.info failed to build", err)
+		log.Fatalf("command.%s failed to build : %s\n", InfoCommandSlug, err)
 	}
 }

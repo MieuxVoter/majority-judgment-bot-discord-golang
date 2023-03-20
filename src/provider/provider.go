@@ -13,6 +13,7 @@ type ResponderInterface interface {
 	RespondServerError(input Input, message string) error
 }
 
+// GetResponder returns the responder adapter that matches the input provider
 func GetResponder(input Input) ResponderInterface {
 	responders := container.GetCollection("responder")
 	for _, genericResponder := range responders {

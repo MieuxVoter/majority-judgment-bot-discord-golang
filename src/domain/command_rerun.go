@@ -13,14 +13,24 @@ import (
 	"xorm.io/xorm"
 )
 
+const RerunCommandSlug = "rerun"
+
 type RerunCommand struct {
 	orm *xorm.Engine
 }
 
+func (c RerunCommand) GetName() string {
+	return RerunCommandSlug
+}
+
+func (c RerunCommand) GetDescription() string {
+	return "Rerun a fresh copy of a past poll"
+}
+
 func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
-		Name:        "rerun",
-		Description: "Rerun a copy of a past poll",
+		Name:        c.GetName(),
+		Description: c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 		Options: []*disgord.ApplicationCommandOption{
 			{
@@ -33,14 +43,11 @@ func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
 }
 
 func (c RerunCommand) Matches(command string) bool {
-	return command == "rerun"
+	return command == c.GetName()
 }
 
 func (c RerunCommand) Handle(input provider.Input) (handled bool, err error) {
-	return true, handleRerunCommand(
-		c.orm,
-		input,
-	)
+	return true, handleRerunCommand(c.orm, input)
 }
 
 func handleRerunCommand(
@@ -71,7 +78,7 @@ func handleRerunCommand(
 	pollId, errConv := strconv.Atoi(pollIdString)
 	if errConv != nil {
 		message := "🐉 The specified poll identifier is not a number.  " +
-			"Please use the _numerical_ identifier of the poll you want to rerun, " +
+			"Please use the _numerical_ identifier of the poll you want to _rerun_, " +
 			"like so `/mj rerun poll:42`."
 		return RespondUserError(input, message)
 	}
@@ -109,7 +116,7 @@ func handleRerunCommand(
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "command.rerun",
+		Name: "command." + RerunCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &RerunCommand{
 				orm: ctn.Get("database.engine").(*xorm.Engine),
@@ -118,6 +125,6 @@ func init() {
 		},
 	})
 	if err != nil {
-		log.Fatalln("command.rerun failed to build", err)
+		log.Fatalf("command.%s failed to build : %s\n", ExplainCommandSlug, err)
 	}
 }
