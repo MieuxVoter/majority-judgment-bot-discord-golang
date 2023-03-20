@@ -15,19 +15,25 @@ import (
 	"os"
 )
 
+// Config is the service handling bot configuration retrieval.
 type Config struct {
 	logger *logrus.Logger
 }
 
 // Get a configuration value
 func (c *Config) Get(key string) string {
-	// We could also load from a .ini, if we want?
 	value, found := os.LookupEnv(key)
 	if !found {
 		fmt.Printf("Missing configuration value for `%s'.", key)
 	}
+	// We could also load from a .ini, here, if we want
 
 	return value
+}
+
+// GetConfig returns the configuration service
+func GetConfig() *Config {
+	return container.Get("config").(*Config)
 }
 
 // loadDotEnv loads Environment variables from files, for convenience

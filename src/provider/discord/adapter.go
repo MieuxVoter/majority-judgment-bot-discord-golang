@@ -11,8 +11,9 @@ import (
 	"main/src/services"
 )
 
-var logger = services.GetLogger()
 var noCtx = context.Background()
+var config *services.Config
+var logger *logrus.Logger
 var discordClient *disgord.Client
 
 // checkErr logs errors if not nil, along with a user-specified trace
@@ -25,7 +26,7 @@ func checkErr(err error, trace string) {
 }
 
 func onBotReady() {
-	logger.Info("Bot is ready!")
+	logger.Info("Bot is readying…")
 	commands := domain.GetCommands()
 	for _, command := range commands {
 		logger.Info("Registering command /", command.Name)
@@ -35,6 +36,7 @@ func onBotReady() {
 			logger.Fatal(err)
 		}
 	}
+	logger.Info("Bot is ready!")
 }
 
 func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
@@ -44,6 +46,7 @@ func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
 	//fmt.Printf("Options %+q\n", (*h.Data).Options)
 	//fmt.Printf("%+q\n", h.GuildID)
 	//fmt.Printf("%+q\n", h.ChannelID)
+
 	var err error
 	vendorInput := domain.DiscordInput{
 		Context:     noCtx,
@@ -55,9 +58,7 @@ func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
 
 		if len(h.Data.Options) == 0 { // no subcommand was provided
 			_, err = container.Get("command.help").(*domain.HelpCommand).Handle(vendorInput)
-			if err != nil {
-				checkErr(err, "HandleHelpCommand:NoSubcommand")
-			}
+			checkErr(err, "HandleHelpCommand:NoSubcommand")
 			return
 		}
 
@@ -145,7 +146,8 @@ func onDirectMessageToMe(s disgord.Session, data *disgord.MessageCreate) {
 
 func Run() {
 
-	config := container.Get("config").(*services.Config)
+	logger = services.GetLogger()
+	config = services.GetConfig()
 
 	// Start the Discord client
 	discordClient = disgord.New(disgord.Config{
@@ -154,7 +156,7 @@ func Run() {
 		Logger:      logger,
 		Intents:     disgord.IntentDirectMessages,
 
-		// ! Non-functional due to a current bug, will be fixed upstream someday.
+		// ! Non-functional due to a current bug in disgord, will be fixed upstream someday.
 		Presence: &disgord.UpdateStatusPayload{
 			Game: &disgord.Activity{
 				Name: "Ranking proposals (`/mj`)",

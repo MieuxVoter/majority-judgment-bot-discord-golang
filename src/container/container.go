@@ -2,7 +2,12 @@ package container
 
 // A simple Dependency Injection Container configuration.
 // Make sure this module keeps no dependencies on other local modules.
-// This is required to keep our init() architecture.
+//
+// Dev Notes - Postmortem
+// ----------------------
+// DI is useful to collect collections of tagged services,
+// but besides that, for now, it's not as useful as it is in other languages
+// because of the way Go handles packages, which can serve as a makeshift DI.
 
 import (
 	"github.com/sarulabs/di"

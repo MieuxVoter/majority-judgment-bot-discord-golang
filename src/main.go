@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"main/src/container"
 	"main/src/database"
 	"main/src/provider/discord"
@@ -12,9 +13,12 @@ import (
 	"main/src/services"
 )
 
-var logger = services.GetLogger()
+var logger *logrus.Logger
 
 func main() {
+	// Collect services we're going to use
+	logger = services.GetLogger()
+
 	// Greet the dev
 	fmt.Printf("=== ⚖  MAJORITY JUDGMENT BOT 🤖 v%s ===\n", security.GetVersion())
 

@@ -8,13 +8,13 @@ import (
 	"os"
 )
 
-// GetLogger returns the currently booted logger
+// GetLogger returns the currently booted logger service
 func GetLogger() *logrus.Logger {
 	return container.Get("logger").(*logrus.Logger)
 }
 
 // bootLogger creates a logger for the bot.
-// It should be ran AFTER we load .env and .env.local
+// It should always be ran AFTER we load .env and .env.local, ie. load the config service.
 func bootLogger(config *Config) *logrus.Logger {
 	appEnv := config.Get("APP_ENV")
 	logLevel := logrus.DebugLevel
