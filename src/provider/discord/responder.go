@@ -71,6 +71,79 @@ func (r Responder) RespondWithMessageAndImage(
 	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
 }
 
+func (r Responder) RespondPollView(
+	input provider.Input,
+	poll *db.Poll,
+	proposals []*db.Proposal,
+	replaceMessage bool,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+
+		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject)
+		title = security.TruncateString(title, 512)
+
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		if replaceMessage {
+			messageType = disgord.InteractionCallbackUpdateMessage
+		}
+
+		pollEmbedHero := &disgord.Embed{
+			Title: title,
+		}
+		if len(proposals) > 0 {
+			description := ""
+			for i, proposal := range proposals {
+				if i > 0 {
+					description += ", "
+				}
+				description += security.TruncateString(proposal.Name, 256)
+			}
+			pollEmbedHero.Description = description
+		} else {
+			// nothing is cool for now
+		}
+
+		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Embeds: []*disgord.Embed{
+					pollEmbedHero,
+				},
+				Components: []*disgord.MessageComponent{
+					{
+						Type:     disgord.MessageComponentActionRow,
+						CustomID: "poll_action_row",
+						Components: []*disgord.MessageComponent{
+							{
+								Type:     disgord.MessageComponentButton,
+								Style:    disgord.Success,
+								CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
+								Label:    "Participate",
+								Emoji: &disgord.Emoji{
+									Name: "📨",
+								},
+							},
+							{
+								Type:     disgord.MessageComponentButton,
+								Style:    disgord.Secondary,
+								CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
+								Label:    "View Results",
+								Emoji: &disgord.Emoji{
+									Name: "🔎",
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+
+		return err
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondPollView")
+}
+
 func (r Responder) RespondWithJudgmentUi(
 	input provider.Input,
 	proposal *db.Proposal,

@@ -9,73 +9,18 @@ import (
 	"strings"
 )
 
-func RespondWithPollUi(
+func RespondPollView(
 	input provider.Input,
 	poll *db.Poll,
 	proposals []*db.Proposal,
 	replaceMessage bool,
 ) error {
-	if d, ok := input.(provider.DiscordInput); ok {
-
-		messageType := disgord.InteractionCallbackChannelMessageWithSource
-		if replaceMessage {
-			messageType = disgord.InteractionCallbackUpdateMessage
-		}
-
-		pollEmbedHero := &disgord.Embed{
-			Title: fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject),
-		}
-		if len(proposals) > 0 {
-			description := ""
-			for i, proposal := range proposals {
-				if i > 0 {
-					description += ", "
-				}
-				description += proposal.Name
-			}
-			pollEmbedHero.Description = description
-		} else {
-			// nothing is cool for now
-		}
-
-		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-			Type: messageType,
-			Data: &disgord.CreateInteractionResponseData{
-				Embeds: []*disgord.Embed{
-					pollEmbedHero,
-				},
-				Components: []*disgord.MessageComponent{
-					{
-						Type:     disgord.MessageComponentActionRow,
-						CustomID: "poll_action_row",
-						Components: []*disgord.MessageComponent{
-							{
-								Type:     disgord.MessageComponentButton,
-								Style:    disgord.Success,
-								CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
-								Label:    "Participate",
-								Emoji: &disgord.Emoji{
-									Name: "📨",
-								},
-							},
-							{
-								Type:     disgord.MessageComponentButton,
-								Style:    disgord.Secondary,
-								CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
-								Label:    "View Results",
-								Emoji: &disgord.Emoji{
-									Name: "🔎",
-								},
-							},
-						},
-					},
-				},
-			},
-		})
-
-		return err
-	}
-	return fmt.Errorf("not supported atm")
+	return provider.GetResponder(input).RespondPollView(
+		input,
+		poll,
+		proposals,
+		replaceMessage,
+	)
 }
 
 func RespondWithJudgmentUi(

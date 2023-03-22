@@ -20,6 +20,12 @@ type ResponderInterface interface {
 		previousJudgment *db.Judgment,
 		replaceMessage bool,
 	) error
+	RespondPollView(
+		input Input,
+		poll *db.Poll,
+		proposals []*db.Proposal,
+		replaceMessage bool,
+	) error
 	RespondDeliberation(
 		input Input,
 		poll *db.Poll,

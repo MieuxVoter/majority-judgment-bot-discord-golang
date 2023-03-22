@@ -229,7 +229,7 @@ func doCreatePoll(
 		return err
 	}
 
-	err = RespondWithPollUi(input, poll, proposals, false)
+	err = RespondPollView(input, poll, proposals, false)
 	if err != nil {
 		return err
 	}

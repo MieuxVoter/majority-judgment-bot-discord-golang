@@ -72,12 +72,13 @@ func handleFeedbackCommand(orm *xorm.Engine, input provider.Input) error {
 		message := "I cannot figure out who you are.  Feedback was canceled."
 		return RespondUserError(input, message)
 	}
+	actorName, _ := input.GetActorName()
 
 	feedback := &db.Feedback{
-		GuildId: guild.Id,
-		Content: messageSent,
-		//AuthorName:     "", // I'd like the name as well here ; RTFM of disgord
+		GuildId:        guild.Id,
+		Content:        messageSent,
 		AuthorVendorId: actorVendorId,
+		AuthorName:     actorName,
 	}
 	_, err = orm.InsertOne(feedback)
 	if err != nil {

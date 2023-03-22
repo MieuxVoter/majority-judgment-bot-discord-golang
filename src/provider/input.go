@@ -12,6 +12,7 @@ import (
 type Input interface {
 	GetOption(command string, name string, defaultValue string) (string, error)
 	GetActorVendorId() (string, error)
+	GetActorName() (string, error)
 	GetGuildVendorId() (string, error)
 	GetButtonName() (string, error)
 	IsDirectMessage() bool
@@ -59,6 +60,10 @@ func (d DiscordInput) GetOption(command string, name string, defaultValue string
 
 func (d DiscordInput) GetActorVendorId() (string, error) {
 	return d.Interaction.Member.UserID.String(), nil
+}
+
+func (d DiscordInput) GetActorName() (string, error) {
+	return d.Interaction.Member.Nick, nil
 }
 
 func (d DiscordInput) GetGuildVendorId() (string, error) {
