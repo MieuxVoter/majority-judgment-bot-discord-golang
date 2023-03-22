@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
+	"github.com/sirupsen/logrus"
 	"log"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/provider"
 	"main/src/security"
+	"main/src/services"
 	"math/rand"
 	"strings"
 	"xorm.io/xorm"
@@ -18,7 +20,9 @@ const InfoCommandSlug = "info"
 
 // InfoCommand displays miscellaneous information about the bot
 type InfoCommand struct {
-	orm *xorm.Engine
+	orm       *xorm.Engine
+	liberapay *services.Liberapay
+	logger    *logrus.Logger
 }
 
 func (c InfoCommand) GetEmote() string {
@@ -81,6 +85,11 @@ func handleInfoCommand(
 	})
 	thanks := strings.Join(thanksSlice, ", ")
 
+	survivalChance, err := command.liberapay.GetSurvivalAsString()
+	if err != nil {
+		command.logger.Errorln("LIBERAPAY FAILED", err)
+	}
+
 	message := "" +
 		"🤖🗩 _Here is some information about myself._\n" +
 		"\n" +
@@ -92,6 +101,8 @@ func handleInfoCommand(
 		"\n" +
 		"Friends" + fmt.Sprintf(" : `%s`\n", thanks) +
 		"\n" +
+		"Survival Chance" + fmt.Sprintf(" : %s\n", survivalChance) +
+		"\n" +
 		""
 
 	return provider.GetResponder(input).RespondWithMessage(input, message, true)
@@ -102,7 +113,9 @@ func init() {
 		Name: "command." + InfoCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &InfoCommand{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:       ctn.Get("database.engine").(*xorm.Engine),
+				liberapay: ctn.Get("liberapay").(*services.Liberapay),
+				logger:    ctn.Get("logger").(*logrus.Logger),
 			}
 			return cmd, nil
 		},

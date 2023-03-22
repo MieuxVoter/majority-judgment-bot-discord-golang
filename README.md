@@ -21,21 +21,19 @@
 - [x] Start a poll with `/mj create …`
 - [x] Vote on a poll using buttons
 - [x] Look at a poll's result using a button
-- [x] Use only `/` commands
-- [x] Do not read messages
+- [x] Use only _slash_ (`/`) commands
+- [x] Be discreet : do not read messages
 - [x] Support multiple guilds
-- [x] Quotas per guild
-- [x] Daily Quotas per guild (Discord handles it)
-- [x] Rerun past poll with `/mj rerun`
-- [x] Display metrics with `/mj info`
+- [x] Enforce quotas per guild
+- [x] Rerun a past poll with `/mj rerun`
+- [x] Inform about my status and metrics with `/mj info`
 - [x] Publish a poll's result using a button
-- [x] Docker config
-- [x] Docker Compose config
-- [x] Choose a grading (ex: 👍👎) per poll
+- [x] Docker Compose config (optional)
+- [x] Choose a `grading` (ex: 👍👎) per poll
 - [x] Add a `secrecy` scope to allow public ballots
 - [x] Explain how Majority Judgment works `/mj explain`
-- [x] Send feedback `/mj feedback`
-- [ ] Pay for itself `/mj love`
+- [x] Record feedback from users with `/mj feedback`
+- [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/)
 
 
 ![](./doc/screen_01.png)
