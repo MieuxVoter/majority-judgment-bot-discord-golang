@@ -10,6 +10,7 @@ import (
 	db "main/src/database"
 	"main/src/network"
 	"main/src/provider"
+	"main/src/provider/discord"
 	"main/src/security"
 	"regexp"
 	"strconv"
@@ -126,6 +127,7 @@ func handleDeliberation(
 		pollTally,
 		pollResult,
 		"png",
+		discord.MaxUrlLength,
 	)
 	if errImg != nil {
 		imageUrl = ""
@@ -136,6 +138,7 @@ func handleDeliberation(
 		pollTally,
 		pollResult,
 		"svg",
+		discord.MaxUrlLength,
 	)
 	if errImgSvg != nil {
 		imageUrl = ""

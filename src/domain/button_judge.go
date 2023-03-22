@@ -185,7 +185,7 @@ func (service JudgeButton) Handle(input provider.Input) (handled bool, err error
 		}
 
 		// Show the UI to judge the next proposal
-		err = RespondWithJudgmentUi(input, judgeVendorId, nextProposal, poll, nextJudgment, true)
+		err = RespondWithJudgmentUi(input, nextProposal, poll, nextJudgment, true)
 
 	} else {
 

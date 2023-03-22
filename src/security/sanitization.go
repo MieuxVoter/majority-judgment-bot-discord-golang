@@ -31,3 +31,12 @@ func RemoveMarkdown(raw string) string {
 func EscapeCsvValue(value string) string {
 	return strings.ReplaceAll(value, "\"", "")
 }
+
+func TruncateString(value string, maxLength int) string {
+	actualLength := len(value)
+	if actualLength > maxLength {
+		actualLength = maxLength
+	}
+
+	return value[:actualLength]
+}

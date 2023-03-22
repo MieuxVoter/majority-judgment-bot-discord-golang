@@ -80,61 +80,18 @@ func RespondWithPollUi(
 
 func RespondWithJudgmentUi(
 	input provider.Input,
-	judgeSnowflake string,
 	proposal *db.Proposal,
 	poll *db.Poll,
 	previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
-	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-
-		messageType := disgord.InteractionCallbackChannelMessageWithSource
-		if replaceMessage {
-			messageType = disgord.InteractionCallbackUpdateMessage
-		}
-		interactionResponse := &disgord.CreateInteractionResponse{
-			Type: messageType,
-			Data: &disgord.CreateInteractionResponseData{
-				Flags: disgord.MessageFlagEphemeral,
-				Embeds: []*disgord.Embed{
-					{
-						Title:       fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name),
-						Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
-					},
-				},
-				Components: []*disgord.MessageComponent{
-					{
-						Type:       disgord.MessageComponentActionRow,
-						CustomID:   "poll_action_row",
-						Components: []*disgord.MessageComponent{}, // filled below
-					},
-				},
-			},
-		}
-
-		for gradeLevel, grade := range poll.GetGradingSlice() {
-
-			previouslySelectedMarker := ""
-			if previousJudgment != nil {
-				if uint8(gradeLevel) == previousJudgment.Grade {
-					previouslySelectedMarker = " ✅"
-				}
-			}
-			interactionResponse.Data.Components[0].Components = append(
-				interactionResponse.Data.Components[0].Components,
-				&disgord.MessageComponent{
-					Type:     disgord.MessageComponentButton,
-					Style:    disgord.Primary,
-					CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
-					Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
-				},
-			)
-		}
-
-		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
-	}
-
-	return fmt.Errorf("unsupported vendor")
+	return provider.GetResponder(input).RespondWithJudgmentUi(
+		input,
+		proposal,
+		poll,
+		previousJudgment,
+		replaceMessage,
+	)
 }
 
 func RespondBallotsInspection(

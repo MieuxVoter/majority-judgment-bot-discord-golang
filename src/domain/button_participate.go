@@ -95,8 +95,7 @@ func handleButtonParticipate(
 	}
 
 	// Show the UI to judge that proposal
-	err = RespondWithJudgmentUi(input, judgeSnowflake, &proposal, &poll, pastJudgment, false)
-
+	err = RespondWithJudgmentUi(input, &proposal, &poll, pastJudgment, false)
 	return
 }
 

@@ -6,7 +6,9 @@ import (
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
+	db "main/src/database"
 	"main/src/provider"
+	"main/src/security"
 )
 
 // Responder implements provider.ResponderInterface for Discord
@@ -65,6 +67,66 @@ func (r Responder) RespondWithMessageAndImage(
 	}
 
 	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
+}
+
+func (r Responder) RespondWithJudgmentUi(
+	input provider.Input,
+	proposal *db.Proposal,
+	poll *db.Poll,
+	previousJudgment *db.Judgment,
+	replaceMessage bool,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+
+		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name)
+		title = security.TruncateString(title, 256)
+		messageType := disgord.InteractionCallbackChannelMessageWithSource
+		if replaceMessage {
+			messageType = disgord.InteractionCallbackUpdateMessage
+		}
+		interactionResponse := &disgord.CreateInteractionResponse{
+			Type: messageType,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral,
+				Embeds: []*disgord.Embed{
+					{
+						Title:       title,
+						Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
+					},
+				},
+				Components: []*disgord.MessageComponent{
+					{
+						Type:       disgord.MessageComponentActionRow,
+						CustomID:   "poll_action_row",
+						Components: []*disgord.MessageComponent{}, // filled below
+					},
+				},
+			},
+		}
+
+		for gradeLevel, grade := range poll.GetGradingSlice() {
+
+			previouslySelectedMarker := ""
+			if previousJudgment != nil {
+				if uint8(gradeLevel) == previousJudgment.Grade {
+					previouslySelectedMarker = " ✅"
+				}
+			}
+			interactionResponse.Data.Components[0].Components = append(
+				interactionResponse.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:     disgord.MessageComponentButton,
+					Style:    disgord.Primary,
+					CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
+					Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
+				},
+			)
+		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
 }
 
 func (r Responder) RespondServerError(

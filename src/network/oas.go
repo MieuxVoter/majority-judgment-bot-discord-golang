@@ -27,13 +27,14 @@ func (oas *Oas) GetMeritProfileUrl(
 	pollTally *judgment.PollTally,
 	pollResult *judgment.PollResult,
 	extension string,
+	maxLength int,
 ) (string, error) {
 
 	fileNameNoExt := ""
+	oasDomain := oas.config.Get("OAS_DOMAIN")
 	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
-	for proposalResultIndex, proposalResult := range pollResult.ProposalsSorted {
-		proposal := proposals[proposalResult.Index]
 
+	for proposalResultIndex, proposalResult := range pollResult.ProposalsSorted {
 		if proposalResultIndex > 0 {
 			fileNameNoExt += "_"
 		}
@@ -45,7 +46,19 @@ func (oas *Oas) GetMeritProfileUrl(
 			}
 			fileNameNoExt += fmt.Sprintf("%d", gradeAmount)
 		}
+	}
 
+	imageUrlPath := fmt.Sprintf(
+		"%s/%s.%s",
+		oasDomain, fileNameNoExt, extension,
+	)
+
+	amountOfCharactersLeft := maxLength - len(imageUrlPath) - len(query)
+	// Conservative approximation through euclidean division:
+	amountOfCharactersLeftPerProposal := amountOfCharactersLeft / len(proposals)
+
+	for _, proposalResult := range pollResult.ProposalsSorted {
+		proposal := proposals[proposalResult.Index]
 		medal := ""
 		if proposalResult.Rank == 1 {
 			medal = "🥇 "
@@ -54,14 +67,21 @@ func (oas *Oas) GetMeritProfileUrl(
 		} else if proposalResult.Rank == 3 {
 			medal = "🥉 "
 		}
-		query += fmt.Sprintf("&proposals[]=%s", url.QueryEscape(medal+proposal.Name))
+		queryKey := "proposals[]"
+		queryProposalName := url.QueryEscape(medal + proposal.Name)
+		maxProposalNameLength := len(queryProposalName)
+		expectedProposalNameLength := len(queryProposalName) + len(queryKey) + 2
+		if expectedProposalNameLength > amountOfCharactersLeftPerProposal {
+			maxProposalNameLength = amountOfCharactersLeftPerProposal - len(queryKey) - 2
+		}
+		queryProposalName = queryProposalName[:maxProposalNameLength]
+		// Since we kind of need to truncate AFTER encoding, we want to remove truncated encoded chars
+		//trailingEncodedAndTruncated := regexp.MustCompile("[%][a-zA-Z0-9]{0,8}$")
+		//queryProposalName = trailingEncodedAndTruncated.ReplaceAllString(queryProposalName, "")
+		query += fmt.Sprintf("&%s=%s", queryKey, queryProposalName)
 	}
 
-	oasDomain := oas.config.Get("OAS_DOMAIN")
-	imageUrl := fmt.Sprintf(
-		"%s/%s.%s%s",
-		oasDomain, fileNameNoExt, extension, query,
-	)
+	imageUrl := fmt.Sprintf("%s%s", imageUrlPath, query)
 
 	return imageUrl, nil
 }
