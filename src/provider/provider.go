@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/services"
@@ -18,6 +19,17 @@ type ResponderInterface interface {
 		poll *db.Poll,
 		previousJudgment *db.Judgment,
 		replaceMessage bool,
+	) error
+	RespondDeliberation(
+		input Input,
+		poll *db.Poll,
+		proposals []db.Proposal,
+		pollTally *judgment.PollTally,
+		pollResult *judgment.PollResult,
+		title string,
+		message string,
+		asPrivateMessage bool,
+		canInspect bool,
 	) error
 	RespondUserError(input Input, message string) error
 	RespondServerError(input Input, message string) error

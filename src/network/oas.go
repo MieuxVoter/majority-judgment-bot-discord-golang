@@ -10,6 +10,7 @@ import (
 	"main/src/database"
 	"main/src/services"
 	"net/url"
+	"regexp"
 )
 
 // Oas service helps communicating with the MJ OAS API.
@@ -76,8 +77,8 @@ func (oas *Oas) GetMeritProfileUrl(
 		}
 		queryProposalName = queryProposalName[:maxProposalNameLength]
 		// Since we kind of need to truncate AFTER encoding, we want to remove truncated encoded chars
-		//trailingEncodedAndTruncated := regexp.MustCompile("[%][a-zA-Z0-9]{0,8}$")
-		//queryProposalName = trailingEncodedAndTruncated.ReplaceAllString(queryProposalName, "")
+		trailingEncodedAndTruncated := regexp.MustCompile("[%][a-zA-Z0-9]{0,2}$")
+		queryProposalName = trailingEncodedAndTruncated.ReplaceAllString(queryProposalName, "")
 		query += fmt.Sprintf("&%s=%s", queryKey, queryProposalName)
 	}
 

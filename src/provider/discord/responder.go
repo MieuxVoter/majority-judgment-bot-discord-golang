@@ -3,10 +3,12 @@ package discord
 import (
 	"fmt"
 	"github.com/andersfylling/disgord"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/network"
 	"main/src/provider"
 	"main/src/security"
 )
@@ -127,6 +129,121 @@ func (r Responder) RespondWithJudgmentUi(
 	}
 
 	return provider.RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
+}
+
+func (r Responder) RespondDeliberation(
+	input provider.Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	pollTally *judgment.PollTally,
+	pollResult *judgment.PollResult,
+	title string,
+	message string,
+	asPrivateMessage bool,
+	canInspect bool,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+
+		// Generate the merit profile image URL
+		imageUrl, errImg := network.GetOas().GetMeritProfileUrl(
+			poll,
+			proposals,
+			pollTally,
+			pollResult,
+			"png",
+			MaxUrlLength,
+		)
+		if errImg != nil {
+			imageUrl = ""
+		}
+		imageUrlSvg, errImgSvg := network.GetOas().GetMeritProfileUrl(
+			poll,
+			proposals,
+			pollTally,
+			pollResult,
+			"svg",
+			MaxUrlLength,
+		)
+		if errImgSvg != nil {
+			imageUrl = ""
+		}
+
+		response := &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackChannelMessageWithSource,
+			Data: &disgord.CreateInteractionResponseData{
+				Content: message,
+				Flags:   0,
+				Embeds: []*disgord.Embed{
+					{
+						Type:  disgord.EmbedTypeImage,
+						Title: title,
+						Image: &disgord.EmbedImage{
+							URL: imageUrl, // no SVG here for now, it appears
+						},
+					},
+				},
+			},
+		}
+		if asPrivateMessage || canInspect {
+			response.Data.Components = []*disgord.MessageComponent{
+				{
+					Type:       disgord.MessageComponentActionRow,
+					CustomID:   "deliberate_action_row",
+					Components: []*disgord.MessageComponent{},
+				},
+			}
+		}
+		if asPrivateMessage {
+			//response.Type = disgord.InteractionCallbackChannelMessageWithSource
+			response.Data.Flags |= disgord.MessageFlagEphemeral
+
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Primary,
+					Label: "Publish",
+					Emoji: &disgord.Emoji{
+						Name: "📢",
+					},
+					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
+				},
+			)
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Link,
+					Label: "As SVG",
+					Emoji: &disgord.Emoji{
+						Name: "✨",
+					},
+					Url: imageUrlSvg,
+				},
+			)
+		} else {
+			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
+		}
+
+		if canInspect {
+			response.Data.Components[0].Components = append(
+				response.Data.Components[0].Components,
+				&disgord.MessageComponent{
+					Type:  disgord.MessageComponentButton,
+					Style: disgord.Secondary,
+					Label: "Inspect Ballots",
+					Emoji: &disgord.Emoji{
+						Name: "🕵",
+					},
+					CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
+				},
+			)
+		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondDeliberation")
 }
 
 func (r Responder) RespondServerError(

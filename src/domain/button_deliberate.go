@@ -2,15 +2,12 @@ package domain
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
 	db "main/src/database"
-	"main/src/network"
 	"main/src/provider"
-	"main/src/provider/discord"
 	"main/src/security"
 	"regexp"
 	"strconv"
@@ -59,9 +56,8 @@ func handleDeliberation(
 
 	handled = true
 
-	// todo: perhaps check the actor's permissions to deliberate?
+	// todo: perhaps check the actor's permissions to deliberate? (use a middleware!)
 
-	// Get the poll this button is for
 	poll := &db.Poll{Id: pollId}
 	hasFoundPoll, err := orm.Get(poll)
 	if !hasFoundPoll {
@@ -73,7 +69,6 @@ func handleDeliberation(
 		return
 	}
 
-	// Get the proposals of the poll
 	proposals, err := db.GetPollProposals(orm, poll)
 	if err != nil {
 		return false, err
@@ -83,7 +78,7 @@ func handleDeliberation(
 		return
 	}
 
-	// Rank the proposals
+	// Rule: Proposals are ranked in the merit profile
 	proposalsTallies := make([]*judgment.ProposalTally, 0, len(proposals))
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
@@ -114,34 +109,11 @@ func handleDeliberation(
 		return
 	}
 
-	// GTFO if there are no judgments
+	// Rule: GTFO if there are no judgments
 	if pollTally.AmountOfJudges == 0 {
 		message := "There are no participants to this poll.  Please try again when the poll has had participants."
 		err = RespondUserError(input, message)
-	}
-
-	// Generate the merit profile image URL
-	imageUrl, errImg := network.GetOas().GetMeritProfileUrl(
-		poll,
-		proposals,
-		pollTally,
-		pollResult,
-		"png",
-		discord.MaxUrlLength,
-	)
-	if errImg != nil {
-		imageUrl = ""
-	}
-	imageUrlSvg, errImgSvg := network.GetOas().GetMeritProfileUrl(
-		poll,
-		proposals,
-		pollTally,
-		pollResult,
-		"svg",
-		discord.MaxUrlLength,
-	)
-	if errImgSvg != nil {
-		imageUrl = ""
+		return
 	}
 
 	winners := ""
@@ -166,100 +138,30 @@ func handleDeliberation(
 	content := fmt.Sprintf("🤖⚖  ")
 	if len(winnersSlice) > 1 {
 		content += fmt.Sprintf(
-			"_Here are the most plebiscited proposals:_ %s",
+			"_Here are the most consensual proposals:_ %s",
 			winners,
 		)
 	} else {
 		content += fmt.Sprintf(
-			"_Here is the most plebiscited proposal:_ %s",
+			"_Here is the most consensual proposal:_ %s",
 			winners,
 		)
 	}
 
-	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+	judgeVendorId, _ := input.GetActorVendorId()
+	canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
 
-		judgeVendorId, _ := input.GetActorVendorId()
-		canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
-
-		response := &disgord.CreateInteractionResponse{
-			Type: disgord.InteractionCallbackChannelMessageWithSource,
-			Data: &disgord.CreateInteractionResponseData{
-				Content: content,
-				Flags:   0,
-				Embeds: []*disgord.Embed{
-					{
-						Type:  disgord.EmbedTypeImage,
-						Title: title,
-						Image: &disgord.EmbedImage{
-							URL: imageUrl, // no SVG here for now, it appears
-						},
-					},
-				},
-			},
-		}
-		if asPrivateMessage || canInspect {
-			response.Data.Components = []*disgord.MessageComponent{
-				{
-					Type:       disgord.MessageComponentActionRow,
-					CustomID:   "deliberate_action_row",
-					Components: []*disgord.MessageComponent{},
-				},
-			}
-		}
-		if asPrivateMessage {
-			//response.Type = disgord.InteractionCallbackChannelMessageWithSource
-			response.Data.Flags |= disgord.MessageFlagEphemeral
-
-			response.Data.Components[0].Components = append(
-				response.Data.Components[0].Components,
-				&disgord.MessageComponent{
-					Type:  disgord.MessageComponentButton,
-					Style: disgord.Primary,
-					Label: "Publish",
-					Emoji: &disgord.Emoji{
-						Name: "📢",
-					},
-					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
-				},
-			)
-			response.Data.Components[0].Components = append(
-				response.Data.Components[0].Components,
-				&disgord.MessageComponent{
-					Type:  disgord.MessageComponentButton,
-					Style: disgord.Link,
-					Label: "As SVG",
-					Emoji: &disgord.Emoji{
-						Name: "✨",
-					},
-					Url: imageUrlSvg,
-				},
-			)
-		} else {
-			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
-		}
-
-		if canInspect {
-			response.Data.Components[0].Components = append(
-				response.Data.Components[0].Components,
-				&disgord.MessageComponent{
-					Type:  disgord.MessageComponentButton,
-					Style: disgord.Secondary,
-					Label: "Inspect Ballots",
-					Emoji: &disgord.Emoji{
-						Name: "🕵",
-					},
-					CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
-				},
-			)
-		}
-
-		err = d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
-		if err != nil {
-			return
-		}
-	} else {
-		log.Fatalln("vendor not supported")
-	}
+	err = provider.GetResponder(input).RespondDeliberation(
+		input,
+		poll,
+		proposals,
+		pollTally,
+		pollResult,
+		title,
+		content,
+		asPrivateMessage,
+		canInspect,
+	)
 
 	return
 }
