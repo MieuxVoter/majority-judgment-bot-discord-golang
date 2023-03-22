@@ -66,6 +66,9 @@ func handleExplainCommand(input provider.Input) error {
 		"We look at the _adhesion_ and _contestation_ groups of each of the two proposals, " +
 		"and follow the decision of the biggest of these four groups.  " +
 		"Yet again, majority prevails.\n" +
+		"\n" +
+		"\n" +
+		"_(illustration: MarjolaineLeray.com)_\n" +
 		""
 	// FIXME: find a another space for this image somewhere on the internet  (permalink, please)
 	imageUrl := "https://media.discordapp.net/attachments/855665583869919233/1087985229177831475/equality_explained.png?width=652&height=493"

@@ -23,6 +23,7 @@ func Sync() error {
 		&Poll{},
 		&Proposal{},
 		&Judgment{},
+		&Feedback{},
 	)
 }
 

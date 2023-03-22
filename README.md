@@ -34,7 +34,7 @@
 - [x] Choose a grading (ex: 👍👎) per poll
 - [x] Add a `secrecy` scope to allow public ballots
 - [x] Explain how Majority Judgment works `/mj explain`
-- [ ] Send feedback `/mj feedback`
+- [x] Send feedback `/mj feedback`
 - [ ] Pay for itself `/mj love`
 
 

@@ -17,7 +17,7 @@ func (c HelpCommand) GetEmote() string {
 }
 
 func (c HelpCommand) GetName() string {
-	return "help"
+	return HelpCommandSlug
 }
 
 func (c HelpCommand) GetDescription() string {
@@ -33,7 +33,7 @@ func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
 }
 
 func (c HelpCommand) Matches(command string) bool {
-	return command == "help"
+	return command == HelpCommandSlug
 }
 
 func (c HelpCommand) Handle(input provider.Input) (handled bool, err error) {

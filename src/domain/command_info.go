@@ -74,6 +74,7 @@ func handleInfoCommand(
 		"Vesporium",
 		"Roipoussiere",
 		"Trollune",
+		"Marjolaine Leray",
 	}
 	rand.Shuffle(len(thanksSlice), func(i, j int) {
 		thanksSlice[i], thanksSlice[j] = thanksSlice[j], thanksSlice[i]
