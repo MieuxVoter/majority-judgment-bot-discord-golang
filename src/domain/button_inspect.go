@@ -64,7 +64,6 @@ func (service InspectButton) Handle(input provider.Input) (handled bool, err err
 	}
 
 	err = RespondBallotsInspection(input, poll, proposals, allJudgments)
-
 	return
 }
 

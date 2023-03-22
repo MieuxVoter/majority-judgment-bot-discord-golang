@@ -70,11 +70,11 @@ func handleInfoCommand(
 		return RespondServerError(input, message)
 	}
 	thanksSlice := []string{
-		"MieuxVoter",
-		"Vesporium",
-		"Roipoussiere",
-		"Trollune",
-		"Marjolaine Leray",
+		"MieuxVoter.fr",
+		"Vesporium (test)",
+		"Roipoussiere (code)",
+		"Trollune (code)",
+		"Marjolaine Leray (illustration)",
 	}
 	rand.Shuffle(len(thanksSlice), func(i, j int) {
 		thanksSlice[i], thanksSlice[j] = thanksSlice[j], thanksSlice[i]

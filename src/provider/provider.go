@@ -13,6 +13,12 @@ type ResponderInterface interface {
 	Matches(input Input) bool
 	RespondWithMessage(input Input, message string, ephemeral bool) error
 	RespondWithMessageAndImage(input Input, message string, imageUrl string, ephemeral bool) error
+	RespondPollView(
+		input Input,
+		poll *db.Poll,
+		proposals []*db.Proposal,
+		replaceMessage bool,
+	) error
 	RespondWithJudgmentUi(
 		input Input,
 		proposal *db.Proposal,
@@ -20,10 +26,11 @@ type ResponderInterface interface {
 		previousJudgment *db.Judgment,
 		replaceMessage bool,
 	) error
-	RespondPollView(
+	RespondJudgmentSummary(
 		input Input,
 		poll *db.Poll,
-		proposals []*db.Proposal,
+		proposals []db.Proposal,
+		judgments []db.Judgment,
 		replaceMessage bool,
 	) error
 	RespondDeliberation(

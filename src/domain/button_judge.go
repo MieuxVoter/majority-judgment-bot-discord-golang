@@ -2,7 +2,6 @@ package domain
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -47,7 +46,7 @@ func (service JudgeButton) Handle(input provider.Input) (handled bool, err error
 		return
 	}
 
-	// todo: check the judge's permissions to judge, somehow
+	// todo: check the judge's permissions to judge, somehow (middleware?)
 
 	// Get the guild this poll is for
 	guildVendorId, err := input.GetGuildVendorId()
@@ -118,27 +117,25 @@ func (service JudgeButton) Handle(input provider.Input) (handled bool, err error
 	// Record the judgment, by either updating or inserting
 	if pastJudgment != nil {
 		pastJudgment.Grade = uint8(gradeLevel)
-		// /!. This does not update when gradeLevel is zero, unless Cols() is specified
+		// /!. This does not update when gradeLevel is zero, unless Cols() is specified (it is).
 		// > When this param is the pointer of struct, only non-empty and non-zero field will be updated to database.
 		// > from https://xorm.io/docs/chapter-06/readme/
-		updated, err := service.orm.Cols("grade").Update(pastJudgment, &db.Judgment{
+		updated, errUpdate := service.orm.Cols("grade").Update(pastJudgment, &db.Judgment{
 			JudgeSnowflake: pastJudgment.JudgeSnowflake,
 			ProposalId:     pastJudgment.ProposalId,
-			//PollId:         pastJudgment.PollId,
 		})
 		if updated == 0 {
 			return false, fmt.Errorf("did not find a judgment to update")
 		}
-		if err != nil {
-			return false, err
+		if errUpdate != nil {
+			return false, errUpdate
 		}
 
 	} else {
 		newJudgment := &db.Judgment{
 			JudgeSnowflake: judgeVendorId,
 			ProposalId:     proposalId,
-			//PollId:         poll.Id,
-			Grade: uint8(gradeLevel),
+			Grade:          uint8(gradeLevel),
 		}
 		_, err = service.orm.InsertOne(newJudgment)
 		if err != nil {
@@ -186,41 +183,19 @@ func (service JudgeButton) Handle(input provider.Input) (handled bool, err error
 
 		// Show the UI to judge the next proposal
 		err = RespondWithJudgmentUi(input, nextProposal, poll, nextJudgment, true)
+		return
 
 	} else {
-
-		if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-
-			summary := ""
-			for k := range judgments {
-				if k > 0 {
-					summary += "  —  "
-				}
-
-				icon := poll.GetGradeIcon(judgments[k].Grade)
-				summary += fmt.Sprintf("(%s %s %s)", icon, proposals[k].Name, icon)
-			}
-			message := "Here's the summary of your judgments:\n" + summary
-			err = d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-				Type: disgord.InteractionCallbackUpdateMessage,
-				Data: &disgord.CreateInteractionResponseData{
-					//Flags: disgord.MessageFlagEphemeral | disgord.MessageFlagSupressEmbeds,
-					Flags: disgord.MessageFlagEphemeral,
-					Embeds: []*disgord.Embed{
-						{
-							Title:       "✅ **WELL DONE!**",
-							Description: message,
-						},
-					},
-				},
-			})
-
-		} else {
-			log.Fatalln("vendor not supported")
-		}
+		// Rule: When all proposals are judged, show a summary of emitted judgments.
+		err = RespondJudgmentSummary(
+			input,
+			poll,
+			proposals,
+			judgments,
+			true,
+		)
+		return
 	}
-
-	return
 }
 
 func init() {

@@ -205,6 +205,44 @@ func (r Responder) RespondWithJudgmentUi(
 	return provider.RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
 }
 
+func (r Responder) RespondJudgmentSummary(
+	input provider.Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	judgments []db.Judgment,
+	replaceMessage bool,
+) error {
+	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+
+		summary := ""
+		for k := range judgments {
+			if k > 0 {
+				summary += "  —  "
+			}
+
+			icon := poll.GetGradeIcon(judgments[k].Grade)
+			summary += fmt.Sprintf("(%s %s %s)", icon, proposals[k].Name, icon)
+		}
+		title := "✅ **WELL DONE!**"
+		message := "Here's the summary of your judgments:\n" + summary
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackUpdateMessage,
+			Data: &disgord.CreateInteractionResponseData{
+				Flags: disgord.MessageFlagEphemeral, // | disgord.MessageFlagSupressEmbeds,
+				Embeds: []*disgord.Embed{
+					{
+						Title:       title,
+						Description: message,
+					},
+				},
+			},
+		})
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondJudgmentSummary")
+}
+
 func (r Responder) RespondDeliberation(
 	input provider.Input,
 	poll *db.Poll,
