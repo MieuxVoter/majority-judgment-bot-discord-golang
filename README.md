@@ -33,8 +33,8 @@
 - [x] Docker Compose config
 - [x] Choose a grading (ex: 👍👎) per poll
 - [x] Add a `secrecy` scope to allow public ballots
-- [ ] Explain how Majority Judgment works `/mj explain`
-- [ ] Allow/Disallow judges, via nickname or roles, per guild
+- [x] Explain how Majority Judgment works `/mj explain`
+- [ ] Send feedback `/mj feedback`
 - [ ] Pay for itself `/mj love`
 
 
@@ -79,4 +79,4 @@ Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, 
 - This leverages the excellent `disgord` https://github.com/andersfylling/disgord
 - Trying out Go's dependency injection with `di`.
 - Using gateways to communicate with Discord.
-- Will probably deploy a simple http server at some point, for webhooks.
+- Could perhaps deploy a simple http server at some point, for webhooks.

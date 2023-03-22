@@ -17,6 +17,10 @@ type CreateCommand struct {
 	orm *xorm.Engine
 }
 
+func (c CreateCommand) GetEmote() string {
+	return "➕"
+}
+
 func (c CreateCommand) GetName() string {
 	return CreateCommandSlug
 }
@@ -28,7 +32,7 @@ func (c CreateCommand) GetDescription() string {
 func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
 		Name:        c.GetName(),
-		Description: c.GetDescription(),
+		Description: c.GetEmote() + " " + c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 		Options: []*disgord.ApplicationCommandOption{
 			{

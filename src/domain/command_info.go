@@ -21,18 +21,22 @@ type InfoCommand struct {
 	orm *xorm.Engine
 }
 
+func (c InfoCommand) GetEmote() string {
+	return "🤖"
+}
+
 func (c InfoCommand) GetName() string {
 	return InfoCommandSlug
 }
 
 func (c InfoCommand) GetDescription() string {
-	return "Display miscellaneous information about this bot on this server"
+	return "Display miscellaneous information about me on this server"
 }
 
 func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
 		Name:        c.GetName(),
-		Description: c.GetDescription(),
+		Description: c.GetEmote() + " " + c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 	}
 }

@@ -20,7 +20,8 @@ var areCommandsDefined = false
 
 // Command interface to implement in services declaring commands.
 type Command interface {
-	Define() *disgord.ApplicationCommandOption // deprecated: generify
+	Define() *disgord.ApplicationCommandOption // deprecated: to generify
+	GetEmote() string
 	GetName() string
 	GetDescription() string
 	Matches(command string) bool

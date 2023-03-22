@@ -12,18 +12,22 @@ const HelpCommandSlug = "help"
 
 type HelpCommand struct{}
 
+func (c HelpCommand) GetEmote() string {
+	return "👁"
+}
+
 func (c HelpCommand) GetName() string {
 	return "help"
 }
 
 func (c HelpCommand) GetDescription() string {
-	return "Send an SOS: ... --- ..."
+	return "General help about how to interact with me"
 }
 
 func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
 		Name:        c.GetName(),
-		Description: c.GetDescription(),
+		Description: c.GetEmote() + " " + c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 	}
 }

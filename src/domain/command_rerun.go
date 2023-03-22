@@ -19,6 +19,10 @@ type RerunCommand struct {
 	orm *xorm.Engine
 }
 
+func (c RerunCommand) GetEmote() string {
+	return "♻"
+}
+
 func (c RerunCommand) GetName() string {
 	return RerunCommandSlug
 }
@@ -30,7 +34,7 @@ func (c RerunCommand) GetDescription() string {
 func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
 	return &disgord.ApplicationCommandOption{
 		Name:        c.GetName(),
-		Description: c.GetDescription(),
+		Description: c.GetEmote() + " " + c.GetDescription(),
 		Type:        disgord.OptionTypeSubCommand,
 		Options: []*disgord.ApplicationCommandOption{
 			{
