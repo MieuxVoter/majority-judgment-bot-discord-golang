@@ -35,6 +35,38 @@ func (r Responder) RespondWithMessage(input provider.Input, message string, ephe
 	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
 }
 
+func (r Responder) RespondWithMessageAndImage(
+	input provider.Input,
+	message string,
+	imageUrl string,
+	ephemeral bool,
+) error {
+	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
+		response := &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackChannelMessageWithSource,
+			Data: &disgord.CreateInteractionResponseData{
+				Content: message,
+				Embeds: []*disgord.Embed{
+					{
+						Type: disgord.EmbedTypeImage,
+						//Title: title,
+						Image: &disgord.EmbedImage{
+							URL: imageUrl,
+						},
+					},
+				},
+			},
+		}
+		if ephemeral {
+			response.Data.Flags |= disgord.MessageFlagEphemeral
+		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
+}
+
 func (r Responder) RespondServerError(
 	input provider.Input,
 	message string,

@@ -6,9 +6,11 @@ import (
 	"main/src/services"
 )
 
+// ResponderInterface should be implemented by our vendor output adapters
 type ResponderInterface interface {
 	Matches(input Input) bool
 	RespondWithMessage(input Input, message string, ephemeral bool) error
+	RespondWithMessageAndImage(input Input, message string, imageUrl string, ephemeral bool) error
 	RespondUserError(input Input, message string) error
 	RespondServerError(input Input, message string) error
 }
@@ -23,7 +25,7 @@ func GetResponder(input Input) ResponderInterface {
 		}
 	}
 
-	services.GetLogger().Fatalln("no responder found")
+	services.GetLogger().Fatalln("no matching responder found")
 	return nil
 }
 
