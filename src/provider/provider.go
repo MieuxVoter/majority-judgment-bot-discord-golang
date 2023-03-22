@@ -37,6 +37,12 @@ type ResponderInterface interface {
 		asPrivateMessage bool,
 		canInspect bool,
 	) error
+	RespondBallotsInspection(
+		input Input,
+		poll *db.Poll,
+		proposals []db.Proposal,
+		judgments []db.Judgment,
+	) error
 	RespondUserError(input Input, message string) error
 	RespondServerError(input Input, message string) error
 }
