@@ -9,6 +9,8 @@ import (
 	db "main/src/database"
 	"main/src/provider"
 	"main/src/security"
+	"math/rand"
+	"strings"
 	"xorm.io/xorm"
 )
 
@@ -63,6 +65,16 @@ func handleInfoCommand(
 		message := "Could not count this guild's polls.  _Suddenly, Australia is on fire._ 🔥"
 		return RespondServerError(input, message)
 	}
+	thanksSlice := []string{
+		"MieuxVoter",
+		"Vesporium",
+		"Roipoussiere",
+		"Trollune",
+	}
+	rand.Shuffle(len(thanksSlice), func(i, j int) {
+		thanksSlice[i], thanksSlice[j] = thanksSlice[j], thanksSlice[i]
+	})
+	thanks := strings.Join(thanksSlice, ", ")
 
 	message := "" +
 		"🤖🗩 _Here is some information about myself._\n" +
@@ -72,6 +84,8 @@ func handleInfoCommand(
 		"Remaining polls' quota of this community" + fmt.Sprintf(" : `%d`\n", guild.Quota) +
 		"Version" + fmt.Sprintf(" : `%s`\n", security.GetVersion()) +
 		"Guild Identifier" + fmt.Sprintf(" : `%s`\n", guild.Snowflake) +
+		"\n" +
+		"Friends" + fmt.Sprintf(" : `%s`\n", thanks) +
 		"\n" +
 		""
 
