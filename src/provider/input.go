@@ -63,7 +63,7 @@ func (d DiscordInput) GetActorVendorId() (string, error) {
 }
 
 func (d DiscordInput) GetActorName() (string, error) {
-	return d.Interaction.Member.Nick, nil
+	return d.Interaction.Member.User.Username, nil
 }
 
 func (d DiscordInput) GetGuildVendorId() (string, error) {
