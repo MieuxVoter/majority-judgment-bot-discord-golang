@@ -17,6 +17,10 @@ import (
 // Responder implements provider.ResponderInterface for Discord
 type Responder struct{}
 
+func (r Responder) sanitizeTitle(title string) string {
+	return security.TruncateString(title, 256)
+}
+
 func (r Responder) convertButtonField(field *provider.ButtonField) *disgord.MessageComponent {
 	component := &disgord.MessageComponent{
 		Type:     disgord.MessageComponentButton,
@@ -143,7 +147,7 @@ func (r Responder) RespondPollView(
 	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
 
 		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject)
-		title = security.TruncateString(title, 512)
+		title = r.sanitizeTitle(title)
 
 		messageType := disgord.InteractionCallbackChannelMessageWithSource
 		if replaceMessage {

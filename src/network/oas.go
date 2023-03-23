@@ -8,6 +8,7 @@ import (
 	"log"
 	"main/src/container"
 	"main/src/database"
+	"main/src/security"
 	"main/src/services"
 	"net/url"
 	"regexp"
@@ -33,7 +34,8 @@ func (oas *Oas) GetMeritProfileUrl(
 
 	fileNameNoExt := ""
 	oasDomain := oas.config.Get("OAS_DOMAIN")
-	query := fmt.Sprintf("?subject=%s", url.QueryEscape(poll.Subject))
+	subject := security.TruncateString(poll.Subject, 40)
+	query := fmt.Sprintf("?subject=%s", url.QueryEscape(subject))
 
 	for proposalResultIndex, proposalResult := range pollResult.ProposalsSorted {
 		if proposalResultIndex > 0 {
