@@ -46,7 +46,7 @@ func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
 }
 
 func (c InfoCommand) Matches(command string) bool {
-	return command == c.GetName()
+	return command == InfoCommandSlug
 }
 
 func (c InfoCommand) Handle(input provider.Input) (handled bool, err error) {
@@ -105,7 +105,15 @@ func handleInfoCommand(
 		"\n" +
 		""
 
-	return provider.GetResponder(input).RespondWithMessage(input, message, true)
+	buttons := make([]*provider.ButtonField, 0)
+	buttons = append(buttons, &provider.ButtonField{
+		Style: disgord.Link,
+		Label: "Wish me Well",
+		Emote: "🌠",
+		Url:   "https://liberapay.com/MajorityJudgmentBot/",
+	})
+
+	return provider.GetResponder(input).RespondWithMessageAndButtons(input, message, buttons, true)
 }
 
 func init() {

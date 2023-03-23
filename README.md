@@ -1,6 +1,6 @@
 # Majority Judgment Bot for Discord
 
-![](./doc/mjbot_logo_00.png)
+<img src="./doc/mjbot_logo_00.png" width="128" height="128" />
 
 > Helps create Majority Judgment polls in Discord.
 
@@ -39,6 +39,11 @@
 ![](./doc/screen_01.png)
 
 
+## Installation
+
+This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/rAAQG9S) and ask around for an invitation !
+
+
 ## Usage
 
 1. Clone this repository.
@@ -47,6 +52,9 @@
    $ cp .env .env.local
    ```
 3. Configure your _discord token_ in `.env.local`
+   ```
+   $ vi .env.local
+   ```
 4. Run
    ```
    $ go run src/main.go
@@ -68,13 +76,7 @@ Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, 
 
 ```
    $ cp .env .env.local
+   $ vi .env.local
    $ docker compose up
 ```
 
-
-## Dev Notes
-
-- This leverages the excellent `disgord` https://github.com/andersfylling/disgord
-- Trying out Go's dependency injection with `di`.
-- Using gateways to communicate with Discord.
-- Could perhaps deploy a simple http server at some point, for webhooks.

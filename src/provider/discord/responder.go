@@ -17,6 +17,29 @@ import (
 // Responder implements provider.ResponderInterface for Discord
 type Responder struct{}
 
+func (r Responder) convertButtonField(field *provider.ButtonField) *disgord.MessageComponent {
+	component := &disgord.MessageComponent{
+		Type:     disgord.MessageComponentButton,
+		Style:    field.Style,
+		Label:    field.Label,
+		CustomID: field.Id,
+	}
+
+	if field.Url != "" {
+		component.Url = field.Url
+		component.Style = disgord.Link
+		component.CustomID = ""
+	}
+
+	if field.Emote != "" {
+		component.Emoji = &disgord.Emoji{
+			Name: field.Emote,
+		}
+	}
+
+	return component
+}
+
 func (r Responder) Matches(input provider.Input) bool {
 	_, isDiscord := (input).(provider.DiscordInput)
 	return isDiscord
@@ -64,6 +87,45 @@ func (r Responder) RespondWithMessageAndImage(
 		}
 		if ephemeral {
 			response.Data.Flags |= disgord.MessageFlagEphemeral
+		}
+
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
+	}
+
+	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
+}
+
+func (r Responder) RespondWithMessageAndButtons(
+	input provider.Input,
+	message string,
+	buttons []*provider.ButtonField,
+	ephemeral bool,
+) error {
+	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
+		response := &disgord.CreateInteractionResponse{
+			Type: disgord.InteractionCallbackChannelMessageWithSource,
+			Data: &disgord.CreateInteractionResponseData{
+				Content: message,
+			},
+		}
+
+		if ephemeral {
+			response.Data.Flags |= disgord.MessageFlagEphemeral
+		}
+
+		if len(buttons) > 0 {
+			row := &disgord.MessageComponent{
+				Type:       disgord.MessageComponentActionRow,
+				CustomID:   "message_action_row",
+				Components: make([]*disgord.MessageComponent, 0),
+			}
+
+			for _, button := range buttons {
+				row.Components = append(row.Components, r.convertButtonField(button))
+			}
+
+			response.Data.Components = make([]*disgord.MessageComponent, 0)
+			response.Data.Components = append(response.Data.Components, row)
 		}
 
 		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)

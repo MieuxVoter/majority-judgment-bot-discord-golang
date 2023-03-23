@@ -1,5 +1,7 @@
 package security
 
+import "strings"
+
 // Doc: https://github.com/ahmetb/govvv#build-variables
 
 var (
@@ -12,5 +14,5 @@ func GetVersion() string {
 	if GitSummary == "" {
 		return "N/A"
 	}
-	return GitSummary
+	return strings.ReplaceAll(GitSummary, "dirty", "edge")
 }

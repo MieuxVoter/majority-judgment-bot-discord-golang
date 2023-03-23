@@ -13,6 +13,7 @@ type ResponderInterface interface {
 	Matches(input Input) bool
 	RespondWithMessage(input Input, message string, ephemeral bool) error
 	RespondWithMessageAndImage(input Input, message string, imageUrl string, ephemeral bool) error
+	RespondWithMessageAndButtons(input Input, message string, buttons []*ButtonField, ephemeral bool) error
 	RespondPollView(
 		input Input,
 		poll *db.Poll,
