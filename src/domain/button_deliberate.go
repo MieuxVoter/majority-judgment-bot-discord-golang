@@ -56,8 +56,6 @@ func handleDeliberation(
 
 	handled = true
 
-	// todo: perhaps check the actor's permissions to deliberate? (use a middleware!)
-
 	poll := &db.Poll{Id: pollId}
 	hasFoundPoll, err := orm.Get(poll)
 	if !hasFoundPoll {

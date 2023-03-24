@@ -48,8 +48,6 @@ func handleButtonParticipate(
 		return
 	}
 
-	// todo: check the judge's permissions to vote, somehow
-
 	// Get the poll this button is for
 	pollId, err := strconv.ParseUint(pollIdAsString, 10, 64)
 	if err != nil {

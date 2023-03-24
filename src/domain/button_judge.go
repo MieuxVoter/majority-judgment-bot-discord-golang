@@ -46,8 +46,6 @@ func (service JudgeButton) Handle(input provider.Input) (handled bool, err error
 		return
 	}
 
-	// todo: check the judge's permissions to judge, somehow (middleware?)
-
 	// Get the guild this poll is for
 	guildVendorId, err := input.GetGuildVendorId()
 	guild, err := db.GetGuild(service.orm, guildVendorId)

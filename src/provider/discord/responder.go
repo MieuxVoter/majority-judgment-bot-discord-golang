@@ -166,8 +166,6 @@ func (r Responder) RespondPollView(
 				description += security.TruncateString(proposal.Name, 256)
 			}
 			pollEmbedHero.Description = description
-		} else {
-			// nothing is cool for now
 		}
 
 		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{

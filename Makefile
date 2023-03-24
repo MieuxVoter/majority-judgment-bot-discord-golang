@@ -101,7 +101,6 @@ clean:
 # run gofmt and complain if a file is out of compliance
 # run go vet and similarly complain if there are issues
 # run go lint and complain if there are issues
-# TODO: go tool vet is currently broken with the vendorexperiement
 lint:
 	@if gofmt -l . | egrep -v ^vendor/ | grep .go; then \
 	  echo "^- Repo contains improperly formatted go files; run gofmt -w *.go" && exit 1; \

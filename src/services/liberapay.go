@@ -91,21 +91,34 @@ func (service *Liberapay) GetMain() (*LiberapayMain, error) {
 	return service.main, nil
 }
 
+func (service *Liberapay) GetSurvivalChancePercentage() (float64, error) {
+	data, err := service.GetMain()
+	if err != nil {
+		return 0.0, err
+	}
+
+	receiving, err := strconv.ParseFloat(data.Receiving.Amount, 64)
+	if err != nil {
+		return 0.0, err
+	}
+	goal, err := strconv.ParseFloat(data.Goal.Amount, 64)
+	if err != nil {
+		return 0.0, err
+	}
+
+	return 100.0 * receiving / goal, nil
+}
+
 func (service *Liberapay) GetSurvivalAsString() (string, error) {
 	data, err := service.GetMain()
 	if err != nil {
 		return "???", err
 	}
 
-	receiving, err := strconv.ParseFloat(data.Receiving.Amount, 64)
-	if err != nil {
-		return "!?!", err
-	}
-	goal, err := strconv.ParseFloat(data.Goal.Amount, 64)
+	survivalChance, err := service.GetSurvivalChancePercentage()
 	if err != nil {
 		return "?!?", err
 	}
-	survivalChance := 100.0 * receiving / goal
 
 	currency := data.Goal.Currency
 	if currency == "EUR" {

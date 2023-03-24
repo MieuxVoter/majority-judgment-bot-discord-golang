@@ -16,7 +16,7 @@ import (
 var logger *logrus.Logger
 
 func main() {
-	// Collect services we're going to use
+	// Collect services we're going to use here
 	logger = services.GetLogger()
 
 	// Greet the dev
