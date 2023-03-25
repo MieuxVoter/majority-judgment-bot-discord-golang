@@ -161,14 +161,14 @@ func (r Responder) RespondPollView(
 			description := ""
 			for i, proposal := range proposals {
 				if i > 0 {
-					description += ", "
+					description += " | "
 				}
-				description += security.TruncateString(proposal.Name, 256)
+				description += security.TruncateEllipsis(proposal.Name, 256)
 			}
 			pollEmbedHero.Description = description
 		}
 
-		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
+		response := &disgord.CreateInteractionResponse{
 			Type: messageType,
 			Data: &disgord.CreateInteractionResponseData{
 				Embeds: []*disgord.Embed{
@@ -201,9 +201,9 @@ func (r Responder) RespondPollView(
 					},
 				},
 			},
-		})
+		}
 
-		return err
+		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
 	}
 
 	return provider.RaiseInvalidProviderError("Discord:RespondPollView")

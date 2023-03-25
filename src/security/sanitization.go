@@ -32,6 +32,7 @@ func EscapeCsvValue(value string) string {
 	return strings.ReplaceAll(value, "\"", "")
 }
 
+// TruncateString truncates a string value to a maximum length
 func TruncateString(value string, maxLength int) string {
 	actualLength := len(value)
 	if actualLength > maxLength {
@@ -39,4 +40,23 @@ func TruncateString(value string, maxLength int) string {
 	}
 
 	return value[:actualLength]
+}
+
+// TruncateEllipsis returns a truncated string with a trailing ellipsis (…) if relevant
+func TruncateEllipsis(value string, maxLength int) string {
+	if maxLength == 0 {
+		return ""
+	}
+	actualLength := len(value)
+	if actualLength <= maxLength {
+		return value
+	}
+	if actualLength < 2 {
+		return value
+	}
+	if maxLength == 1 {
+		return value[:1]
+	}
+	actualLength = maxLength - 1
+	return value[:actualLength] + "…"
 }
