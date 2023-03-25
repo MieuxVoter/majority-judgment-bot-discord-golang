@@ -122,9 +122,11 @@ func handleDeliberation(
 		}
 		proposal := proposals[proposalResult.Index]
 		if proposalResultIndex > 0 {
-			winners += fmt.Sprintf(", ")
+			winners += fmt.Sprintf(" `💠` ")
 		}
-		winners += fmt.Sprintf("**%s**", proposal.Name)
+		proposalName := security.RemoveMarkdown(proposal.Name)
+		proposalName = security.TruncateEllipsis(proposalName, 256)
+		winners += fmt.Sprintf("**%s**", proposalName)
 		winnersSlice = append(winnersSlice, proposal.Name)
 	}
 

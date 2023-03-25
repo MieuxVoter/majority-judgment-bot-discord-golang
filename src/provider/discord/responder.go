@@ -161,9 +161,11 @@ func (r Responder) RespondPollView(
 			description := ""
 			for i, proposal := range proposals {
 				if i > 0 {
-					description += " | "
+					description += " **|** "
 				}
-				description += security.TruncateEllipsis(proposal.Name, 256)
+
+				proposalName := security.RemoveMarkdown(proposal.Name)
+				description += security.TruncateEllipsis(proposalName, 256)
 			}
 			pollEmbedHero.Description = description
 		}
