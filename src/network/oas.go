@@ -77,11 +77,13 @@ func (oas *Oas) GetMeritProfileUrl(
 		if expectedProposalNameLength > amountOfCharactersLeftPerProposal {
 			maxProposalNameLength = amountOfCharactersLeftPerProposal - len(queryKey) - 2
 		}
-		queryProposalName = queryProposalName[:maxProposalNameLength]
-		// Since we kind of need to truncate AFTER encoding, we want to remove truncated encoded chars
-		trailingEncodedAndTruncated := regexp.MustCompile("[%][a-zA-Z0-9]{0,2}$")
-		queryProposalName = trailingEncodedAndTruncated.ReplaceAllString(queryProposalName, "")
-		query += fmt.Sprintf("&%s=%s", queryKey, queryProposalName)
+		if maxProposalNameLength > 0 {
+			queryProposalName = queryProposalName[:maxProposalNameLength]
+			// Since we kind of need to truncate AFTER encoding, we want to remove truncated encoded chars
+			trailingEncodedAndTruncated := regexp.MustCompile("[%][a-zA-Z0-9]{0,2}$")
+			queryProposalName = trailingEncodedAndTruncated.ReplaceAllString(queryProposalName, "")
+			query += fmt.Sprintf("&%s=%s", queryKey, queryProposalName)
+		}
 	}
 
 	imageUrl := fmt.Sprintf("%s%s", imageUrlPath, query)
