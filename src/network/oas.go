@@ -35,7 +35,7 @@ func (oas *Oas) GetMeritProfileUrl(
 	fileNameNoExt := ""
 	oasDomain := oas.config.Get("OAS_DOMAIN")
 	subject := security.TruncateString(poll.Subject, 40)
-	query := fmt.Sprintf("?subject=%s", url.QueryEscape(subject))
+	query := fmt.Sprintf("?s=%s", url.QueryEscape(subject))
 
 	for proposalResultIndex, proposalResult := range pollResult.ProposalsSorted {
 		if proposalResultIndex > 0 {
@@ -70,7 +70,7 @@ func (oas *Oas) GetMeritProfileUrl(
 		} else if proposalResult.Rank == 3 {
 			medal = "🥉 "
 		}
-		queryKey := "proposals[]"
+		queryKey := "p[]"
 		queryProposalName := url.QueryEscape(medal + proposal.Name)
 		maxProposalNameLength := len(queryProposalName)
 		expectedProposalNameLength := len(queryProposalName) + len(queryKey) + 2
