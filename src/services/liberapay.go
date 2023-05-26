@@ -14,6 +14,7 @@ import (
 	"xorm.io/xorm"
 )
 
+// MainApiEndpoint is described at the bottom of this file, in the Annex
 const MainApiEndpoint = "https://liberapay.com/%s/public.json"
 
 // Liberapay service fetches (and perhaps caches) financial data from liberapay.com
