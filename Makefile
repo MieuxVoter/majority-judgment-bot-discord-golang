@@ -31,8 +31,6 @@ NAME=mjbot
 # bucket to upload binaries to, rightscale-binaries for public, ??? for private
 #BUCKET=rightscale-binaries
 
-#=== below this line ideally remains unchanged, add new targets at the end  ===
-
 # dependencies that are used by the build&test process, these need to be installed in the
 # global Go env and not in the vendor sub-tree
 DEPEND=golang.org/x/tools/cmd/cover github.com/onsi/ginkgo/ginkgo \
@@ -65,7 +63,7 @@ build: $(NAME)
 
 # create a tgz with the binary and any artifacts that are necessary
 # note the hack to allow for various GOOS & GOARCH combos, sigh
-build/$(NAME)-%.tgz: *.go
+build/$(NAME)-%.tgz: $(NAME)
 	rm -rf build/$(NAME)
 	mkdir -p build/$(NAME)
 	tgt=$*; GOOS=$${tgt%-*} GOARCH=$${tgt#*-} go build -ldflags "$(VFLAG)" -o build/$(NAME)/$(NAME) .
@@ -74,8 +72,12 @@ build/$(NAME)-%.tgz: *.go
 	tar -zcf $@ -C build ./$(NAME)
 	rm -r build/$(NAME)
 
-build/$(NAME)-%.zip: *.go
+build/$(NAME)-%.zip: $(NAME)
 	touch $@
+
+release: $(NAME)
+	strip ./mjbot
+	upx ./mjbot
 
 # upload assumes you have AWS_ACCESS_KEY_ID and AWS_SECRET_KEY env variables set,
 # which happens in the .travis.yml for CI. Yup, that means you can't run it from your laptop,

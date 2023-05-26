@@ -69,6 +69,9 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
    $ ./mjbot
 ```
 
+> `mjbot` is about 17Mio at the moment, which is way too much.
+> We use `upx` in `make release` and it shrinks to `4.5Mio` but it's still too big.
+
 
 ## Using docker
 
