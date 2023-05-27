@@ -343,7 +343,7 @@ func (r Responder) RespondDeliberation(
 			MaxUrlLength,
 		)
 		if errImgSvg != nil {
-			imageUrl = ""
+			imageUrlSvg = ""
 		}
 
 		response := &disgord.CreateInteractionResponse{
@@ -356,12 +356,15 @@ func (r Responder) RespondDeliberation(
 						Type:  disgord.EmbedTypeImage,
 						Title: title,
 						Image: &disgord.EmbedImage{
-							URL: imageUrl, // no SVG here for now, it appears
+							// Rule: SVG is NOT allowed here, it appears
+							// Rule: 256 characters max
+							URL: imageUrl,
 						},
 					},
 				},
 			},
 		}
+
 		if asPrivateMessage || canInspect {
 			response.Data.Components = []*disgord.MessageComponent{
 				{
@@ -387,18 +390,20 @@ func (r Responder) RespondDeliberation(
 					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
 				},
 			)
-			response.Data.Components[0].Components = append(
-				response.Data.Components[0].Components,
-				&disgord.MessageComponent{
-					Type:  disgord.MessageComponentButton,
-					Style: disgord.Link,
-					Label: "As SVG",
-					Emoji: &disgord.Emoji{
-						Name: "✨",
+			if imageUrlSvg != "" {
+				response.Data.Components[0].Components = append(
+					response.Data.Components[0].Components,
+					&disgord.MessageComponent{
+						Type:  disgord.MessageComponentButton,
+						Style: disgord.Link,
+						Label: "As SVG",
+						Emoji: &disgord.Emoji{
+							Name: "✨",
+						},
+						Url: imageUrlSvg,
 					},
-					Url: imageUrlSvg,
-				},
-			)
+				)
+			}
 		} else {
 			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
 		}
