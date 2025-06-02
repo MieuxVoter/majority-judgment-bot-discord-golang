@@ -87,6 +87,8 @@ func (oas *Oas) GetMeritProfileUrl(
 	}
 
 	imageUrl := fmt.Sprintf("%s%s", imageUrlPath, query)
+	//imageUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/SMPTE_Color_Bars.svg/1344px-SMPTE_Color_Bars.svg.png"
+	//imageUrl = "https://i.imgur.com/ZGPxFN2.jpg" // why yes Discord dumped support for PNG
 
 	return imageUrl, nil
 }
