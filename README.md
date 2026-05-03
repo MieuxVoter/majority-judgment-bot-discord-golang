@@ -48,15 +48,15 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
 
 1. Clone this repository.
 2. Create `.env.local`, copied from `.env`
-   ```
+   ```shell
    $ cp .env .env.local
    ```
 3. Configure your _discord token_ in `.env.local`
-   ```
+   ```shell
    $ vi .env.local
    ```
 4. Run
-   ```
+   ```shell
    $ go run src/main.go
    ```
 5. Visit the OAuth URL that was printed in the output
@@ -64,7 +64,7 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
 
 ## Build
 
-```
+```shell
    $ make
    $ ./mjbot
 ```
@@ -77,7 +77,7 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
 
 Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, and run `docker compose`: 
 
-```
+```shell
    $ cp .env .env.local
    $ vi .env.local
    $ docker compose up
