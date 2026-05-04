@@ -1,56 +1,29 @@
 #! /usr/bin/make
-#
-# Makefile for Golang projects, v2
-#
-# Features:
-# - uses github.com/Masterminds/glide to manage dependencies and uses GO15VENDOREXPERIMENT
-# - runs ginkgo tests recursively, computes code coverage report
-# - runs gofmt and go vet
-# - prepares code coverage so travis-ci can upload it and produce badges for README.md
-# - build for linux/amd64, linux/arm, darwin/amd64, windows/amd64
-# - just 'make' builds for local OS/arch
-# - produces .tgz/.zip build output
-# - can bundle additional files into archive
-# - sets a VERSION variable in the app
-# - to include the build status and code coverage badge in CI use (replace NAME by what
-#   you set $(NAME) to further down, and also replace magnum.travis-ci.com by travis-ci.org for
-#   publicly accessible repos [sigh]):
-#   [![Build Status](https://magnum.travis-ci.com/rightscale/NAME.svg?token=4Q13wQTY4zqXgU7Edw3B&branch=master)](https://magnum.travis-ci.com/rightscale/NAME
-#   ![Code Coverage](https://s3.amazonaws.com/rs-code-coverage/NAME/cc_badge_master.svg)
-#
-# Top-level targets:
-# default: compile the program, you can thus use make && ./NAME -options ...
-# build: builds binaries for linux and darwin
-# test: runs unit tests recursively and produces code coverage stats and shows them
-# travis-test: just runs unit tests recursively
-# clean: removes build stuff
 
-# name of this app, used as basename for almost everything
+# Name of this app, used as basename for almost everything.
 NAME=mjbot
 
-# bucket to upload binaries to, rightscale-binaries for public, ??? for private
-#BUCKET=rightscale-binaries
-
-# dependencies that are used by the build&test process, these need to be installed in the
-# global Go env and not in the vendor sub-tree
+# Dependencies that are used by the build & test processes.
+# These need to be installed in the global Go env and not in the vendor sub-tree.
 DEPEND=golang.org/x/tools/cmd/cover github.com/onsi/ginkgo/ginkgo \
        github.com/onsi/gomega github.com/rlmcpherson/s3gof3r/gof3r \
        github.com/Masterminds/glide github.com/golang/lint/golint
 
+# Eg: 2026-05-21 19:17:44
 DATE=$(shell date '+%F %T')
-TRAVIS_BRANCH?=dev
-TRAVIS_COMMIT?=$(shell git symbolic-ref HEAD | cut -d"/" -f 3)
+
+# We might not need this anymore.
 GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
-# govvv version embedding at compile time
+# govvv allows version embedding at compile time.
 VFLAG=$(shell govvv -flags -pkg $(shell go list ./src/security))
 
-.PHONY: depend clean default
+.PHONY: clean default depend lint release
 
-# the default target builds a binary in the top-level dir for whatever the local OS is
-# it does not depend on 'depend' 'cause it's a pain to have that run every time you hit 'make'
-# instead you get to 'make depend' manually once
+# The default target builds a binary in the top-level dir for whatever the local OS is.
+# It does not depend on 'depend' 'cause it's a pain to have that run every time we hit 'make'.
+# Instead we need to 'make depend' manually once during the initial setup.
 default: $(NAME)
 $(NAME): $(shell find . -name \*.go)
 	go build -ldflags "$(VFLAG)" -o $(NAME) src/main.go
@@ -76,8 +49,27 @@ build/$(NAME)-%.zip: $(NAME)
 	touch $@
 
 release: $(NAME)
-	strip ./mjbot
-	upx ./mjbot
+	strip "./$(NAME)"
+	upx --ultra-brute "./$(NAME)"
+
+# Installing build dependencies. You will need to run this once manually when you clone the repo.
+depend:
+	go get -v $(DEPEND)
+	glide install
+
+clean:
+	rm -rf build .vendor/pkg
+
+# Run gofmt and complain if a file is out of compliance
+# Run go vet and similarly complain if there are issues
+# Run go lint and complain if there are issues
+lint:
+	@if gofmt -l . | egrep -v ^vendor/ | grep .go; then \
+	  echo "^- Repo contains improperly formatted go files; run gofmt -w *.go" && exit 1; \
+	  else echo "All .go files formatted correctly"; fi
+	#go tool vet -v -composites=false *.go
+	#go tool vet -v -composites=false **/*.go
+	for pkg in $$(go list ./... |grep -v /vendor/); do golint $$pkg; done
 
 # upload assumes you have AWS_ACCESS_KEY_ID and AWS_SECRET_KEY env variables set,
 # which happens in the .travis.yml for CI. Yup, that means you can't run it from your laptop,
@@ -91,22 +83,3 @@ release: $(NAME)
 #	      gof3r put --no-md5 --acl=$(ACL) -b ${BUCKET} -k rsbin/$(NAME)/$(TRAVIS_BRANCH)/$$f <$$f; \
 #	    fi; \
 #	  done)
-
-# Installing build dependencies. You will need to run this once manually when you clone the repo
-depend:
-	go get -v $(DEPEND)
-	glide install
-
-clean:
-	rm -rf build .vendor/pkg
-
-# run gofmt and complain if a file is out of compliance
-# run go vet and similarly complain if there are issues
-# run go lint and complain if there are issues
-lint:
-	@if gofmt -l . | egrep -v ^vendor/ | grep .go; then \
-	  echo "^- Repo contains improperly formatted go files; run gofmt -w *.go" && exit 1; \
-	  else echo "All .go files formatted correctly"; fi
-	#go tool vet -v -composites=false *.go
-	#go tool vet -v -composites=false **/*.go
-	for pkg in $$(go list ./... |grep -v /vendor/); do golint $$pkg; done

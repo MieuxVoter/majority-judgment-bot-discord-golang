@@ -1,4 +1,4 @@
-FROM andersfylling/disgord:latest as builder
+FROM andersfylling/disgord:latest AS builder
 MAINTAINER https://github.com/andersfylling
 WORKDIR /build
 COPY . /build
