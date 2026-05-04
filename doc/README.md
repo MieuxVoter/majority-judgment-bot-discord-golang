@@ -15,6 +15,8 @@ This leverages the excellent `disgord` https://github.com/andersfylling/disgord
 
 ## Architectural Decision Drafts
 
+- [Abandon of our v0](v0-abandon.md)
+
 ### Merit Profile Generation using a web service
 
 We use MieuxVoter's OpenApi implementation.
