@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -28,21 +28,21 @@ func (c FeedbackCommand) GetDescription() string {
 	return "Send a message to my creators"
 }
 
-func (c FeedbackCommand) Define() *disgord.ApplicationCommandOption {
-	return &disgord.ApplicationCommandOption{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-		Type:        disgord.OptionTypeSubCommand,
-		Options: []*disgord.ApplicationCommandOption{
-			{
-				Type:        disgord.OptionTypeString,
-				Required:    true,
-				Name:        "message",
-				Description: "The message you wish to send us — intolerance won't be tolerated",
-			},
-		},
-	}
-}
+//func (c FeedbackCommand) Define() *disgord.ApplicationCommandOption {
+//	return &disgord.ApplicationCommandOption{
+//		Name:        c.GetName(),
+//		Description: c.GetEmote() + " " + c.GetDescription(),
+//		Type:        disgord.OptionTypeSubCommand,
+//		Options: []*disgord.ApplicationCommandOption{
+//			{
+//				Type:        disgord.OptionTypeString,
+//				Required:    true,
+//				Name:        "message",
+//				Description: "The message you wish to send us — intolerance won't be tolerated",
+//			},
+//		},
+//	}
+//}
 
 func (c FeedbackCommand) Matches(command string) bool {
 	return command == FeedbackCommandSlug

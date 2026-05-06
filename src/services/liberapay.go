@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord/json"
+	//"github.com/andersfylling/disgord/json"
 	"github.com/sarulabs/di"
 	"io"
 	"log"
@@ -63,7 +63,8 @@ func (service *Liberapay) FetchMain() error {
 	}
 
 	var result LiberapayMain
-	err = json.Unmarshal(body, &result)
+	err = fmt.Errorf("IMPLEMENT JSON UNMARSHAL\n%v", body) // FIXME
+	//err = json.Unmarshal(body, &result)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@ package domain
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -31,20 +31,20 @@ func (c RerunCommand) GetDescription() string {
 	return "Rerun a fresh copy of a past poll"
 }
 
-func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
-	return &disgord.ApplicationCommandOption{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-		Type:        disgord.OptionTypeSubCommand,
-		Options: []*disgord.ApplicationCommandOption{
-			{
-				Name:        "poll",
-				Description: "The poll's numerical identifier, shown after the ⚖",
-				Type:        disgord.OptionTypeString,
-			},
-		},
-	}
-}
+//func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
+//	return &disgord.ApplicationCommandOption{
+//		Name:        c.GetName(),
+//		Description: c.GetEmote() + " " + c.GetDescription(),
+//		Type:        disgord.OptionTypeSubCommand,
+//		Options: []*disgord.ApplicationCommandOption{
+//			{
+//				Name:        "poll",
+//				Description: "The poll's numerical identifier, shown after the ⚖",
+//				Type:        disgord.OptionTypeString,
+//			},
+//		},
+//	}
+//}
 
 func (c RerunCommand) Matches(command string) bool {
 	return command == c.GetName()

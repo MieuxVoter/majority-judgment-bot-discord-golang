@@ -3,8 +3,8 @@ package discord
 import (
 	"context"
 	"fmt"
-	"github.com/andersfylling/disgord"
-	"github.com/andersfylling/disgord/std"
+	//"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord/std"
 	"github.com/sirupsen/logrus"
 	"main/src/container"
 	"main/src/domain"
@@ -15,7 +15,7 @@ import (
 var noCtx = context.Background()
 var config *services.Config
 var logger *logrus.Logger
-var discordClient *disgord.Client
+//var discordClient *disgord.Client
 
 // checkErr logs errors if not nil, along with a user-specified trace
 func checkErr(err error, trace string) {

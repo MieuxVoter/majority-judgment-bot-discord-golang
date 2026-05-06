@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -24,13 +24,13 @@ func (c HelpCommand) GetDescription() string {
 	return "General help about how to interact with me"
 }
 
-func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
-	return &disgord.ApplicationCommandOption{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-		Type:        disgord.OptionTypeSubCommand,
-	}
-}
+//func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
+//	return &disgord.ApplicationCommandOption{
+//		Name:        c.GetName(),
+//		Description: c.GetEmote() + " " + c.GetDescription(),
+//		Type:        disgord.OptionTypeSubCommand,
+//	}
+//}
 
 func (c HelpCommand) Matches(command string) bool {
 	return command == HelpCommandSlug

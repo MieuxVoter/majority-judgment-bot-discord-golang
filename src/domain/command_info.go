@@ -2,7 +2,7 @@ package domain
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"github.com/sirupsen/logrus"
 	"log"
@@ -37,13 +37,13 @@ func (c InfoCommand) GetDescription() string {
 	return "Display miscellaneous information about me on this server"
 }
 
-func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
-	return &disgord.ApplicationCommandOption{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-		Type:        disgord.OptionTypeSubCommand,
-	}
-}
+//func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
+//	return &disgord.ApplicationCommandOption{
+//		Name:        c.GetName(),
+//		Description: c.GetEmote() + " " + c.GetDescription(),
+//		Type:        disgord.OptionTypeSubCommand,
+//	}
+//}
 
 func (c InfoCommand) Matches(command string) bool {
 	return command == InfoCommandSlug
@@ -107,7 +107,7 @@ func handleInfoCommand(
 
 	buttons := make([]*provider.ButtonField, 0)
 	buttons = append(buttons, &provider.ButtonField{
-		Style: disgord.Link,
+		//Style: disgord.Link,
 		Label: "Wish me Well",
 		Emote: "🌠",
 		Url:   "https://liberapay.com/MajorityJudgmentBot/",

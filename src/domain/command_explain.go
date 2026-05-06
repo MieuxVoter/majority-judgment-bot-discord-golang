@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -24,13 +24,13 @@ func (c ExplainCommand) GetDescription() string {
 	return "Explain Majority Judgment like you're five years old"
 }
 
-func (c ExplainCommand) Define() *disgord.ApplicationCommandOption {
-	return &disgord.ApplicationCommandOption{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-		Type:        disgord.OptionTypeSubCommand,
-	}
-}
+//func (c ExplainCommand) Define() *disgord.ApplicationCommandOption {
+//	return &disgord.ApplicationCommandOption{
+//		Name:        c.GetName(),
+//		Description: c.GetEmote() + " " + c.GetDescription(),
+//		Type:        disgord.OptionTypeSubCommand,
+//	}
+//}
 
 func (c ExplainCommand) Matches(command string) bool {
 	return command == c.GetName()

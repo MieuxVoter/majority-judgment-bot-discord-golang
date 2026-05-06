@@ -2,7 +2,7 @@ package discord
 
 import (
 	"fmt"
-	"github.com/andersfylling/disgord"
+	//"github.com/andersfylling/disgord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/sarulabs/di"
 	"log"
