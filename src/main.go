@@ -32,9 +32,9 @@ func main() {
 
 	// Parse command-line flags
 	shouldSyncCommands := flag.Bool(
-		"sync-commands",
-		false,
-		"Whether to synchronize commands with discord",
+		"no-sync-commands",
+		true,
+		"Skip synchronizing commands with Discord",
 	)
 	flag.Parse()
 
@@ -56,54 +56,55 @@ func main() {
 
 	h := handler.New()
 	h.Command("/test", commands.TestHandler)
-	//h.Autocomplete("/test", commands.TestAutocompleteHandler)
+	h.Autocomplete("/test", commands.TestAutocompleteHandler)
+
+	h.Command("/mj", commands.TestHandler)
 
 	// Connect to Discord and start listening
 	client, err := disgo.New(
 		discordToken,
+		//bot.WithLogger(logger),
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
 				gateway.IntentGuildMessages,
 			),
 		),
-		//bot.WithEventListenerFunc(func(e *events.MessageCreate) {
-		//	// event code here
-		//}),
 		bot.WithEventListeners(h),
 	)
 	if err != nil {
-		logger.Fatalln(err)
+		logger.Fatalln("failed building disgo: %s", err)
 	}
 
 	// Close the client's network connection when the bot exits, I guess?
 	defer func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		closeContext, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
-		client.Close(ctx)
+		client.Close(closeContext)
 	}()
 
+	// Tell Discord about this bot's available commands, via the REST API
 	if *shouldSyncCommands {
 		logger.Infoln("Synchronizing commands with Discord…")
-		//slog.Info("Syncing commands", slog.Any("guild_ids", cfg.Bot.DevGuilds))
-		guilds := []snowflake.ID{} // empty == globally
-		err = handler.SyncCommands(client, commands.Commands, guilds)
+		var guilds []snowflake.ID // empty == all guilds
+		err = handler.SyncCommands(client, commands.GetCommands(), guilds)
 		if err != nil {
-			logger.Fatalln("Failed to sync commands", err)
+			logger.Fatalln("failed to sync commands: %s", err)
 		}
 		logger.Infoln("Done synchronizing commands with Discord.")
 	}
 
 	gatewayContext, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	if err = client.OpenGateway(gatewayContext); err != nil {
+	err = client.OpenGateway(gatewayContext)
+	if err != nil {
 		logger.Fatalln(err)
 	}
 
-	// Finally, start the waiting loop
+	// Finally, start the waiting loop for a system signal
 	logger.Infoln("Bot is running. Press CTRL-C to exit.")
-	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM)
-	<-s
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-signalChannel
 	logger.Infoln("Shutting down…")
 }
 

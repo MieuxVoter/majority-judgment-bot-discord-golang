@@ -19,12 +19,25 @@ var test = discord.SlashCommandCreate{
 }
 
 func TestHandler(e *handler.CommandEvent) error {
+	//choice := e.SlashCommandInteractionData().String("choice")
 	return e.CreateMessage(discord.MessageCreate{}.
-		WithContentf("I AM A DISEMBODIED HEAD SO YOU CAN TRUST ME ; YOU CAN TRUST ME"),
+		WithContentf("I AM A DISEMBODIED HEAD SO YOU CAN TRUST ME … YOU CAN TRUST ME"),
 	)
-	//return e.CreateMessage(discord.NewMessageCreateBuilder().
-	//	SetContentf("test command. Choice: %s", e.SlashCommandInteractionData().String("choice")).
-	//	AddActionRow(discord.NewPrimaryButton("test", "/test-button")).
-	//	Build(),
-	//)
+}
+
+func TestAutocompleteHandler(e *handler.AutocompleteEvent) error {
+	return e.AutocompleteResult([]discord.AutocompleteChoice{
+		discord.AutocompleteChoiceString{
+			Name:  "Dominique",
+			Value: "1",
+		},
+		discord.AutocompleteChoiceString{
+			Name:  "Giulia",
+			Value: "2",
+		},
+		discord.AutocompleteChoiceString{
+			Name:  "Hayley",
+			Value: "3",
+		},
+	})
 }
