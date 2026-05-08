@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -10,6 +11,7 @@ import (
 	"xorm.io/xorm"
 )
 
+// CreateCommandSlug is locale-insensitive (and should stay that way)
 const CreateCommandSlug = "create"
 
 type CreateCommand struct {
@@ -28,90 +30,83 @@ func (c CreateCommand) GetDescription() string {
 	return "Create a new poll"
 }
 
-//func (c CreateCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
-//	return &disgord.ApplicationCommandOption{
-//		Name:        c.GetName(),
-//		Description: c.GetEmote() + " " + c.GetDescription(),
-//		Type:        disgord.OptionTypeSubCommand,
-//		Options: []*disgord.ApplicationCommandOption{
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "subject",
-//				Description: "The poll's subject, such as \"Meeting date\"",
-//			},
-//			// How to get variadism here, for proposals?
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "proposal_a",
-//				Description: "The name of the first proposal, like Friday",
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "proposal_b",
-//				Description: "The name of the second proposal, like Pizza",
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "proposal_c",
-//				Description: "The name of the third proposal, like Beaujolais",
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "proposal_d",
-//				Description: "The name of the fourth proposal, like Michel",
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "proposal_e",
-//				Description: "The name of the fifth element, like Moultipass",
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "grading",
-//				Description: "The grades to use in this poll",
-//				Choices: []*disgord.ApplicationCommandOptionChoice{
-//					{
-//						Name:  "👎👍",
-//						Value: "👎👍",
-//					},
-//					{
-//						Name:  "👎👊👍",
-//						Value: "👎👊👍",
-//					},
-//					{
-//						Name:  "🤮😐😀🤩",
-//						Value: "🤮😐😀🤩",
-//					},
-//					{
-//						Name:  "🤮😐😌😀🤩 (default)",
-//						Value: "🤮😐😌😀🤩",
-//					},
-//					// Discord only supports at most 5 buttons per action row,
-//					// so to add more than 5 grades we need to tweak our judgment UI.
-//				},
-//			},
-//			{
-//				Type:        disgord.OptionTypeString,
-//				Name:        "secrecy",
-//				Description: "Whether individual votes are kept secret or not. (default is secret)",
-//				Choices: []*disgord.ApplicationCommandOptionChoice{
-//					{
-//						Name:  "secret for all (default)",
-//						Value: "secret",
-//					},
-//					//{
-//					//	Name:  "poll author can see",
-//					//	Value: "admin",
-//					//},
-//					{
-//						Name:  "anyone can see",
-//						Value: "public",
-//					},
-//				},
-//			},
-//		},
-//	}
-//}
+func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
+	return []discord.ApplicationCommandOption{
+		discord.ApplicationCommandOptionString{
+			Name:        "subject",
+			Description: "The poll's subject, such as \"Meeting date\"",
+			Required:    true,
+		},
+		// How to get variadism here, for proposals?
+		discord.ApplicationCommandOptionString{
+			Name:        "proposal_a",
+			Description: "The name of the first proposal, like `Friday`",
+		},
+		discord.ApplicationCommandOptionString{
+			Name:        "proposal_b",
+			Description: "The name of the second proposal, like Pizza",
+		},
+		//{
+		//	Type:        disgord.OptionTypeString,
+		//	Name:        "proposal_c",
+		//	Description: "The name of the third proposal, like Beaujolais",
+		//},
+		//{
+		//	Type:        disgord.OptionTypeString,
+		//	Name:        "proposal_d",
+		//	Description: "The name of the fourth proposal, like Michel",
+		//},
+		//{
+		//	Type:        disgord.OptionTypeString,
+		//	Name:        "proposal_e",
+		//	Description: "The name of the fifth element, like Moultipass",
+		//},
+		//{
+		//	Type:        disgord.OptionTypeString,
+		//	Name:        "grading",
+		//	Description: "The grades to use in this poll",
+		//	Choices: []*disgord.ApplicationCommandOptionChoice{
+		//		{
+		//			Name:  "👎👍",
+		//			Value: "👎👍",
+		//		},
+		//		{
+		//			Name:  "👎👊👍",
+		//			Value: "👎👊👍",
+		//		},
+		//		{
+		//			Name:  "🤮😐😀🤩",
+		//			Value: "🤮😐😀🤩",
+		//		},
+		//		{
+		//			Name:  "🤮😐😌😀🤩 (default)",
+		//			Value: "🤮😐😌😀🤩",
+		//		},
+		//		// Discord only supports at most 5 buttons per action row,
+		//		// so to add more than 5 grades we need to tweak our judgment UI.
+		//	},
+		//},
+		//{
+		//	Type:        disgord.OptionTypeString,
+		//	Name:        "secrecy",
+		//	Description: "Whether individual votes are kept secret or not. (default is secret)",
+		//	Choices: []*disgord.ApplicationCommandOptionChoice{
+		//		{
+		//			Name:  "secret for all (default)",
+		//			Value: "secret",
+		//		},
+		//		//{
+		//		//	Name:  "poll author can see",
+		//		//	Value: "admin",
+		//		//},
+		//		{
+		//			Name:  "anyone can see",
+		//			Value: "public",
+		//		},
+		//	},
+		//},
+	}
+}
 
 func (c CreateCommand) Matches(command string) bool {
 	return command == c.GetName()
@@ -132,10 +127,15 @@ func handleCreateCommand(
 ) error {
 
 	responder := provider.GetResponder(input)
-	subject, err := input.GetOption("create", "subject", "Poll")
+
+	subject, err := input.GetOptionString("create", "subject", "Poll")
+	if err != nil {
+		return err
+	}
+
 	proposalsNames := make([]string, 0)
 	for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
-		rawProposalName, _ := input.GetOption("create", "proposal_"+v, "")
+		rawProposalName, _ := input.GetOptionString("create", "proposal_"+v, "")
 		if rawProposalName == "" {
 			continue
 		}
@@ -150,16 +150,11 @@ func handleCreateCommand(
 	}
 
 	if len(proposalsNames) < 2 {
-		//err = responder.RespondUserError(input, "A Poll needs at least two proposals.")
-		//if err != nil {
-		//	return err
-		//}
-		//return nil
 		return responder.RespondUserError(input, "A Poll needs at least two proposals.")
 	}
 
-	grading, _ := input.GetOption("create", "grading", "🤮😐😌😀🤩")
-	secrecy, _ := input.GetOption("create", "secrecy", "secret")
+	grading, _ := input.GetOptionString("create", "grading", "🤮😐😌😀🤩")
+	secrecy, _ := input.GetOptionString("create", "secrecy", "secret")
 
 	err = doCreatePoll(orm, input, subject, proposalsNames, grading, secrecy)
 
@@ -188,11 +183,6 @@ func doCreatePoll(
 		return err
 	}
 	if !isAllowed {
-		//err = responder.RespondUserError(input, "This guild cannot create polls anymore.")
-		//if err != nil {
-		//	return err
-		//}
-		//return nil
 		return responder.RespondUserError(input, "This guild cannot create polls anymore.")
 	}
 
@@ -232,11 +222,10 @@ func doCreatePoll(
 		return err
 	}
 
-	panic("-- WOW TODO --") // FIXME
-	//err = responder.RespondPollView(input, poll, proposals, false)
-	//if err != nil {
-	//	return err
-	//}
+	err = responder.RespondPollView(input, poll, proposals, false)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -251,6 +240,7 @@ func init() {
 			return cmd, nil
 		},
 	})
+
 	if err != nil {
 		log.Fatalf("subcommand.mj.%s failed to build : %s\n", CreateCommandSlug, err)
 	}

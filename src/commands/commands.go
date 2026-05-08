@@ -23,6 +23,8 @@ type Subcommand interface {
 	GetDescription() string
 	Matches(subCommandName string) bool
 	Handle(input provider.Input) error
+	// GetOptionsForDiscord defines options for Discord, as an abstraction layer for this is work. (maybe later?)
+	GetOptionsForDiscord() []discord.ApplicationCommandOption
 }
 
 // MjCommand is our main (and only) root slash command for now.
@@ -51,12 +53,13 @@ func DefineSubcommandForDiscord(sc Subcommand) discord.ApplicationCommandOption 
 	return discord.ApplicationCommandOptionSubCommand{
 		Name:        sc.GetName(),
 		Description: sc.GetEmote() + " " + sc.GetDescription(),
+		Options:     sc.GetOptionsForDiscord(),
 	}
 }
 
 func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, event *handler.CommandEvent) error {
 	if data.SubCommandName == nil {
-		// Note: I have not found any way to trigger this yet.
+		// Note: I have not found any way to trigger this situation yet.
 		return event.CreateMessage(discord.MessageCreate{}.
 			WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _Nifty Haxxor_ :party:"),
 		)
@@ -77,7 +80,7 @@ func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, even
 		return subcommand.(Subcommand).Handle(input)
 	}
 
-	// Note: I have not found any way to trigger this yet.
+	// Note: I have not found any way to trigger this situation yet.
 	return event.CreateMessage(discord.MessageCreate{}.
 		WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _404: Hack Not Found_ :party:"),
 	)
@@ -104,7 +107,7 @@ func GetDiscordCommands() []discord.ApplicationCommandCreate {
 		}
 		discordCommands = append(discordCommands, mjDiscordSlashCommand)
 
-		// Inject other root discordCommands later on (if any; none is envisioned).
+		// Inject other root Discord commands later on (if any; none is envisioned).
 		// …
 
 		// Finally, toggle our memoization marker.

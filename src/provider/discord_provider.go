@@ -6,17 +6,21 @@ import (
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
+	db "main/src/database"
 	"main/src/security"
+	"xorm.io/xorm"
 )
 
-// Responder implements provider.ResponderInterface for Discord
-type Responder struct{}
+// DiscordResponder implements provider.ResponderInterface for Discord
+type DiscordResponder struct {
+	orm *xorm.Engine
+}
 
-func (r Responder) sanitizeTitle(title string) string {
+func (r DiscordResponder) sanitizeTitle(title string) string {
 	return security.TruncateString(title, 256)
 }
 
-//func (r Responder) convertButtonField(field *provider.ButtonField) *disgord.MessageComponent {
+//func (r DiscordResponder) convertButtonField(field *provider.ButtonField) *disgord.MessageComponent {
 //	component := &disgord.MessageComponent{
 //		Type:     disgord.MessageComponentButton,
 //		Style:    field.Style,
@@ -39,12 +43,12 @@ func (r Responder) sanitizeTitle(title string) string {
 //	return component
 //}
 
-func (r Responder) Matches(input Input) bool {
+func (r DiscordResponder) Matches(input Input) bool {
 	_, isDiscord := (input).(DiscordInput)
 	return isDiscord
 }
 
-func (r Responder) RespondWithMessage(input Input, message string, ephemeral bool) error {
+func (r DiscordResponder) RespondWithMessage(input Input, message string, ephemeral bool) error {
 	if d, isDiscord := (input).(DiscordInput); isDiscord {
 		msg := discord.MessageCreate{
 			Content: message,
@@ -60,7 +64,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 	return RaiseInvalidProviderError("Discord:RespondWithMessage")
 }
 
-//func (r Responder) RespondWithMessageAndImage(
+//func (r DiscordResponder) RespondWithMessageAndImage(
 //	input provider.Input,
 //	message string,
 //	imageUrl string,
@@ -92,7 +96,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
 //}
 
-//func (r Responder) RespondWithMessageAndButtons(
+//func (r DiscordResponder) RespondWithMessageAndButtons(
 //	input provider.Input,
 //	message string,
 //	buttons []*provider.ButtonField,
@@ -131,80 +135,107 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
 //}
 
-//func (r Responder) RespondPollView(
-//	input provider.Input,
-//	poll *db.Poll,
-//	proposals []*db.Proposal,
-//	replaceMessage bool,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-//
-//		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, poll.Subject)
-//		title = r.sanitizeTitle(title)
-//
-//		messageType := disgord.InteractionCallbackChannelMessageWithSource
-//		if replaceMessage {
-//			messageType = disgord.InteractionCallbackUpdateMessage
-//		}
-//
-//		pollEmbedHero := &disgord.Embed{
-//			Title: title,
-//		}
-//		if len(proposals) > 0 {
-//			description := ""
-//			for i, proposal := range proposals {
-//				if i > 0 {
-//					description += " **|** "
-//				}
-//
-//				proposalName := security.RemoveMarkdown(proposal.Name)
-//				description += security.TruncateEllipsis(proposalName, 256)
-//			}
-//			pollEmbedHero.Description = description
-//		}
-//
-//		response := &disgord.CreateInteractionResponse{
-//			Type: messageType,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Embeds: []*disgord.Embed{
-//					pollEmbedHero,
-//				},
-//				Components: []*disgord.MessageComponent{
-//					{
-//						Type:     disgord.MessageComponentActionRow,
-//						CustomID: "poll_action_row",
-//						Components: []*disgord.MessageComponent{
-//							{
-//								Type:     disgord.MessageComponentButton,
-//								Style:    disgord.Success,
-//								CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
-//								Label:    "Participate",
-//								Emoji: &disgord.Emoji{
-//									Name: "📨",
-//								},
-//							},
-//							{
-//								Type:     disgord.MessageComponentButton,
-//								Style:    disgord.Secondary,
-//								CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
-//								Label:    "View Results",
-//								Emoji: &disgord.Emoji{
-//									Name: "🔎",
-//								},
-//							},
-//						},
-//					},
-//				},
-//			},
-//		}
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondPollView")
-//}
+func (r DiscordResponder) RespondPollView(
+	input Input,
+	poll *db.Poll,
+	proposals []*db.Proposal,
+	replaceMessage bool,
+) error {
+	if d, isDiscord := input.(DiscordInput); isDiscord {
 
-//func (r Responder) RespondWithJudgmentUi(
+		title := "### " + r.sanitizeTitle(poll.Subject)
+		amountOfVotes, _ := db.CountBallots(r.orm, poll)
+
+		description := ""
+		if len(proposals) > 0 {
+			for _, proposal := range proposals {
+				description += "- "
+				proposalName := security.RemoveMarkdown(proposal.Name)
+				description += security.TruncateEllipsis(proposalName, 256)
+				description += "\n"
+			}
+		}
+
+		//discord.NewMessageCreateV2()
+		msg := discord.MessageCreate{
+			Flags: discord.MessageFlagIsComponentsV2,
+			Components: []discord.LayoutComponent{
+				discord.NewContainer(
+					discord.NewSection(
+						discord.NewTextDisplay(title),
+						discord.NewTextDisplay(description),
+					).WithAccessory(
+						discord.NewPrimaryButton(
+							"Vote",
+							fmt.Sprintf("button_poll_vote:%d", poll.Id),
+						).WithEmoji(
+							discord.ComponentEmoji{Name: "🗳"},
+						),
+					),
+					discord.NewSmallSeparator(),
+					discord.NewSection(
+						discord.NewTextDisplay(
+							fmt.Sprintf("%d votes", amountOfVotes),
+						),
+					).WithAccessory(
+						discord.NewSecondaryButton(
+							"Show results",
+							fmt.Sprintf("button_poll_results:%d", poll.Id),
+						).WithEmoji(
+							discord.ComponentEmoji{Name: "🔎"},
+							//discord.ComponentEmoji{Name: "🏆"},
+						),
+					),
+				),
+			},
+		}
+
+		err := d.Event.CreateMessage(msg)
+
+		return err
+
+		//response := &disgord.CreateInteractionResponse{
+		//	Type: messageType,
+		//	Data: &disgord.CreateInteractionResponseData{
+		//		Embeds: []*disgord.Embed{
+		//			pollEmbedHero,
+		//		},
+		//		Components: []*disgord.MessageComponent{
+		//			{
+		//				Type:     disgord.MessageComponentActionRow,
+		//				CustomID: "poll_action_row",
+		//				Components: []*disgord.MessageComponent{
+		//					{
+		//						Type:     disgord.MessageComponentButton,
+		//						Style:    disgord.Success,
+		//						CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
+		//						Label:    "Participate",
+		//						Emoji: &disgord.Emoji{
+		//							Name: "📨",
+		//						},
+		//					},
+		//					{
+		//						Type:     disgord.MessageComponentButton,
+		//						Style:    disgord.Secondary,
+		//						CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
+		//						Label:    "View Results",
+		//						Emoji: &disgord.Emoji{
+		//							Name: "🔎",
+		//						},
+		//					},
+		//				},
+		//			},
+		//		},
+		//	},
+		//}
+		//
+		//return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
+	}
+
+	return RaiseInvalidProviderError("Discord:RespondPollView")
+}
+
+//func (r DiscordResponder) RespondWithJudgmentUi(
 //	input provider.Input,
 //	proposal *db.Proposal,
 //	poll *db.Poll,
@@ -264,7 +295,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
 //}
 
-//func (r Responder) RespondJudgmentSummary(
+//func (r DiscordResponder) RespondJudgmentSummary(
 //	input provider.Input,
 //	poll *db.Poll,
 //	proposals []db.Proposal,
@@ -302,7 +333,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondJudgmentSummary")
 //}
 
-//func (r Responder) RespondDeliberation(
+//func (r DiscordResponder) RespondDeliberation(
 //	input provider.Input,
 //	poll *db.Poll,
 //	proposals []db.Proposal,
@@ -422,7 +453,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondDeliberation")
 //}
 
-//func (r Responder) RespondBallotsInspection(
+//func (r DiscordResponder) RespondBallotsInspection(
 //	input provider.Input,
 //	poll *db.Poll,
 //	proposals []db.Proposal,
@@ -480,7 +511,7 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondBallotInspection")
 //}
 
-func (r Responder) RespondServerError(
+func (r DiscordResponder) RespondServerError(
 	input Input,
 	message string,
 ) error {
@@ -501,7 +532,7 @@ func (r Responder) RespondServerError(
 	return RaiseInvalidProviderError("Discord:RespondServerError")
 }
 
-func (r Responder) RespondUserError(
+func (r DiscordResponder) RespondUserError(
 	input Input,
 	message string,
 ) error {
@@ -526,7 +557,9 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "responder.discord",
 		Build: func(ctn di.Container) (interface{}, error) {
-			responder := &Responder{}
+			responder := &DiscordResponder{
+				orm: ctn.Get("database.engine").(*xorm.Engine),
+			}
 			return responder, nil
 		},
 	})

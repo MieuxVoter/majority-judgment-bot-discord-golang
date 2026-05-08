@@ -67,7 +67,7 @@ func handleRerunCommand(
 		return RespondUserError(input, message)
 	}
 
-	pollIdString, _ := input.GetOption("rerun", "poll", "")
+	pollIdString, _ := input.GetOptionString("rerun", "poll", "")
 	if pollIdString == "" {
 		mostRecentPoll, errMrp := db.GetLastPollOfGuild(orm, guild)
 		if errMrp != nil {

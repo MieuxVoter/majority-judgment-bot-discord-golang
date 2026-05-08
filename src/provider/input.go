@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 )
@@ -9,7 +10,7 @@ import (
 // Trying to be generic so as to add other platforms/vendors than Discord at some point.
 // This might not work, or might become troublesome, but let's strive for vendor abstraction anyway.
 type Input interface {
-	GetOption(subcommand string, name string, defaultValue string) (string, error)
+	GetOptionString(subcommand string, name string, defaultValue string) (string, error)
 	//GetActorVendorId() (string, error)
 	//GetActorName() (string, error)
 	GetGuildVendorId() (string, error)
@@ -29,32 +30,19 @@ type DiscordInput struct {
 	Event *handler.CommandEvent
 }
 
-// FIXME
-func (d DiscordInput) GetOption(subcommand string, name string, defaultValue string) (string, error) {
-	//var options []*discord.ApplicationCommandDataOption
-	//
-	//for _, option := range d.Interaction.Data.Options {
-	//	if option.Name == subcommand {
-	//		options = option.Options
-	//	}
-	//}
-	//
-	//if options == nil {
-	//	return "", fmt.Errorf("command subquery options not found")
-	//}
-	//
-	//for _, option := range options {
-	//	if option.Name == name {
-	//		value := fmt.Sprintf("%s", option.Value)
-	//		if value == "" {
-	//			value = defaultValue
-	//		}
-	//
-	//		return value, nil
-	//	}
-	//}
+func (d DiscordInput) GetOptionString(subcommand string, name string, defaultValue string) (string, error) {
+	option, optionWasFound := d.Data.Option(name)
 
-	return defaultValue, nil
+	if !optionWasFound {
+		return defaultValue, nil
+		//return "", fmt.Errorf("subcommand `%s` option `%s` not found", subcommand, name)
+	}
+
+	if option.Type == discord.ApplicationCommandOptionTypeString {
+		return option.String(), nil
+	}
+
+	return "", fmt.Errorf("subcommand `%s` option `%s` type unsupported", subcommand, name)
 }
 
 //func (d DiscordInput) GetActorVendorId() (string, error) {
@@ -66,7 +54,11 @@ func (d DiscordInput) GetOption(subcommand string, name string, defaultValue str
 //}
 
 func (d DiscordInput) GetGuildVendorId() (string, error) {
-	return d.Event.GuildID().String(), nil
+	guildId := d.Event.GuildID()
+	if guildId != nil {
+		return d.Event.GuildID().String(), nil
+	}
+	return "", fmt.Errorf("guild id is unavailable")
 }
 
 //func (d DiscordInput) GetButtonName() (string, error) {
@@ -74,7 +66,5 @@ func (d DiscordInput) GetGuildVendorId() (string, error) {
 //}
 
 func (d DiscordInput) IsDirectMessage() bool {
-	return false // FIXME
-	//return d.Event.UserCommandInteractionData().GuildID()
-	//return d.Interaction.GuildID.IsZero()
+	return d.Event.GuildID() == nil
 }

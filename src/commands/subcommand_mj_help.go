@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -22,6 +23,10 @@ func (c HelpCommand) GetName() string {
 
 func (c HelpCommand) GetDescription() string {
 	return "General help about how to interact with me"
+}
+
+func (c HelpCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
+	return []discord.ApplicationCommandOption{}
 }
 
 func (c HelpCommand) Matches(subCommandName string) bool {

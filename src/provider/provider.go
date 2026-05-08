@@ -3,6 +3,7 @@ package provider
 import (
 	"fmt"
 	"main/src/container"
+	db "main/src/database"
 	"main/src/services"
 )
 
@@ -12,12 +13,12 @@ type ResponderInterface interface {
 	RespondWithMessage(input Input, message string, ephemeral bool) error
 	//RespondWithMessageAndImage(input Input, message string, imageUrl string, ephemeral bool) error
 	//RespondWithMessageAndButtons(input Input, message string, buttons []*ButtonField, ephemeral bool) error
-	//RespondPollView(
-	//	input Input,
-	//	poll *db.Poll,
-	//	proposals []*db.Proposal,
-	//	replaceMessage bool,
-	//) error
+	RespondPollView(
+		input Input,
+		poll *db.Poll,
+		proposals []*db.Proposal,
+		replaceMessage bool,
+	) error
 	//RespondWithJudgmentUi(
 	//	input Input,
 	//	proposal *db.Proposal,

@@ -34,7 +34,7 @@
 - [ ] Add a `secrecy` scope to allow public ballots
 - [ ] Explain how Majority Judgment works `/mj explain`
 - [ ] Record feedback from users with `/mj feedback`
-- [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/)
+- [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/) — ひとりぼっちのよる
 
 
 ![](./doc/screen_01.png)

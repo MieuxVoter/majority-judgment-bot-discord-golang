@@ -54,7 +54,7 @@ func (c FeedbackCommand) Handle(input provider.Input) (handled bool, err error) 
 
 func handleFeedbackCommand(orm *xorm.Engine, input provider.Input) error {
 
-	messageSent, _ := input.GetOption(FeedbackCommandSlug, "message", "")
+	messageSent, _ := input.GetOptionString(FeedbackCommandSlug, "message", "")
 	if messageSent == "" {
 		message := "Please provide a message with your feedback."
 		return RespondUserError(input, message)

@@ -7,7 +7,7 @@ import (
 	"xorm.io/xorm"
 )
 
-// GetGuild returns the found guild, or fails
+// GetGuild returns the found guild, or fails.
 func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
 		Snowflake: snowflake,
@@ -23,7 +23,7 @@ func GetGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	return guild, nil
 }
 
-// CreateGuild creates a new Guild in the database
+// CreateGuild creates a new Guild in the database.
 func CreateGuild(orm *xorm.Engine, snowflake string) (*Guild, error) {
 	guild := &Guild{
 		Snowflake: snowflake,
@@ -52,7 +52,7 @@ func GetOrCreateGuild(orm *xorm.Engine, snowflake string) (guild *Guild, err err
 	return
 }
 
-// FindPoll returns nil if the poll was not found
+// FindPoll returns nil if the poll was not found.
 func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	guild := &Poll{Id: id}
 	has, err := orm.Get(guild)
@@ -66,7 +66,7 @@ func FindPoll(orm *xorm.Engine, id uint64) (*Poll, error) {
 	return guild, nil
 }
 
-// CountPolls counts all the polls this bot is responsible for
+// CountPolls counts all the polls this bot is responsible for.
 func CountPolls(orm *xorm.Engine) (int64, error) {
 	poll := &Poll{}
 	count, err := orm.Count(poll)
@@ -77,7 +77,7 @@ func CountPolls(orm *xorm.Engine) (int64, error) {
 	return count, nil
 }
 
-// CountGuildPolls counts all the polls this bot is responsible for
+// CountGuildPolls counts all the polls this guild is responsible for.
 func CountGuildPolls(orm *xorm.Engine, guild *Guild) (int64, error) {
 	poll := &Poll{}
 	count, err := orm.Where("guild_id = ?", guild.Id).Count(poll)
@@ -106,7 +106,7 @@ func GetLastPollOfGuild(orm *xorm.Engine, guild *Guild) (*Poll, error) {
 	return poll, nil
 }
 
-// GetPollProposals returns the specified poll's proposals
+// GetPollProposals returns the specified poll's proposals.
 func GetPollProposals(orm *xorm.Engine, poll *Poll) ([]Proposal, error) {
 	var proposals []Proposal
 	err := orm.
@@ -143,17 +143,40 @@ func GetJudgmentsByJudgeOnPoll(orm *xorm.Engine, judge string, poll *Poll) ([]Ju
 	return judgments, nil
 }
 
-func CountGrades(orm *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
-	rows := make([]int64, 0, 2)
-	if err := orm.Table("judgment").
+func CountGradesReceived(orm *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
+	rows := make([]int64, 0, 1)
+	err := orm.Table("judgment").
 		Select("COUNT(*) as amount").
 		Where("`judgment`.`proposal_id` = ?", proposal.Id).
 		And("`judgment`.`grade` = ?", gradeLevel).
-		Find(&rows); err != nil {
+		Find(&rows)
+	if err != nil {
 		return 0, err
 	}
 	if 1 != len(rows) {
-		return 0, fmt.Errorf("wrong shape in CountGrades")
+		return 0, fmt.Errorf("wrong shape in CountGradesReceived")
+	}
+
+	return uint64(rows[0]), nil
+}
+
+func CountBallots(orm *xorm.Engine, poll *Poll) (uint64, error) {
+	rows := make([]int64, 0, 1)
+	err := orm.Table("judgment").
+		Select("COUNT(distinct `judgment`.judge_snowflake) AS amount").
+		In(
+			"proposal_id",
+			builder.
+				Select("id").
+				From("proposal").
+				Where(builder.Eq{"`proposal`.poll_id": poll.Id}),
+		).
+		Find(&rows)
+	if err != nil {
+		return 0, err
+	}
+	if 1 != len(rows) {
+		return 0, fmt.Errorf("wrong shape in CountBallots")
 	}
 
 	return uint64(rows[0]), nil
