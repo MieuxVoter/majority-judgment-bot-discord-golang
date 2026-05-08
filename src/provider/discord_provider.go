@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di"
 	"log"
@@ -50,9 +49,9 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 			Content: message,
 		}
 
-		//if ephemeral {
-		//	msg = msg.WithFlags(discord.MessageFlagEphemeral)
-		//}
+		if ephemeral {
+			msg = msg.WithFlags(discord.MessageFlagEphemeral)
+		}
 
 		return d.Event.CreateMessage(msg)
 	}
@@ -533,8 +532,6 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //}
 
 func init() {
-	fmt.Println("init() responder.discord")
-
 	err := container.GetBuilder().Add(di.Def{
 		Name: "responder.discord",
 		Build: func(ctn di.Container) (interface{}, error) {

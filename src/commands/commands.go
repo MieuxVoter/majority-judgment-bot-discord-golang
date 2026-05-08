@@ -3,24 +3,59 @@ package commands
 import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/sarulabs/di"
+	"log"
 	"main/src/container"
 	"main/src/provider"
 )
 
-// mjSlashCommand is our main, root command /mj.
-var mjSlashCommand = discord.SlashCommandCreate{
-	Name:        "mj",
-	Description: "Manage Majority Judgment polls",
-	Options:     []discord.ApplicationCommandOption{}, // injected dynamically, see GetCommands
+// Command interface for the root slash command(s)
+type Command interface {
+	GetName() string
+	GetDescription() string
 }
 
-func MjSlashCommandHandler(data discord.SlashCommandInteractionData, event *handler.CommandEvent) error {
-	//fmt.Println("MjSlashCommandHandler called")
-	//err := e.CreateMessage(discord.MessageCreate{}.
-	//	WithContentf("HELP ME I AM TRAPPED IN A BOT FACTORY"),
-	//)
+// Subcommand interface to implement in services declaring subcommands.
+type Subcommand interface {
+	GetEmote() string
+	GetName() string
+	GetDescription() string
+	Matches(subCommandName string) bool
+	Handle(input provider.Input) error
+}
 
+// MjCommand is our main (and only) root slash command for now.
+// It does not do anything by itself, and instead relies on subcommands.
+type MjCommand struct{}
+
+func (c MjCommand) GetName() string {
+	return "mj"
+}
+
+func (c MjCommand) GetDescription() string {
+	return "Manage Majority Judgment polls"
+}
+
+// --- Discord ---
+
+func DefineCommandForDiscord(c Command) discord.SlashCommandCreate {
+	return discord.SlashCommandCreate{
+		Name:        c.GetName(),
+		Description: c.GetDescription(),
+		Options:     []discord.ApplicationCommandOption{}, // injected dynamically, see GetDiscordCommands
+	}
+}
+
+func DefineSubcommandForDiscord(sc Subcommand) discord.ApplicationCommandOption {
+	return discord.ApplicationCommandOptionSubCommand{
+		Name:        sc.GetName(),
+		Description: sc.GetEmote() + " " + sc.GetDescription(),
+	}
+}
+
+func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, event *handler.CommandEvent) error {
 	if data.SubCommandName == nil {
+		// Note: I have not found any way to trigger this yet.
 		return event.CreateMessage(discord.MessageCreate{}.
 			WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _Nifty Haxxor_ :party:"),
 		)
@@ -30,54 +65,62 @@ func MjSlashCommandHandler(data discord.SlashCommandInteractionData, event *hand
 		Data:  data,
 		Event: event,
 	}
-	subCommands := container.GetCollection("command.mj")
-	for _, subCommand := range subCommands {
-		if !subCommand.(Command).Matches(*data.SubCommandName) {
+	subcommands := container.GetCollection("subcommand.mj")
+	for _, subcommand := range subcommands {
+		if !subcommand.(Subcommand).Matches(*data.SubCommandName) {
 			continue
 		}
 
-		return subCommand.(Command).Handle(input)
+		return subcommand.(Subcommand).Handle(input)
 	}
 
+	// Note: I have not found any way to trigger this yet.
 	return event.CreateMessage(discord.MessageCreate{}.
 		WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _404: Hack Not Found_ :party:"),
 	)
 }
 
-// commands are also injected dynamically, see GetCommands.
-var commands = []discord.ApplicationCommandCreate{}
+// discordCommands are also injected dynamically, see GetDiscordCommands.
+var discordCommands = []discord.ApplicationCommandCreate{}
 
-// areCommandsInjected marks whether the commands have been injected already.
-var areCommandsInjected = false
+// areDiscordCommandsInjected marks whether the commands have been injected already.
+var areDiscordCommandsInjected = false
 
-// Command interface to implement in services declaring commands.
-type Command interface {
-	GetEmote() string
-	GetName() string
-	GetDescription() string
-	Matches(subCommandName string) bool
-	Handle(input provider.Input) error
-	DefineForDiscord() discord.ApplicationCommandOption
-}
-
-// GetCommands lists all commands from services available in the container.
-func GetCommands() []discord.ApplicationCommandCreate {
-	if !areCommandsInjected {
+// GetDiscordCommands lists all commands from services available in the container.
+func GetDiscordCommands() []discord.ApplicationCommandCreate {
+	if !areDiscordCommandsInjected {
 		// Inject /mj command and it subcommands from the tagged services.
-		commandsServices := container.GetCollection("command.mj")
-		for _, commandGeneric := range commandsServices {
-			command := commandGeneric.(Command)
-			//fmt.Printf("registering subcommand %s\n", command.GetName())
-			mjSlashCommand.Options = append(mjSlashCommand.Options, command.DefineForDiscord())
+		mjDiscordSlashCommand := DefineCommandForDiscord(container.Get("command.mj").(Command))
+		mjSubcommandsServices := container.GetCollection("subcommand.mj")
+		for _, subcommandGeneric := range mjSubcommandsServices {
+			subcommand := subcommandGeneric.(Subcommand)
+			mjDiscordSlashCommand.Options = append(
+				mjDiscordSlashCommand.Options,
+				DefineSubcommandForDiscord(subcommand),
+			)
 		}
-		commands = append(commands, mjSlashCommand)
+		discordCommands = append(discordCommands, mjDiscordSlashCommand)
 
-		// Inject other root commands later on (if any; none is envisioned).
+		// Inject other root discordCommands later on (if any; none is envisioned).
 		// …
 
-		// Finally, mark the commands as injected so we don't do it twice by accident.
-		areCommandsInjected = true
+		// Finally, toggle our memoization marker.
+		areDiscordCommandsInjected = true
 	}
 
-	return commands
+	return discordCommands
+}
+
+func init() {
+	err := container.GetBuilder().Add(di.Def{
+		Name: "command.mj",
+		Build: func(ctn di.Container) (interface{}, error) {
+			cmd := MjCommand{}
+			return cmd, nil
+		},
+	})
+
+	if err != nil {
+		log.Fatalf("service command.mj failed to build: %s\n", err)
+	}
 }

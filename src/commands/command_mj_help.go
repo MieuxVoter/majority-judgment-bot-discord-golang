@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
@@ -29,20 +28,13 @@ func (c HelpCommand) Matches(subCommandName string) bool {
 	return subCommandName == HelpCommandSlug
 }
 
-func (c HelpCommand) DefineForDiscord() discord.ApplicationCommandOption {
-	return discord.ApplicationCommandOptionSubCommand{
-		Name:        c.GetName(),
-		Description: c.GetEmote() + " " + c.GetDescription(),
-	}
-}
-
 func (c HelpCommand) Handle(input provider.Input) error {
 	return handleHelpCommand(input)
 }
 
 func handleHelpCommand(input provider.Input) error {
 	message := "🤖 _Hello !_ " +
-		"My purpose is to help you create majority judgment polls.\n" +
+		"My purpose is to help you create Majority Judgment polls.\n" +
 		"\n" +
 		"Try me out:\n" +
 		"⌨ `/mj create <subject> <proposal_a> <proposal_b> …`\n" +
@@ -60,7 +52,7 @@ func handleHelpCommand(input provider.Input) error {
 		"so we'll need more wit to support more grades.\n" +
 		"\n" +
 		"❺ **Can I use more than 5 proposals?**\n" +
-		"> **Yes.**  Discord does not allow variadic application commands, for now, " +
+		"> **Yes.**  Discord does not allow variadic application discordCommands, for now, " +
 		"but as a workaround you may specify multiple proposals per field, " +
 		"using `|` as separator.\n" +
 		"\n" +
@@ -71,7 +63,7 @@ func handleHelpCommand(input provider.Input) error {
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "command.mj." + HelpCommandSlug,
+		Name: "subcommand.mj." + HelpCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &HelpCommand{}
 			return cmd, nil
@@ -79,6 +71,6 @@ func init() {
 	})
 
 	if err != nil {
-		log.Fatalf("service command.mj.%s failed to build : %s\n", HelpCommandSlug, err)
+		log.Fatalf("service subcommand.mj.%s failed to build : %s\n", HelpCommandSlug, err)
 	}
 }

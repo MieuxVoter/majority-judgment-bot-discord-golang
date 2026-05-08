@@ -56,16 +56,16 @@ type ResponderInterface interface {
 // GetResponder returns the responder adapter that matches the input provider
 func GetResponder(input Input) ResponderInterface {
 	responders := container.GetCollection("responder")
-	services.GetLogger().Infoln("GetResponder")
-	services.GetLogger().Infoln("%v", responders)
-	services.GetLogger().Infoln("%v", len(responders))
+	//services.GetLogger().Infoln("GetResponder")
+	//services.GetLogger().Infoln("%v", responders)
+	//services.GetLogger().Infoln("%v", len(responders))
 	for _, genericResponder := range responders {
 		responder := genericResponder.(ResponderInterface)
-		services.GetLogger().Infoln("Checking responder")
+		//services.GetLogger().Infoln("Checking responder")
 		if responder.Matches(input) {
 			return responder
 		}
-		services.GetLogger().Infoln("Responder not matching")
+		//services.GetLogger().Infoln("Responder not matching")
 	}
 
 	services.GetLogger().Fatalln("no matching responder found")

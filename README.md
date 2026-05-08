@@ -4,7 +4,7 @@
 
 > Helps create Majority Judgment polls in Discord.
 
-![](./doc/screen_00.png)
+![A screenshot of the bot in action.](./doc/screen_00.png)
 
 
 [![MIT](https://img.shields.io/github/license/MieuxVoter/majority-judgment-bot-discord-golang?style=for-the-badge)](LICENSE.md)
@@ -21,10 +21,11 @@
 - [ ] Start a poll with `/mj create …`
 - [ ] Vote on a poll using buttons
 - [ ] Look at a poll's result using a button
-- [ ] Use only _slash_ (`/`) commands
+- [x] Use only _slash_ (`/`) commands
 - [x] Be discreet : do not read messages
-- [ ] Support multiple guilds
+- [ ] Scope polls per guild (privacy!)
 - [ ] Enforce quotas per guild
+- [x] Print some miscellaneous help with `/mj help`
 - [ ] Rerun a past poll with `/mj rerun`
 - [ ] Inform about my status and metrics with `/mj info`
 - [ ] Publish a poll's result using a button
@@ -65,8 +66,8 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
 ## Build
 
 ```shell
-   $ make
-   $ ./mjbot
+$ make
+$ ./mjbot
 ```
 
 > `mjbot` is about 17Mio at the moment, which is way too much.
@@ -78,8 +79,8 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
 Configure the bot _(discord token, database, log level, etc.)_ in `.env.local`, and run `docker compose`: 
 
 ```shell
-   $ cp .env .env.local
-   $ vi .env.local
-   $ docker compose up
+$ cp .env .env.local
+$ vi .env.local
+$ docker compose up
 ```
 

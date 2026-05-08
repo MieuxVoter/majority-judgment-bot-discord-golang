@@ -12,7 +12,6 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/sirupsen/logrus"
 	"main/src/commands"
 	"main/src/container"
 	"main/src/database"
@@ -24,11 +23,9 @@ import (
 	"time"
 )
 
-var logger *logrus.Logger
-
 func main() {
 	// Collect services we're going to use here
-	logger = services.GetLogger()
+	logger := services.GetLogger()
 
 	// Parse command-line flags
 	shouldSyncCommands := flag.Bool(
@@ -55,9 +52,9 @@ func main() {
 	}
 
 	h := handler.New()
-	h.Command("/test", commands.TestHandler)
-	h.Autocomplete("/test", commands.TestAutocompleteHandler)
-	h.SlashCommand("/mj", commands.MjSlashCommandHandler)
+	//h.Command("/test", commands.TestHandler)
+	//h.Autocomplete("/test", commands.TestAutocompleteHandler)
+	h.SlashCommand("/mj", commands.MjDiscordSlashCommandHandler)
 
 	// Connect to Discord and start listening
 	client, err := disgo.New(
@@ -90,7 +87,7 @@ func main() {
 	if *shouldSyncCommands {
 		logger.Infoln("Synchronizing commands with Discord…")
 		var guilds []snowflake.ID // empty == all guilds
-		err = handler.SyncCommands(client, commands.GetCommands(), guilds)
+		err = handler.SyncCommands(client, commands.GetDiscordCommands(), guilds)
 		if err != nil {
 			logger.Fatalln("failed to sync commands: %s", err)
 		}
