@@ -1,15 +1,20 @@
 package provider
 
+import (
+	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/handler"
+)
+
 // Input holds data coming from userland through the vendor.
 // Trying to be generic so as to add other platforms/vendors than Discord at some point.
 // This might not work, or might become troublesome, but let's strive for vendor abstraction anyway.
 type Input interface {
-	GetOption(command string, name string, defaultValue string) (string, error)
-	GetActorVendorId() (string, error)
-	GetActorName() (string, error)
-	GetGuildVendorId() (string, error)
-	GetButtonName() (string, error)
-	IsDirectMessage() bool
+	//GetOption(command string, name string, defaultValue string) (string, error)
+	//GetActorVendorId() (string, error)
+	//GetActorName() (string, error)
+	//GetGuildVendorId() (string, error)
+	//GetButtonName() (string, error)
+	//IsDirectMessage() bool
 }
 
 //  ___  _                   _
@@ -19,12 +24,11 @@ type Input interface {
 //
 
 // DiscordInput wrapper for data coming from Discord's userland.
-//type DiscordInput struct {
-//	Context     context.Context
-//	Session     disgord.Session
-//	Interaction *disgord.InteractionCreate
-//}
-//
+type DiscordInput struct {
+	Data  discord.SlashCommandInteractionData
+	Event *handler.CommandEvent
+}
+
 //func (d DiscordInput) GetOption(command string, name string, defaultValue string) (string, error) {
 //	var options []*disgord.ApplicationCommandDataOption
 //

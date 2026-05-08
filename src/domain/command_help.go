@@ -24,7 +24,7 @@ func (c HelpCommand) GetDescription() string {
 	return "General help about how to interact with me"
 }
 
-//func (c HelpCommand) Define() *disgord.ApplicationCommandOption {
+//func (c HelpCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),

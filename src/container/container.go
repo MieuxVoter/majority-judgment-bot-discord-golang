@@ -5,7 +5,7 @@ package container
 //
 // Dev Notes - Postmortem
 // ----------------------
-// DI is useful to collect collections of tagged services,
+// DI is actually useful to collect collections of tagged services,
 // but besides that, for now, it's not as useful as it is in other languages
 // because of the way Go handles packages, which can serve as a makeshift DI.
 
@@ -18,7 +18,7 @@ import (
 var builder *di.Builder
 var container di.Container
 
-// GetBuilder returns the container builder, to which we can add new services
+// GetBuilder returns the container builder, to which we can add new services.
 func GetBuilder() *di.Builder {
 	if builder == nil {
 		var err error
@@ -35,12 +35,12 @@ func Build() {
 	container = GetBuilder().Build()
 }
 
-// Get a service, by name
+// Get a service, by name.
 func Get(name string) interface{} {
 	return container.Get(name)
 }
 
-// GetCollection of services, by name prefix
+// GetCollection of services, by name prefix.
 func GetCollection(prefix string) []interface{} {
 	collection := make([]interface{}, 0)
 	for key := range container.Definitions() {

@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"fmt"
 	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/handler"
 	"main/src/container"
 	"main/src/provider"
 )
@@ -14,6 +14,36 @@ var mjSlashCommand = discord.SlashCommandCreate{
 	Options:     []discord.ApplicationCommandOption{}, // injected dynamically, see GetCommands
 }
 
+func MjSlashCommandHandler(data discord.SlashCommandInteractionData, event *handler.CommandEvent) error {
+	//fmt.Println("MjSlashCommandHandler called")
+	//err := e.CreateMessage(discord.MessageCreate{}.
+	//	WithContentf("HELP ME I AM TRAPPED IN A BOT FACTORY"),
+	//)
+
+	if data.SubCommandName == nil {
+		return event.CreateMessage(discord.MessageCreate{}.
+			WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _Nifty Haxxor_ :party:"),
+		)
+	}
+
+	input := provider.DiscordInput{
+		Data:  data,
+		Event: event,
+	}
+	subCommands := container.GetCollection("command.mj")
+	for _, subCommand := range subCommands {
+		if !subCommand.(Command).Matches(*data.SubCommandName) {
+			continue
+		}
+
+		return subCommand.(Command).Handle(input)
+	}
+
+	return event.CreateMessage(discord.MessageCreate{}.
+		WithContentf(":party: **ACHIEVEMENT UNLOCKED**: _404: Hack Not Found_ :party:"),
+	)
+}
+
 // commands are also injected dynamically, see GetCommands.
 var commands = []discord.ApplicationCommandCreate{}
 
@@ -22,27 +52,27 @@ var areCommandsInjected = false
 
 // Command interface to implement in services declaring commands.
 type Command interface {
-	Define() discord.ApplicationCommandOption
 	GetEmote() string
 	GetName() string
 	GetDescription() string
-	Matches(command string) bool
-	Handle(input provider.Input) (handled bool, err error)
+	Matches(subCommandName string) bool
+	Handle(input provider.Input) error
+	DefineForDiscord() discord.ApplicationCommandOption
 }
 
 // GetCommands lists all commands from services available in the container.
 func GetCommands() []discord.ApplicationCommandCreate {
 	if !areCommandsInjected {
-		// Inject /mj subcommands from the tagged services.
+		// Inject /mj command and it subcommands from the tagged services.
 		commandsServices := container.GetCollection("command.mj")
 		for _, commandGeneric := range commandsServices {
 			command := commandGeneric.(Command)
-			fmt.Printf("registering subcommand %s\n", command.GetName())
-			mjSlashCommand.Options = append(mjSlashCommand.Options, command.Define())
+			//fmt.Printf("registering subcommand %s\n", command.GetName())
+			mjSlashCommand.Options = append(mjSlashCommand.Options, command.DefineForDiscord())
 		}
 		commands = append(commands, mjSlashCommand)
 
-		// Inject other eventual commands later on (if any).
+		// Inject other root commands later on (if any; none is envisioned).
 		// …
 
 		// Finally, mark the commands as injected so we don't do it twice by accident.

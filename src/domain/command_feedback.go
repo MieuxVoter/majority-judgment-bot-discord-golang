@@ -28,7 +28,7 @@ func (c FeedbackCommand) GetDescription() string {
 	return "Send a message to my creators"
 }
 
-//func (c FeedbackCommand) Define() *disgord.ApplicationCommandOption {
+//func (c FeedbackCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),

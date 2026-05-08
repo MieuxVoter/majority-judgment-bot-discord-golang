@@ -37,7 +37,7 @@ func (c InfoCommand) GetDescription() string {
 	return "Display miscellaneous information about me on this server"
 }
 
-//func (c InfoCommand) Define() *disgord.ApplicationCommandOption {
+//func (c InfoCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),

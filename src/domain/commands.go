@@ -21,7 +21,7 @@ var areCommandsDefined = false
 
 // Command interface to implement in services declaring commands.
 type Command interface {
-	//Define() *disgord.ApplicationCommandOption // deprecated: to generify
+	//DefineForDiscord() *disgord.ApplicationCommandOption // deprecated: to generify
 	GetEmote() string
 	GetName() string
 	GetDescription() string
@@ -35,7 +35,7 @@ type Command interface {
 //		commandsServices := container.GetCollection("command")
 //		for _, commandGeneric := range commandsServices {
 //			command := commandGeneric.(Command)
-//			commands[0].Options = append(commands[0].Options, command.Define())
+//			commands[0].Options = append(commands[0].Options, command.DefineForDiscord())
 //		}
 //		areCommandsDefined = true
 //	}

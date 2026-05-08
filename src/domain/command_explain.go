@@ -24,7 +24,7 @@ func (c ExplainCommand) GetDescription() string {
 	return "Explain Majority Judgment like you're five years old"
 }
 
-//func (c ExplainCommand) Define() *disgord.ApplicationCommandOption {
+//func (c ExplainCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),

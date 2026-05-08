@@ -29,7 +29,7 @@ func (c CreateCommand) GetDescription() string {
 	return "Create a new poll"
 }
 
-//func (c CreateCommand) Define() *disgord.ApplicationCommandOption {
+//func (c CreateCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),

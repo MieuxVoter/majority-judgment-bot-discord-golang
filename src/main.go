@@ -57,18 +57,22 @@ func main() {
 	h := handler.New()
 	h.Command("/test", commands.TestHandler)
 	h.Autocomplete("/test", commands.TestAutocompleteHandler)
-
-	h.Command("/mj", commands.TestHandler)
+	h.SlashCommand("/mj", commands.MjSlashCommandHandler)
 
 	// Connect to Discord and start listening
 	client, err := disgo.New(
 		discordToken,
-		//bot.WithLogger(logger),
+		//bot.WithLogger(logger), // requires slog, yet we still use logrus
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
 				gateway.IntentGuildMessages,
 			),
 		),
+		// For later — http server
+		//bot.WithHTTPServerConfigOpts(publicKey,
+		//	httpserver.WithAddress(":80"),
+		//	httpserver.WithURL("/webhooks/interactions/callback"),
+		//),
 		bot.WithEventListeners(h),
 	)
 	if err != nil {

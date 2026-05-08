@@ -8,6 +8,7 @@ import (
 	"main/src/provider"
 )
 
+// HelpCommandSlug is locale-insensitive (and should stay that way)
 const HelpCommandSlug = "help"
 
 type HelpCommand struct{}
@@ -24,19 +25,19 @@ func (c HelpCommand) GetDescription() string {
 	return "General help about how to interact with me"
 }
 
-func (c HelpCommand) Define() discord.ApplicationCommandOption {
+func (c HelpCommand) Matches(subCommandName string) bool {
+	return subCommandName == HelpCommandSlug
+}
+
+func (c HelpCommand) DefineForDiscord() discord.ApplicationCommandOption {
 	return discord.ApplicationCommandOptionSubCommand{
 		Name:        c.GetName(),
 		Description: c.GetEmote() + " " + c.GetDescription(),
 	}
 }
 
-func (c HelpCommand) Matches(command string) bool {
-	return command == HelpCommandSlug
-}
-
-func (c HelpCommand) Handle(input provider.Input) (handled bool, err error) {
-	return true, handleHelpCommand(input)
+func (c HelpCommand) Handle(input provider.Input) error {
+	return handleHelpCommand(input)
 }
 
 func handleHelpCommand(input provider.Input) error {
@@ -78,6 +79,6 @@ func init() {
 	})
 
 	if err != nil {
-		log.Fatalf("command.mj.%s failed to build : %s\n", HelpCommandSlug, err)
+		log.Fatalf("service command.mj.%s failed to build : %s\n", HelpCommandSlug, err)
 	}
 }

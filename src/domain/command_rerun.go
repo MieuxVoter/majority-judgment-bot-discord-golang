@@ -31,7 +31,7 @@ func (c RerunCommand) GetDescription() string {
 	return "Rerun a fresh copy of a past poll"
 }
 
-//func (c RerunCommand) Define() *disgord.ApplicationCommandOption {
+//func (c RerunCommand) DefineForDiscord() *disgord.ApplicationCommandOption {
 //	return &disgord.ApplicationCommandOption{
 //		Name:        c.GetName(),
 //		Description: c.GetEmote() + " " + c.GetDescription(),
