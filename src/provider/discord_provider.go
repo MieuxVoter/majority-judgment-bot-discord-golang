@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di"
 	"log"
@@ -479,57 +480,47 @@ func (r Responder) RespondWithMessage(input Input, message string, ephemeral boo
 //	return provider.RaiseInvalidProviderError("Discord:RespondBallotInspection")
 //}
 
-//func (r Responder) RespondServerError(
-//	input provider.Input,
-//	message string,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-//		messageType := disgord.InteractionCallbackChannelMessageWithSource
-//		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-//			Type: messageType,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Flags: disgord.MessageFlagEphemeral,
-//				Content: fmt.Sprintf(
-//					"💥 **BOOM !**\n"+
-//						"\n"+
-//						"%s\n"+
-//						"",
-//					message,
-//				),
-//			},
-//		})
-//
-//		return err
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondServerError")
-//}
+func (r Responder) RespondServerError(
+	input Input,
+	message string,
+) error {
+	if _, isDiscord := input.(DiscordInput); isDiscord {
+		//return GetResponder(input).RespondWithMessage(
+		return r.RespondWithMessage(
+			input,
+			fmt.Sprintf(
+				"💥 **BOOM !**\n"+
+					"\n"+
+					"%s\n",
+				message,
+			),
+			true,
+		)
+	}
 
-//func (r Responder) RespondUserError(
-//	input provider.Input,
-//	message string,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-//		messageType := disgord.InteractionCallbackChannelMessageWithSource
-//		err := d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-//			Type: messageType,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Flags: disgord.MessageFlagEphemeral,
-//				Content: fmt.Sprintf(
-//					"🍄 **Ooops**\n"+
-//						"\n"+
-//						"%s\n"+
-//						"",
-//					message,
-//				),
-//			},
-//		})
-//
-//		return err
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondUserError")
-//}
+	return RaiseInvalidProviderError("Discord:RespondServerError")
+}
+
+func (r Responder) RespondUserError(
+	input Input,
+	message string,
+) error {
+	if _, isDiscord := input.(DiscordInput); isDiscord {
+		return r.RespondWithMessage(
+			input,
+			fmt.Sprintf(
+				"🍄 **Ooops**\n"+
+					"\n"+
+					"%s\n"+
+					"",
+				message,
+			),
+			true,
+		)
+	}
+
+	return RaiseInvalidProviderError("Discord:RespondUserError")
+}
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
