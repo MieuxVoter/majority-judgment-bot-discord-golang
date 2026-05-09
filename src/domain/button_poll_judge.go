@@ -194,14 +194,12 @@ func (b PollJudgeButton) Handle(input provider.ButtonInput) (handled bool, err e
 
 	} else {
 		// Rule: When all proposals are judged, show a summary of emitted judgments.
-		err = RespondUserError(input, "TODO")
-		//err = RespondJudgmentSummary(
-		//	input,
-		//	poll,
-		//	proposals,
-		//	judgments,
-		//	true,
-		//)
+		err = RespondBallotSummary(
+			input,
+			poll,
+			proposals,
+			judgments,
+		)
 		return
 	}
 }

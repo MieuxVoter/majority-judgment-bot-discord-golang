@@ -256,43 +256,39 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 	return RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
 }
 
-//func (r DiscordResponder) RespondJudgmentSummary(
-//	input provider.Input,
-//	poll *db.Poll,
-//	proposals []db.Proposal,
-//	judgments []db.Judgment,
-//	replaceMessage bool,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordCommandInput); isDiscord {
-//
-//		summary := ""
-//		for k := range judgments {
-//			if k > 0 {
-//				summary += "  —  "
-//			}
-//
-//			icon := poll.GetGradeIcon(judgments[k].Grade)
-//			summary += fmt.Sprintf("(%s %s %s)", icon, proposals[k].Name, icon)
-//		}
-//		title := "✅ **WELL DONE!**"
-//		message := "Here's the summary of your judgments:\n" + summary
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, &disgord.CreateInteractionResponse{
-//			Type: disgord.InteractionCallbackUpdateMessage,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Flags: disgord.MessageFlagEphemeral, // | disgord.MessageFlagSupressEmbeds,
-//				Embeds: []*disgord.Embed{
-//					{
-//						Title:       title,
-//						Description: message,
-//					},
-//				},
-//			},
-//		})
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondJudgmentSummary")
-//}
+func (r DiscordResponder) RespondBallotSummary(
+	input Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	judgments []db.Judgment,
+) error {
+	if d, isDiscord := input.(DiscordInteraction); isDiscord {
+
+		title := "### ✅ **A VOTÉ**"
+		message := "Here's the summary of your judgments:"
+		summary := ""
+		for k := range judgments {
+			icon := poll.GetGradeIcon(judgments[k].Grade)
+			summary += fmt.Sprintf("- %s ⋅ %s\n", icon, proposals[k].Name)
+		}
+
+		flags := discord.MessageFlagIsComponentsV2 | discord.MessageFlagEphemeral
+		components := []discord.LayoutComponent{
+			discord.NewContainer(
+				discord.NewTextDisplay(title),
+				discord.NewTextDisplay(message),
+				discord.NewTextDisplay(summary),
+			),
+		}
+
+		return d.UpdateMessage(discord.MessageUpdate{
+			Flags:      &flags,
+			Components: &components,
+		})
+	}
+
+	return RaiseInvalidProviderError("Discord:RespondBallotSummary")
+}
 
 //func (r DiscordResponder) RespondDeliberation(
 //	input provider.Input,

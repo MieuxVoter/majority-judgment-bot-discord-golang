@@ -26,13 +26,12 @@ type ResponderInterface interface {
 		previousJudgment *db.Judgment,
 		replaceMessage bool,
 	) error
-	//RespondJudgmentSummary(
-	//	input Input,
-	//	poll *db.Poll,
-	//	proposals []db.Proposal,
-	//	judgments []db.Judgment,
-	//	replaceMessage bool,
-	//) error
+	RespondBallotSummary(
+		input Input,
+		poll *db.Poll,
+		proposals []db.Proposal,
+		judgments []db.Judgment,
+	) error
 	//RespondDeliberation(
 	//	input Input,
 	//	poll *db.Poll,

@@ -35,21 +35,19 @@ func RespondWithJudgmentUi(
 	)
 }
 
-//func RespondJudgmentSummary(
-//	input provider.Input,
-//	poll *db.Poll,
-//	proposals []db.Proposal,
-//	judgments []db.Judgment,
-//	replaceMessage bool,
-//) error {
-//	return provider.GetResponder(input).RespondJudgmentSummary(
-//		input,
-//		poll,
-//		proposals,
-//		judgments,
-//		replaceMessage,
-//	)
-//}
+func RespondBallotSummary(
+	input provider.Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	judgments []db.Judgment,
+) error {
+	return provider.GetResponder(input).RespondBallotSummary(
+		input,
+		poll,
+		proposals,
+		judgments,
+	)
+}
 
 //func RespondBallotsInspection(
 //	input provider.Input,
