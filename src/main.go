@@ -21,7 +21,7 @@ func main() {
 	logger := services.GetLogger()
 
 	// Parse command-line flags
-	shouldSyncCommands := flag.Bool(
+	shouldSyncCommands := flag.Bool( // this one is not overly useful
 		"no-sync-commands",
 		true,
 		"Skip synchronizing commands with Discord",
@@ -38,14 +38,17 @@ func main() {
 		logger.Fatalln(err)
 	}
 
+	// Start the Discord business of the bot
 	closeDiscordBot := runner.RunDiscordBot(*shouldSyncCommands)
 	defer closeDiscordBot()
 
-	// Finally, start the waiting loop for a system signal
+	// Perhaps later start the Telegram/Fediverse business of the bot here
+
+	// Finally, start waiting for an interrupting system signal
 	logger.Infoln("Bot is running. Press CTRL-C to exit.")
-	signalChannel := make(chan os.Signal, 1)
-	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
-	<-signalChannel
+	waitingChannel := make(chan os.Signal, 1)
+	signal.Notify(waitingChannel, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	<-waitingChannel
 	logger.Infoln("Shutting down…")
 }
 

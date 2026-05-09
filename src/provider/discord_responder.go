@@ -11,6 +11,17 @@ import (
 	"xorm.io/xorm"
 )
 
+//func getInteractionEvent(input Input) (*handler.InteractionEvent, error) {
+//	discordCommandInput, isDiscordCommandInput := (input).(DiscordCommandInput)
+//	if isDiscordCommandInput {
+//		interactionEvent, isInteractionEvent := (*discordCommandInput.Event).(*handler.InteractionEvent)
+//		if isInteractionEvent {
+//			return &interactionEvent, nil
+//		}
+//	}
+//	//_, isDiscord = (input).(DiscordButtonInput)
+//}
+
 // DiscordResponder implements provider.ResponderInterface for Discord
 type DiscordResponder struct {
 	orm *xorm.Engine
@@ -44,12 +55,15 @@ func (r DiscordResponder) sanitizeTitle(title string) string {
 //}
 
 func (r DiscordResponder) Matches(input Input) bool {
-	_, isDiscord := (input).(DiscordInput)
+	_, isDiscord := (input).(DiscordCommandInput)
+	if !isDiscord {
+		_, isDiscord = (input).(DiscordButtonInput)
+	}
 	return isDiscord
 }
 
 func (r DiscordResponder) RespondWithMessage(input Input, message string, ephemeral bool) error {
-	if d, isDiscord := (input).(DiscordInput); isDiscord {
+	if d, isDiscord := (input).(DiscordInteraction); isDiscord {
 		msg := discord.MessageCreate{
 			Content: message,
 		}
@@ -58,7 +72,7 @@ func (r DiscordResponder) RespondWithMessage(input Input, message string, epheme
 			msg = msg.WithFlags(discord.MessageFlagEphemeral)
 		}
 
-		return d.Event.CreateMessage(msg)
+		return d.CreateMessage(msg)
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondWithMessage")
@@ -70,7 +84,7 @@ func (r DiscordResponder) RespondWithMessage(input Input, message string, epheme
 //	imageUrl string,
 //	ephemeral bool,
 //) error {
-//	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
+//	if d, isDiscord := (input).(provider.DiscordCommandInput); isDiscord {
 //		response := &disgord.CreateInteractionResponse{
 //			Type: disgord.InteractionCallbackChannelMessageWithSource,
 //			Data: &disgord.CreateInteractionResponseData{
@@ -102,7 +116,7 @@ func (r DiscordResponder) RespondWithMessage(input Input, message string, epheme
 //	buttons []*provider.ButtonField,
 //	ephemeral bool,
 //) error {
-//	if d, isDiscord := (input).(provider.DiscordInput); isDiscord {
+//	if d, isDiscord := (input).(provider.DiscordCommandInput); isDiscord {
 //		response := &disgord.CreateInteractionResponse{
 //			Type: disgord.InteractionCallbackChannelMessageWithSource,
 //			Data: &disgord.CreateInteractionResponseData{
@@ -141,7 +155,7 @@ func (r DiscordResponder) RespondPollView(
 	proposals []*db.Proposal,
 	replaceMessage bool,
 ) error {
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(DiscordCommandInput); isDiscord {
 
 		title := "### " + r.sanitizeTitle(poll.Subject)
 		amountOfVotes, _ := db.CountBallots(r.orm, poll)
@@ -166,7 +180,7 @@ func (r DiscordResponder) RespondPollView(
 					).WithAccessory(
 						discord.NewPrimaryButton(
 							"Vote",
-							fmt.Sprintf("/button/poll/vote/%d", poll.Id),
+							fmt.Sprintf("/button/poll/%d/vote", poll.Id),
 						).WithEmoji(
 							discord.ComponentEmoji{Name: "🗳"},
 						),
@@ -202,57 +216,32 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 	previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
-	if d, isDiscord := input.(DiscordInput); isDiscord {
+	if d, isDiscord := input.(DiscordInteraction); isDiscord {
 
-		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name)
-		title = security.TruncateString(title, 256)
+		title := "### " + security.TruncateString(proposal.Name, 256)
 
-		return r.RespondWithMessage(input, d.Event.Data.CommandName(), true)
+		gradeButtons := make([]discord.InteractiveComponent, 0, 5)
+		for gradeLevel, grade := range poll.GetGradingSlice() {
+			customId := fmt.Sprintf("/button/poll/%d/judge/%d/as/%d", poll.Id, proposal.Id, gradeLevel)
+			emoji := discord.ComponentEmoji{Name: grade}
+			button := discord.NewSecondaryButton("", customId).WithEmoji(emoji)
+			if previousJudgment != nil && previousJudgment.Grade == uint8(gradeLevel) {
+				button = discord.NewSuccessButton("", customId).WithEmoji(emoji)
+			}
+			gradeButtons = append(gradeButtons, button)
+		}
 
-		//messageType := disgord.InteractionCallbackChannelMessageWithSource
-		//if replaceMessage {
-		//	messageType = disgord.InteractionCallbackUpdateMessage
-		//}
-		//interactionResponse := &disgord.CreateInteractionResponse{
-		//	Type: messageType,
-		//	Data: &disgord.CreateInteractionResponseData{
-		//		Flags: disgord.MessageFlagEphemeral,
-		//		Embeds: []*disgord.Embed{
-		//			{
-		//				Title:       title,
-		//				Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
-		//			},
-		//		},
-		//		Components: []*disgord.MessageComponent{
-		//			{
-		//				Type:       disgord.MessageComponentActionRow,
-		//				CustomID:   "poll_action_row",
-		//				Components: []*disgord.MessageComponent{}, // filled below
-		//			},
-		//		},
-		//	},
-		//}
-		//
-		//for gradeLevel, grade := range poll.GetGradingSlice() {
-		//
-		//	previouslySelectedMarker := ""
-		//	if previousJudgment != nil {
-		//		if uint8(gradeLevel) == previousJudgment.Grade {
-		//			previouslySelectedMarker = " ✅"
-		//		}
-		//	}
-		//	interactionResponse.Data.Components[0].Components = append(
-		//		interactionResponse.Data.Components[0].Components,
-		//		&disgord.MessageComponent{
-		//			Type:     disgord.MessageComponentButton,
-		//			Style:    disgord.Primary,
-		//			CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
-		//			Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
-		//		},
-		//	)
-		//}
-		//
-		//return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
+		msg := discord.MessageCreate{
+			Flags: discord.MessageFlagIsComponentsV2 | discord.MessageFlagEphemeral,
+			Components: []discord.LayoutComponent{
+				discord.NewContainer(
+					discord.NewTextDisplay(title),
+					discord.NewActionRow(gradeButtons...),
+				),
+			},
+		}
+
+		return d.CreateMessage(msg)
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
@@ -265,7 +254,7 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 //	judgments []db.Judgment,
 //	replaceMessage bool,
 //) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+//	if d, isDiscord := input.(provider.DiscordCommandInput); isDiscord {
 //
 //		summary := ""
 //		for k := range judgments {
@@ -307,7 +296,7 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 //	asPrivateMessage bool,
 //	canInspect bool,
 //) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+//	if d, isDiscord := input.(provider.DiscordCommandInput); isDiscord {
 //
 //		// Generate the merit profile image URL
 //		imageUrl, errImg := network.GetOas().GetMeritProfileUrl(
@@ -449,7 +438,7 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 //		}
 //	}
 //
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
+//	if d, isDiscord := input.(provider.DiscordCommandInput); isDiscord {
 //
 //		messageType := disgord.InteractionCallbackChannelMessageWithSource
 //		csvFile := disgord.CreateMessageFile{
@@ -478,7 +467,7 @@ func (r DiscordResponder) RespondServerError(
 	input Input,
 	message string,
 ) error {
-	if _, isDiscord := input.(DiscordInput); isDiscord {
+	if _, isDiscord := input.(DiscordCommandInput); isDiscord {
 		//return GetResponder(input).RespondWithMessage(
 		return r.RespondWithMessage(
 			input,
@@ -499,7 +488,7 @@ func (r DiscordResponder) RespondUserError(
 	input Input,
 	message string,
 ) error {
-	if _, isDiscord := input.(DiscordInput); isDiscord {
+	if _, isDiscord := input.(DiscordCommandInput); isDiscord {
 		return r.RespondWithMessage(
 			input,
 			fmt.Sprintf(

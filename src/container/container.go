@@ -53,7 +53,7 @@ func Get(name string) interface{} {
 func GetCollection(prefix string) []interface{} {
 	collection := make([]interface{}, 0)
 	for key := range container.Definitions() {
-		if strings.HasPrefix(key, prefix+".") {
+		if strings.HasPrefix(key, prefix) {
 			collection = append(collection, container.Get(key))
 		}
 	}

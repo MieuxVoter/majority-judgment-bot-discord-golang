@@ -11,20 +11,31 @@ import (
 	"xorm.io/xorm"
 )
 
+// PollVoteButton is the button the user presses to start voting.
 type PollVoteButton struct {
 	orm *xorm.Engine
 }
 
-func (b PollVoteButton) Handle(input provider.Input) (bool, error) {
+var buttonPollVotePattern = "/button/poll/{pollId}/vote"
+var buttonPollVoteRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/vote$")
+
+func (b PollVoteButton) GetRegex() *regexp.Regexp {
+	return buttonPollVoteRegex
+}
+
+func (b PollVoteButton) GetPattern() string {
+	return buttonPollVotePattern
+}
+
+func (b PollVoteButton) Handle(input provider.ButtonInput) (bool, error) {
 	return handleButtonPollVote(&b, input)
 }
 
-var pollParticipationRegex = regexp.MustCompile("^/button/poll/vote/(?P<pollId>\\d+)$")
-
 func handleButtonPollVote(
 	button *PollVoteButton,
-	input provider.Input,
+	input provider.ButtonInput,
 ) (handled bool, err error) {
+
 	handled = false
 	err = nil
 
@@ -32,7 +43,7 @@ func handleButtonPollVote(
 	if err != nil {
 		return
 	}
-	matches := findNamedMatches(pollParticipationRegex, buttonName)
+	matches := findNamedMatches(button.GetRegex(), buttonName)
 	pollIdAsString, isMatchFound := matches["pollId"]
 
 	if !isMatchFound {

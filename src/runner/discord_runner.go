@@ -10,6 +10,9 @@ import (
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/sirupsen/logrus"
 	"main/src/commands"
+	"main/src/container"
+	"main/src/domain"
+	"main/src/provider"
 	"main/src/services"
 	"time"
 )
@@ -61,7 +64,7 @@ func registerDiscordCommands(client *bot.Client) {
 //	//fmt.Printf("%+q\n", h.ChannelID)
 //
 //	var err error
-//	vendorInput := provider.DiscordInput{
+//	vendorInput := provider.DiscordCommandInput{
 //		Context:     noCtx,
 //		Session:     s,
 //		Interaction: h,
@@ -172,10 +175,33 @@ func RunDiscordBot(
 
 	h := handler.New()
 	h.SlashCommand("/mj", commands.MjDiscordSlashCommandHandler)
-	h.ButtonComponent("/button/poll/vote/{id}", func(data discord.ButtonInteractionData, e *handler.ComponentEvent) error {
-		logger.Infoln("button handled!!")
-		return nil
-	})
+
+	for _, buttonGeneric := range container.GetCollection("button.") {
+		button := buttonGeneric.(domain.Button)
+		h.ButtonComponent(
+			button.GetPattern(),
+			func(
+				data discord.ButtonInteractionData,
+				event *handler.ComponentEvent,
+			) error {
+				//logger.Debugln("button handled:", button.GetPattern())
+				input := provider.DiscordButtonInput{
+					Data:  data,
+					Event: event,
+				}
+				handled, err := button.Handle(input)
+				if !handled {
+					logger.Errorln("not handled by button", button.GetPattern())
+				}
+				return err
+			},
+		)
+	}
+
+	//h.ButtonComponent("/button/poll/vote/{id}", func(data discord.ButtonInteractionData, e *handler.ComponentEvent) error {
+	//	logger.Infoln("button handled!!")
+	//	return nil
+	//})
 	//h.Command("/test", commands.TestHandler)
 	//h.Autocomplete("/test", commands.TestAutocompleteHandler)
 

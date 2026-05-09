@@ -67,7 +67,7 @@ func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, even
 
 	fmt.Println("Guild:", event.GuildID())
 
-	input := provider.DiscordInput{
+	input := provider.DiscordCommandInput{
 		Data:  data,
 		Event: event,
 	}
