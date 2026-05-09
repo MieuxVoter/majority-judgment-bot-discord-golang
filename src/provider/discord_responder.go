@@ -231,17 +231,26 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 			gradeButtons = append(gradeButtons, button)
 		}
 
-		msg := discord.MessageCreate{
-			Flags: discord.MessageFlagIsComponentsV2 | discord.MessageFlagEphemeral,
-			Components: []discord.LayoutComponent{
-				discord.NewContainer(
-					discord.NewTextDisplay(title),
-					discord.NewActionRow(gradeButtons...),
-				),
-			},
+		flags := discord.MessageFlagIsComponentsV2 | discord.MessageFlagEphemeral
+		components := []discord.LayoutComponent{
+			discord.NewContainer(
+				discord.NewTextDisplay(title),
+				discord.NewActionRow(gradeButtons...),
+			),
 		}
 
-		return d.CreateMessage(msg)
+		if replaceMessage {
+			return d.UpdateMessage(discord.MessageUpdate{
+				// We need pointers here, not sure why
+				Flags:      &flags,
+				Components: &components,
+			})
+		}
+
+		return d.CreateMessage(discord.MessageCreate{
+			Flags:      flags,
+			Components: components,
+		})
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
@@ -467,12 +476,11 @@ func (r DiscordResponder) RespondServerError(
 	input Input,
 	message string,
 ) error {
-	if _, isDiscord := input.(DiscordCommandInput); isDiscord {
-		//return GetResponder(input).RespondWithMessage(
+	if _, isDiscord := input.(DiscordInteraction); isDiscord {
 		return r.RespondWithMessage(
 			input,
 			fmt.Sprintf(
-				"💥 **BOOM !**\n"+
+				"### 💥 **BOOM !**\n"+
 					"\n"+
 					"%s\n",
 				message,
@@ -488,11 +496,11 @@ func (r DiscordResponder) RespondUserError(
 	input Input,
 	message string,
 ) error {
-	if _, isDiscord := input.(DiscordCommandInput); isDiscord {
+	if _, isDiscord := input.(DiscordInteraction); isDiscord {
 		return r.RespondWithMessage(
 			input,
 			fmt.Sprintf(
-				"🍄 **Ooops**\n"+
+				"### 🍄 **Ooopsie !**\n"+
 					"\n"+
 					"%s\n"+
 					"",

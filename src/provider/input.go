@@ -15,18 +15,12 @@ type Input interface {
 	GetActorVendorId() (string, error)
 	GetActorName() (string, error)
 	GetGuildVendorId() (string, error)
-	GetButtonName() (string, error)
 	IsDirectMessage() bool
 }
 
 type ButtonInput interface {
-	//GetOptionString(subcommand string, name string, defaultValue string) (string, error)
-	//GetActorVendorId() (string, error)
-	//GetActorName() (string, error)
-	//GetGuildVendorId() (string, error)
-	//GetButtonName() (string, error)
-	//IsDirectMessage() bool
 	Input
+	GetButtonName() (string, error)
 }
 
 //  ___  _                   _
@@ -37,6 +31,7 @@ type ButtonInput interface {
 
 type DiscordInteraction interface {
 	CreateMessage(messageCreate discord.MessageCreate, opts ...rest.RequestOpt) error
+	UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error
 }
 
 // DiscordCommandInput wrapper for data coming from Discord's userland.
@@ -95,12 +90,16 @@ func (d DiscordCommandInput) CreateMessage(messageCreate discord.MessageCreate, 
 	return d.Event.CreateMessage(messageCreate, opts...)
 }
 
+func (d DiscordCommandInput) UpdateMessage(_ discord.MessageUpdate, _ ...rest.RequestOpt) error {
+	return fmt.Errorf("cannot update a message from a command")
+}
+
 type DiscordButtonInput struct {
 	Data  discord.ButtonInteractionData
 	Event *handler.ComponentEvent
 }
 
-func (d DiscordButtonInput) GetOptionString(subcommand string, name string, defaultValue string) (string, error) {
+func (d DiscordButtonInput) GetOptionString(subcommand string, name string, _ string) (string, error) {
 	return "", fmt.Errorf("button does not support GetOptionString(%s, %s)", subcommand, name)
 }
 
@@ -138,4 +137,8 @@ func (d DiscordButtonInput) IsDirectMessage() bool {
 
 func (d DiscordButtonInput) CreateMessage(messageCreate discord.MessageCreate, opts ...rest.RequestOpt) error {
 	return d.Event.CreateMessage(messageCreate, opts...)
+}
+
+func (d DiscordButtonInput) UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error {
+	return d.Event.UpdateMessage(messageUpdate, opts...)
 }
