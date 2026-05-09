@@ -20,13 +20,14 @@ type Config struct {
 	logger *logrus.Logger
 }
 
-// Get a configuration value
+// Get a configuration value.
 func (c *Config) Get(key string) string {
 	value, found := os.LookupEnv(key)
 	if !found {
-		fmt.Printf("Missing configuration value for `%s'.", key)
+		c.logger.Warnln("Missing configuration value for `%s'.", key)
+		//fmt.Printf("Missing configuration value for `%s'.", key)
 	}
-	// We could also load from a .ini, here, if we want
+	// We could also load from a .ini, here, if we wanted to.
 
 	return value
 }

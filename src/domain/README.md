@@ -1,10 +1,10 @@
-## Haw to create a new subcommand
+## How to create a new /mj subcommand
 
-Create a new file with an object implementing `Command`,
-and register it to the container with a name prefixed by `command.`.
+Create a new file with an object implementing `Subcommand`,
+and register it to the container with a name prefixed by `command.mj.`.
 It will be auto-loaded when the bot starts.
 
-See the `command_create.go` file for an example of how to do that.
+See the `subcommand_mj_create.go` file for an example of how to do that.
 
 > That's it.
 
@@ -14,9 +14,15 @@ See the `command_create.go` file for an example of how to do that.
 Same goes for buttons.
 
 
-### Wait, you're using `init()` ?
+## Wait, you're using `init()` ?
 
 We register the service to the container in the `init()`.
 This should not cause any trouble or unexpected behavior.
 
 Do strive to not add anything else to the `init()`, though.
+
+
+## There's a lot of stuff in here
+
+We got out of the cyclic dependency hell that way.
+

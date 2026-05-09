@@ -156,7 +156,6 @@ func (r DiscordResponder) RespondPollView(
 			}
 		}
 
-		//discord.NewMessageCreateV2()
 		msg := discord.MessageCreate{
 			Flags: discord.MessageFlagIsComponentsV2,
 			Components: []discord.LayoutComponent{
@@ -167,7 +166,7 @@ func (r DiscordResponder) RespondPollView(
 					).WithAccessory(
 						discord.NewPrimaryButton(
 							"Vote",
-							fmt.Sprintf("button_poll_vote:%d", poll.Id),
+							fmt.Sprintf("/button/poll/vote/%d", poll.Id),
 						).WithEmoji(
 							discord.ComponentEmoji{Name: "🗳"},
 						),
@@ -190,110 +189,74 @@ func (r DiscordResponder) RespondPollView(
 			},
 		}
 
-		err := d.Event.CreateMessage(msg)
-
-		return err
-
-		//response := &disgord.CreateInteractionResponse{
-		//	Type: messageType,
-		//	Data: &disgord.CreateInteractionResponseData{
-		//		Embeds: []*disgord.Embed{
-		//			pollEmbedHero,
-		//		},
-		//		Components: []*disgord.MessageComponent{
-		//			{
-		//				Type:     disgord.MessageComponentActionRow,
-		//				CustomID: "poll_action_row",
-		//				Components: []*disgord.MessageComponent{
-		//					{
-		//						Type:     disgord.MessageComponentButton,
-		//						Style:    disgord.Success,
-		//						CustomID: fmt.Sprintf("button_participate:%d", poll.Id),
-		//						Label:    "Participate",
-		//						Emoji: &disgord.Emoji{
-		//							Name: "📨",
-		//						},
-		//					},
-		//					{
-		//						Type:     disgord.MessageComponentButton,
-		//						Style:    disgord.Secondary,
-		//						CustomID: fmt.Sprintf("button_deliberate:%d", poll.Id),
-		//						Label:    "View Results",
-		//						Emoji: &disgord.Emoji{
-		//							Name: "🔎",
-		//						},
-		//					},
-		//				},
-		//			},
-		//		},
-		//	},
-		//}
-		//
-		//return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
+		return d.Event.CreateMessage(msg)
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondPollView")
 }
 
-//func (r DiscordResponder) RespondWithJudgmentUi(
-//	input provider.Input,
-//	proposal *db.Proposal,
-//	poll *db.Poll,
-//	previousJudgment *db.Judgment,
-//	replaceMessage bool,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordInput); isDiscord {
-//
-//		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name)
-//		title = security.TruncateString(title, 256)
-//		messageType := disgord.InteractionCallbackChannelMessageWithSource
-//		if replaceMessage {
-//			messageType = disgord.InteractionCallbackUpdateMessage
-//		}
-//		interactionResponse := &disgord.CreateInteractionResponse{
-//			Type: messageType,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Flags: disgord.MessageFlagEphemeral,
-//				Embeds: []*disgord.Embed{
-//					{
-//						Title:       title,
-//						Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
-//					},
-//				},
-//				Components: []*disgord.MessageComponent{
-//					{
-//						Type:       disgord.MessageComponentActionRow,
-//						CustomID:   "poll_action_row",
-//						Components: []*disgord.MessageComponent{}, // filled below
-//					},
-//				},
-//			},
-//		}
-//
-//		for gradeLevel, grade := range poll.GetGradingSlice() {
-//
-//			previouslySelectedMarker := ""
-//			if previousJudgment != nil {
-//				if uint8(gradeLevel) == previousJudgment.Grade {
-//					previouslySelectedMarker = " ✅"
-//				}
-//			}
-//			interactionResponse.Data.Components[0].Components = append(
-//				interactionResponse.Data.Components[0].Components,
-//				&disgord.MessageComponent{
-//					Type:     disgord.MessageComponentButton,
-//					Style:    disgord.Primary,
-//					CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
-//					Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
-//				},
-//			)
-//		}
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
-//}
+func (r DiscordResponder) RespondWithJudgmentUi(
+	input Input,
+	proposal *db.Proposal,
+	poll *db.Poll,
+	previousJudgment *db.Judgment,
+	replaceMessage bool,
+) error {
+	if d, isDiscord := input.(DiscordInput); isDiscord {
+
+		title := fmt.Sprintf("⚖ `#%d` %s", poll.Id, proposal.Name)
+		title = security.TruncateString(title, 256)
+
+		return r.RespondWithMessage(input, d.Event.Data.CommandName(), true)
+
+		//messageType := disgord.InteractionCallbackChannelMessageWithSource
+		//if replaceMessage {
+		//	messageType = disgord.InteractionCallbackUpdateMessage
+		//}
+		//interactionResponse := &disgord.CreateInteractionResponse{
+		//	Type: messageType,
+		//	Data: &disgord.CreateInteractionResponseData{
+		//		Flags: disgord.MessageFlagEphemeral,
+		//		Embeds: []*disgord.Embed{
+		//			{
+		//				Title:       title,
+		//				Description: fmt.Sprintf("What do you think of **_%s_** as _%s_ ?", proposal.Name, poll.Subject),
+		//			},
+		//		},
+		//		Components: []*disgord.MessageComponent{
+		//			{
+		//				Type:       disgord.MessageComponentActionRow,
+		//				CustomID:   "poll_action_row",
+		//				Components: []*disgord.MessageComponent{}, // filled below
+		//			},
+		//		},
+		//	},
+		//}
+		//
+		//for gradeLevel, grade := range poll.GetGradingSlice() {
+		//
+		//	previouslySelectedMarker := ""
+		//	if previousJudgment != nil {
+		//		if uint8(gradeLevel) == previousJudgment.Grade {
+		//			previouslySelectedMarker = " ✅"
+		//		}
+		//	}
+		//	interactionResponse.Data.Components[0].Components = append(
+		//		interactionResponse.Data.Components[0].Components,
+		//		&disgord.MessageComponent{
+		//			Type:     disgord.MessageComponentButton,
+		//			Style:    disgord.Primary,
+		//			CustomID: fmt.Sprintf("button_judge:%d:%d", proposal.Id, gradeLevel),
+		//			Label:    fmt.Sprintf("%s%s", grade, previouslySelectedMarker),
+		//		},
+		//	)
+		//}
+		//
+		//return d.Session.SendInteractionResponse(d.Context, d.Interaction, interactionResponse)
+	}
+
+	return RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
+}
 
 //func (r DiscordResponder) RespondJudgmentSummary(
 //	input provider.Input,

@@ -35,35 +35,35 @@ func RespondWithJudgmentUi(
 	)
 }
 
-func RespondJudgmentSummary(
-	input provider.Input,
-	poll *db.Poll,
-	proposals []db.Proposal,
-	judgments []db.Judgment,
-	replaceMessage bool,
-) error {
-	return provider.GetResponder(input).RespondJudgmentSummary(
-		input,
-		poll,
-		proposals,
-		judgments,
-		replaceMessage,
-	)
-}
+//func RespondJudgmentSummary(
+//	input provider.Input,
+//	poll *db.Poll,
+//	proposals []db.Proposal,
+//	judgments []db.Judgment,
+//	replaceMessage bool,
+//) error {
+//	return provider.GetResponder(input).RespondJudgmentSummary(
+//		input,
+//		poll,
+//		proposals,
+//		judgments,
+//		replaceMessage,
+//	)
+//}
 
-func RespondBallotsInspection(
-	input provider.Input,
-	poll *db.Poll,
-	proposals []db.Proposal,
-	judgments []db.Judgment,
-) error {
-	return provider.GetResponder(input).RespondBallotsInspection(
-		input,
-		poll,
-		proposals,
-		judgments,
-	)
-}
+//func RespondBallotsInspection(
+//	input provider.Input,
+//	poll *db.Poll,
+//	proposals []db.Proposal,
+//	judgments []db.Judgment,
+//) error {
+//	return provider.GetResponder(input).RespondBallotsInspection(
+//		input,
+//		poll,
+//		proposals,
+//		judgments,
+//	)
+//}
 
 func RespondServerError(input provider.Input, message string) error {
 	return provider.GetResponder(input).RespondServerError(input, message)

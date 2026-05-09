@@ -19,13 +19,13 @@ type ResponderInterface interface {
 		proposals []*db.Proposal,
 		replaceMessage bool,
 	) error
-	//RespondWithJudgmentUi(
-	//	input Input,
-	//	proposal *db.Proposal,
-	//	poll *db.Poll,
-	//	previousJudgment *db.Judgment,
-	//	replaceMessage bool,
-	//) error
+	RespondWithJudgmentUi(
+		input Input,
+		proposal *db.Proposal,
+		poll *db.Poll,
+		previousJudgment *db.Judgment,
+		replaceMessage bool,
+	) error
 	//RespondJudgmentSummary(
 	//	input Input,
 	//	poll *db.Poll,

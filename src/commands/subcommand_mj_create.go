@@ -6,6 +6,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/domain"
 	"main/src/provider"
 	"main/src/security"
 	"xorm.io/xorm"
@@ -126,8 +127,6 @@ func handleCreateCommand(
 	input provider.Input,
 ) error {
 
-	responder := provider.GetResponder(input)
-
 	subject, err := input.GetOptionString("create", "subject", "Poll")
 	if err != nil {
 		return err
@@ -150,7 +149,7 @@ func handleCreateCommand(
 	}
 
 	if len(proposalsNames) < 2 {
-		return responder.RespondUserError(input, "A Poll needs at least two proposals.")
+		return domain.RespondUserError(input, "A Poll needs at least two proposals.")
 	}
 
 	grading, _ := input.GetOptionString("create", "grading", "🤮😐😌😀🤩")
@@ -170,7 +169,7 @@ func doCreatePoll(
 	secrecy string,
 ) error {
 
-	responder := provider.GetResponder(input)
+	//responder := provider.GetResponder(input)
 	guildVendorId, _ := input.GetGuildVendorId()
 	guild, err := db.GetOrCreateGuild(orm, guildVendorId)
 	if err != nil {
@@ -183,7 +182,7 @@ func doCreatePoll(
 		return err
 	}
 	if !isAllowed {
-		return responder.RespondUserError(input, "This guild cannot create polls anymore.")
+		return domain.RespondUserError(input, "This guild cannot create polls anymore.")
 	}
 
 	// Decrement the guild's quota
@@ -222,7 +221,7 @@ func doCreatePoll(
 		return err
 	}
 
-	err = responder.RespondPollView(input, poll, proposals, false)
+	err = domain.RespondPollView(input, poll, proposals, false)
 	if err != nil {
 		return err
 	}

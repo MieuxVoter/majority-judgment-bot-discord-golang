@@ -11,10 +11,10 @@ import (
 // This might not work, or might become troublesome, but let's strive for vendor abstraction anyway.
 type Input interface {
 	GetOptionString(subcommand string, name string, defaultValue string) (string, error)
-	//GetActorVendorId() (string, error)
-	//GetActorName() (string, error)
+	GetActorVendorId() (string, error)
+	GetActorName() (string, error)
 	GetGuildVendorId() (string, error)
-	//GetButtonName() (string, error)
+	GetButtonName() (string, error)
 	IsDirectMessage() bool
 }
 
@@ -35,7 +35,6 @@ func (d DiscordInput) GetOptionString(subcommand string, name string, defaultVal
 
 	if !optionWasFound {
 		return defaultValue, nil
-		//return "", fmt.Errorf("subcommand `%s` option `%s` not found", subcommand, name)
 	}
 
 	if option.Type == discord.ApplicationCommandOptionTypeString {
@@ -45,13 +44,21 @@ func (d DiscordInput) GetOptionString(subcommand string, name string, defaultVal
 	return "", fmt.Errorf("subcommand `%s` option `%s` type unsupported", subcommand, name)
 }
 
-//func (d DiscordInput) GetActorVendorId() (string, error) {
-//	return d.Interaction.Member.UserID.String(), nil
-//}
+func (d DiscordInput) GetActorVendorId() (string, error) {
+	member := d.Event.Member()
+	if member != nil {
+		return member.User.ID.String(), nil
+	}
+	return "", fmt.Errorf("actor id is unavailable")
+}
 
-//func (d DiscordInput) GetActorName() (string, error) {
-//	return d.Interaction.Member.User.Username, nil
-//}
+func (d DiscordInput) GetActorName() (string, error) {
+	member := d.Event.Member()
+	if member != nil {
+		return member.User.Username, nil
+	}
+	return "", fmt.Errorf("actor name is unavailable")
+}
 
 func (d DiscordInput) GetGuildVendorId() (string, error) {
 	guildId := d.Event.GuildID()
@@ -61,9 +68,9 @@ func (d DiscordInput) GetGuildVendorId() (string, error) {
 	return "", fmt.Errorf("guild id is unavailable")
 }
 
-//func (d DiscordInput) GetButtonName() (string, error) {
-//	return d.Interaction.Data.CustomID, nil
-//}
+func (d DiscordInput) GetButtonName() (string, error) {
+	return d.Event.Data.CommandName(), nil
+}
 
 func (d DiscordInput) IsDirectMessage() bool {
 	return d.Event.GuildID() == nil

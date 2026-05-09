@@ -1,4 +1,4 @@
-package commands
+package domain
 
 import (
 	"github.com/disgoorg/disgo/discord"

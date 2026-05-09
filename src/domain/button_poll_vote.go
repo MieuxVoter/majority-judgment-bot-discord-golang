@@ -11,18 +11,18 @@ import (
 	"xorm.io/xorm"
 )
 
-type ParticipateButton struct {
+type PollVoteButton struct {
 	orm *xorm.Engine
 }
 
-func (b ParticipateButton) Handle(input provider.Input) (bool, error) {
-	return handleButtonParticipate(&b, input)
+func (b PollVoteButton) Handle(input provider.Input) (bool, error) {
+	return handleButtonPollVote(&b, input)
 }
 
-var pollParticipationRegex = regexp.MustCompile("^button_participate:(?P<pollId>\\d+)$")
+var pollParticipationRegex = regexp.MustCompile("^/button/poll/vote/(?P<pollId>\\d+)$")
 
-func handleButtonParticipate(
-	button *ParticipateButton,
+func handleButtonPollVote(
+	button *PollVoteButton,
 	input provider.Input,
 ) (handled bool, err error) {
 	handled = false
@@ -78,7 +78,7 @@ func handleButtonParticipate(
 		return
 	}
 
-	// Shuffle proposals perhaps?
+	// Idea: Shuffle proposals perhaps?
 
 	// Pick one proposal (the first)
 	proposal := proposals[0]
@@ -99,15 +99,15 @@ func handleButtonParticipate(
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "button.participate",
+		Name: "button.poll.vote",
 		Build: func(ctn di.Container) (interface{}, error) {
-			cmd := &ParticipateButton{
+			cmd := &PollVoteButton{
 				orm: ctn.Get("database.engine").(*xorm.Engine),
 			}
 			return cmd, nil
 		},
 	})
 	if err != nil {
-		log.Fatalln("button.participate failed to build", err)
+		log.Fatalln("button.poll.vote failed to build", err)
 	}
 }
