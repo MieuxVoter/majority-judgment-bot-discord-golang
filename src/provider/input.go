@@ -18,6 +18,7 @@ type Input interface {
 	IsDirectMessage() bool
 }
 
+// ButtonInput holds data coming from userland through the vendor when a button was pressed.
 type ButtonInput interface {
 	Input
 	GetButtonName() (string, error)
@@ -29,12 +30,14 @@ type ButtonInput interface {
 // |___/|_/__/\__\___/_| \__,_|
 // (move this to its own file?)
 
+// DiscordInteraction is an interface for both [DiscordCommandInput] and [DiscordButtonInput].
+// It helps us to get out (somewhat gracefully) of our typing woes.
 type DiscordInteraction interface {
 	CreateMessage(messageCreate discord.MessageCreate, opts ...rest.RequestOpt) error
 	UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error
 }
 
-// DiscordCommandInput wrapper for data coming from Discord's userland.
+// DiscordCommandInput wrapper for command data coming from Discord's userland.
 type DiscordCommandInput struct {
 	Data  discord.SlashCommandInteractionData
 	Event *handler.CommandEvent
@@ -42,15 +45,12 @@ type DiscordCommandInput struct {
 
 func (d DiscordCommandInput) GetOptionString(subcommand string, name string, defaultValue string) (string, error) {
 	option, optionWasFound := d.Data.Option(name)
-
 	if !optionWasFound {
 		return defaultValue, nil
 	}
-
 	if option.Type == discord.ApplicationCommandOptionTypeString {
 		return option.String(), nil
 	}
-
 	return "", fmt.Errorf("subcommand `%s` option `%s` type unsupported", subcommand, name)
 }
 
@@ -94,6 +94,7 @@ func (d DiscordCommandInput) UpdateMessage(_ discord.MessageUpdate, _ ...rest.Re
 	return fmt.Errorf("cannot update a message from a command")
 }
 
+// DiscordButtonInput is a wrapper for button data coming from Discord's userland.
 type DiscordButtonInput struct {
 	Data  discord.ButtonInteractionData
 	Event *handler.ComponentEvent

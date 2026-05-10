@@ -18,22 +18,22 @@
 
 ## Feature Wishlist
 
-- [ ] Start a poll with `/mj create …`
-- [ ] Vote on a poll using buttons
+- [x] Start a poll with `/mj create …`
+- [ ] Rerun a past poll with `/mj rerun`
+- [x] Print some miscellaneous help with `/mj help`
+- [ ] Inform about my status and metrics with `/mj info`
+- [ ] Explain briefly how Majority Judgment works `/mj explain`
+- [ ] Record feedback from users with `/mj feedback`
+- [x] Vote on a poll using buttons
 - [ ] Look at a poll's result using a button
+- [ ] Publish a poll's result using a button
 - [x] Use only _slash_ (`/`) commands
 - [x] Be discreet : do not read messages
-- [ ] Scope polls per guild (privacy!)
-- [ ] Enforce quotas per guild
-- [x] Print some miscellaneous help with `/mj help`
-- [ ] Rerun a past poll with `/mj rerun`
-- [ ] Inform about my status and metrics with `/mj info`
-- [ ] Publish a poll's result using a button
-- [ ] Docker Compose config (optional)
+- [x] Scope polls per guild (privacy!)
+- [x] Enforce quotas per guild
 - [ ] Choose a `grading` (ex: 👍👎) per poll
 - [ ] Add a `secrecy` scope to allow public ballots
-- [ ] Explain how Majority Judgment works `/mj explain`
-- [ ] Record feedback from users with `/mj feedback`
+- [ ] Docker Compose config (optional)
 - [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/) — ひとりぼっちのよる
 
 

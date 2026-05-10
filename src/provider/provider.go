@@ -7,7 +7,7 @@ import (
 	"main/src/services"
 )
 
-// ResponderInterface should be implemented by our vendor output adapters
+// ResponderInterface should be implemented by our vendor output adapters.
 type ResponderInterface interface {
 	Matches(input Input) bool
 	RespondWithMessage(input Input, message string, ephemeral bool) error
@@ -67,6 +67,8 @@ func GetResponder(input Input) ResponderInterface {
 	return nil
 }
 
+// RaiseInvalidProviderError is sugar for raising when the provider is invalid.
+// This should absolutely never raise, unless there's a terrible glitch in the code.
 func RaiseInvalidProviderError(trace string) error {
 	return fmt.Errorf("invalid input type for provider (%s)", trace)
 }
