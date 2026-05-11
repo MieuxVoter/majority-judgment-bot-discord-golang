@@ -87,7 +87,13 @@ func handlePollResult(
 		return
 	}
 
-	// Rule: Proposals are ranked in the merit profile
+	amountOfJudges, err := db.CountBallots(orm, poll)
+	if err != nil {
+		err = RespondServerError(input, "Failed to count the ballots!?  Please warn your admin.")
+		return
+	}
+
+	// Collect the tallies of the proposals
 	proposalsTallies := make([]*judgment.ProposalTally, 0, len(proposals))
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
@@ -104,14 +110,18 @@ func handlePollResult(
 	}
 
 	pollTally := &judgment.PollTally{
-		Proposals: proposalsTallies,
+		Proposals:      proposalsTallies,
+		AmountOfJudges: amountOfJudges,
 	}
-	pollTally.GuessAmountOfJudges() // TBD: we should count them with an SQL query
+	//pollTally.GuessAmountOfJudges() // nope ; we count them with an SQL query instead
+
+	// Rule: the "worst" grade is the default grade
 	err = pollTally.BalanceWithStaticDefault(0)
 	if err != nil {
 		return
 	}
 
+	// Rule: proposals are ranked in the merit profile
 	deliberator := &judgment.MajorityJudgment{}
 	pollResult, err := deliberator.Deliberate(pollTally)
 	if err != nil {
@@ -120,7 +130,7 @@ func handlePollResult(
 
 	// Rule: GTFO if there are no judgments
 	if pollTally.AmountOfJudges == 0 {
-		message := "There are no participants to this poll.  Please try again when the poll has had participants."
+		message := "No-one participated to this poll.  Try again when the poll has had participants."
 		err = RespondUserError(input, message)
 		return
 	}
@@ -142,20 +152,18 @@ func handlePollResult(
 	}
 
 	title := poll.Subject
-	//title := fmt.Sprintf("%d participant", pollTally.AmountOfJudges)
-	//if pollTally.AmountOfJudges > 1 {
-	//	title += "s"
-	//}
 
-	content := fmt.Sprintf("⚖  ")
+	content := fmt.Sprintf("🏆 ")
 	if len(winnersSlice) > 1 {
 		content += fmt.Sprintf(
-			`_The most consensual proposals are_ %s`,
+			`_%s_ %s`,
+			`The favorite proposals are`,
 			winners,
 		)
 	} else {
 		content += fmt.Sprintf(
-			`_The most consensual proposal is_ %s`,
+			`_%s_ %s`,
+			`The favorite proposal is`,
 			winners,
 		)
 	}

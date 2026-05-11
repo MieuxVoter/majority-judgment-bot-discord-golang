@@ -38,30 +38,30 @@ func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption
 			Description: "The poll's subject, such as \"Meeting date\"",
 			Required:    true,
 		},
-		// How to get variadism here, for proposals?
+		// *How to get variadism here, for proposals?*
+		// Right now we work around the limitation with a hack,
+		// by supporting adding multiple proposals per field using | as separator.
+		// Note: we cannot use spaces in Name (in 2026-05)
 		discord.ApplicationCommandOptionString{
 			Name:        "proposal_a",
-			Description: "The name of the first proposal, like `Friday`",
+			Description: `The name of the first proposal, like "Friday"`,
 		},
 		discord.ApplicationCommandOptionString{
 			Name:        "proposal_b",
-			Description: "The name of the second proposal, like Pizza",
+			Description: `The name of the second proposal, like "Pizza"`,
 		},
-		//{
-		//	Type:        disgord.OptionTypeString,
-		//	Name:        "proposal_c",
-		//	Description: "The name of the third proposal, like Beaujolais",
-		//},
-		//{
-		//	Type:        disgord.OptionTypeString,
-		//	Name:        "proposal_d",
-		//	Description: "The name of the fourth proposal, like Michel",
-		//},
-		//{
-		//	Type:        disgord.OptionTypeString,
-		//	Name:        "proposal_e",
-		//	Description: "The name of the fifth element, like Moultipass",
-		//},
+		discord.ApplicationCommandOptionString{
+			Name:        "proposal_c",
+			Description: `The name of the third proposal, like "Beaujolais"`,
+		},
+		discord.ApplicationCommandOptionString{
+			Name:        "proposal_d",
+			Description: `The name of the fourth proposal, like "Michel"`,
+		},
+		discord.ApplicationCommandOptionString{
+			Name:        "proposal_e",
+			Description: `If you need more than five, use | as separator`,
+		},
 		//{
 		//	Type:        disgord.OptionTypeString,
 		//	Name:        "grading",
