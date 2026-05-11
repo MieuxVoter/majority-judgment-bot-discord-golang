@@ -71,7 +71,7 @@ func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, even
 		Data:  data,
 		Event: event,
 	}
-	subcommands := container.GetCollection("subcommand.mj")
+	subcommands := container.GetCollection("subcommand.mj.")
 	for _, subcommand := range subcommands {
 		if !subcommand.(Subcommand).Matches(*data.SubCommandName) {
 			continue
@@ -97,7 +97,7 @@ func GetDiscordCommands() []discord.ApplicationCommandCreate {
 	if !areDiscordCommandsInjected {
 		// Inject /mj command and it subcommands from the tagged services.
 		mjDiscordSlashCommand := DefineCommandForDiscord(container.Get("command.mj").(Command))
-		mjSubcommandsServices := container.GetCollection("subcommand.mj")
+		mjSubcommandsServices := container.GetCollection("subcommand.mj.")
 		for _, subcommandGeneric := range mjSubcommandsServices {
 			subcommand := subcommandGeneric.(Subcommand)
 			mjDiscordSlashCommand.Options = append(

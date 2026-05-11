@@ -8,6 +8,7 @@ import (
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
 	"github.com/mskrha/svg2png"
 	"github.com/sarulabs/di"
+	"image/color"
 	"log"
 	"main/src/container"
 	db "main/src/database"
@@ -331,7 +332,24 @@ func (r DiscordResponder) RespondPollResult(
 			//		Name:  "Rempaillot",
 			//		Tally: []uint64{3, 4, 4, 1, 0},
 			//	},
+			//	{
+			//		Name:  "Tonte à Lier",
+			//		Tally: []uint64{2, 5, 3, 2, 0},
+			//	},
+			//	{
+			//		Name:  "Tout Poutoux",
+			//		Tally: []uint64{1, 3, 1, 1, 6},
+			//	},
+			//	{
+			//		Name:  "Passelinot",
+			//		Tally: []uint64{2, 2, 4, 2, 2},
+			//	},
+			//	{
+			//		Name:  "Edouard Ve",
+			//		Tally: []uint64{1, 3, 4, 3, 1},
+			//	},
 			//},
+			merit.WithBgColor(color.RGBA{R: 32, G: 32, B: 32, A: 255}),
 		)
 
 		if err != nil {
@@ -388,6 +406,21 @@ func (r DiscordResponder) RespondPollResult(
 			flags |= discord.MessageFlagEphemeral
 		}
 
+		bottomAccessory := discord.NewSecondaryButton(
+			"Info",
+			fmt.Sprintf("/button/poll/%d/info", poll.Id),
+		).WithEmoji(
+			discord.ComponentEmoji{Name: "ℹ"},
+		)
+		if asPrivateMessage {
+			bottomAccessory = discord.NewSecondaryButton(
+				"Publish",
+				fmt.Sprintf("/button/poll/%d/publish", poll.Id),
+			).WithEmoji(
+				discord.ComponentEmoji{Name: "📢"},
+			)
+		}
+
 		msg := discord.MessageCreate{
 			Flags: flags,
 			Components: []discord.LayoutComponent{
@@ -417,14 +450,7 @@ func (r DiscordResponder) RespondPollResult(
 								participantsPluralization,
 							),
 						),
-					).WithAccessory(
-						discord.NewSecondaryButton(
-							"Publish",
-							fmt.Sprintf("/button/poll/%d/publish", poll.Id),
-						).WithEmoji(
-							discord.ComponentEmoji{Name: "📢"},
-						),
-					),
+					).WithAccessory(bottomAccessory),
 				),
 			},
 			Files: []*discord.File{

@@ -8,7 +8,6 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/snowflake/v2"
-	"github.com/sirupsen/logrus"
 	"main/src/commands"
 	"main/src/container"
 	"main/src/domain"
@@ -17,17 +16,19 @@ import (
 	"time"
 )
 
+// Wo do not need these memoization(s).  Remove these comments at some point.
+
 // config is a local memoization of the [services.Config] service.
 // It requires that the function [RunDiscordBot] is run first.
-var config *services.Config
+//var config *services.Config
 
 // logger is a local memoization of the [logrus.Logger] service.
 // It requires that the function [RunDiscordBot] is run first.
-var logger *logrus.Logger
+//var logger *logrus.Logger
 
 // discordClient connects to the REST HTTP API of Discord.
 // It requires that the function [RunDiscordBot] is run first.
-var discordClient *bot.Client
+//var discordClient *bot.Client
 
 // checkErr logs errors if not nil, along with a user-specified trace
 //func checkErr(err error, trace string) {
@@ -38,127 +39,13 @@ var discordClient *bot.Client
 //	}
 //}
 
-func registerDiscordCommands(client *bot.Client) {
-	logger.Infoln("Synchronizing commands with Discord…")
-	var guilds []snowflake.ID // empty == all guilds
-	err := handler.SyncCommands(client, commands.GetDiscordCommands(), guilds)
-	if err != nil {
-		logger.Fatalln("failed to sync commands: %s", err)
-	}
-	logger.Infoln("Done synchronizing commands with Discord.")
-}
-
-//func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
-//	// Handy debug/exploration snippets
-//	//fmt.Printf("Interaction: %+v\n", *h)
-//	//fmt.Printf("Data %+v\n", *h.Data)
-//	//fmt.Printf("Options %+q\n", (*h.Data).Options)
-//	//fmt.Printf("%+q\n", h.GuildID)
-//	//fmt.Printf("%+q\n", h.ChannelID)
-//
-//	var err error
-//	vendorInput := provider.DiscordCommandInput{
-//		Context:     noCtx,
-//		Session:     s,
-//		Interaction: h,
-//	}
-//
-//	if h.Type == disgord.InteractionApplicationCommand {
-//
-//		if len(h.Data.Options) == 0 { // no subcommand was provided
-//			_, err = container.Get("command.help").(*domain.HelpCommand).Handle(vendorInput)
-//			checkErr(err, "HandleHelpCommand:NoSubcommand")
-//			return
-//		}
-//
-//		subCmdName := h.Data.Options[0].Name
-//
-//		logger.Debugln("Handling application command by", h.Member, subCmdName)
-//
-//		commands := container.GetCollection("command")
-//		commandWasHandled := false
-//		for _, commandGeneric := range commands {
-//			command := commandGeneric.(domain.Command)
-//			if command.Matches(subCmdName) {
-//				commandWasHandled, err = command.Handle(vendorInput)
-//				if err != nil {
-//					checkErr(err, "command "+subCmdName)
-//				}
-//				if commandWasHandled {
-//					break
-//				}
-//			}
-//		}
-//
-//		if !commandWasHandled {
-//			logger.Errorln("Unrecognized subcommand ", subCmdName)
-//		}
-//
-//	} else if h.Type == disgord.InteractionMessageComponent {
-//
-//		if h.Data.ComponentType == disgord.MessageComponentButton {
-//
-//			logger.Debugln("Handling interaction on button", h.Member, h.GuildID)
-//
-//			buttons := container.GetCollection("button")
-//			buttonWasHandled := false
-//			for _, buttonGeneric := range buttons {
-//				button := buttonGeneric.(domain.Button)
-//				buttonWasHandled, err = button.Handle(vendorInput)
-//				if err != nil {
-//					checkErr(err, "button handle")
-//				}
-//				if buttonWasHandled {
-//					break
-//				}
-//			}
-//
-//			if !buttonWasHandled {
-//				logger.Warnln("Unhandled button interaction", h, h.Data)
-//				err = domain.RespondServerError(vendorInput, "This button does nothing.")
-//				checkErr(err, "RespondCommandFailure:ButtonUnknown")
-//			}
-//
-//		} else if h.Data.ComponentType == disgord.MessageComponentSelectMenu {
-//			// We have no more "select" interactions in the bot for now, but they may come back later.
-//			// Let's keep this as snippet, it's harmless anyway.
-//			logger.Debugln("Handling interaction on select ", h, h.Data)
-//
-//			err = s.SendInteractionResponse(noCtx, h, &disgord.CreateInteractionResponse{
-//				Type: disgord.InteractionCallbackDeferredUpdateMessage,
-//				Data: &disgord.CreateInteractionResponseData{},
-//			})
-//			checkErr(err, "SendInteractionResponse:Select")
-//
-//		} else {
-//			logger.Warningln("Unhandled interaction on message component ", h, h.Data)
-//		}
-//
-//	} else if h.Type == disgord.InteractionPing {
-//		logger.Warningln("Unhandled ping interaction", h, h.Data)
-//	} else {
-//		logger.Warningln("Unhandled interaction type", h, h.Data)
-//	}
-//}
-
-// onDirectMessageToMe reacts when the bot is @ in a channel message
-//func onDirectMessageToMe(s disgord.Session, data *disgord.MessageCreate) {
-//	msg := data.Message
-//
-//	logger.Info("Bot has been talked to: ", msg.Member, msg.Content)
-//
-//	botUsage := "🤖 _I am ready to assist._   Type `/mj` to start."
-//	_, err := msg.Reply(noCtx, s, botUsage)
-//	checkErr(err, "onDirectMessageToMe")
-//}
-
 func RunDiscordBot(
 	shouldSyncCommands bool,
 ) (deferrable func()) {
 
-	// Fetch and memoize services we're going to use.
-	config = services.GetConfig()
-	logger = services.GetLogger()
+	// Fetch the services we're going to use
+	config := services.GetConfig()
+	logger := services.GetLogger()
 
 	// Read the Discord token from environment
 	discordToken := config.Get("DISCORD_TOKEN")
@@ -166,9 +53,11 @@ func RunDiscordBot(
 		logger.Fatalln("DISCORD_TOKEN environment variable not found")
 	}
 
+	// Register our slash command(s)
 	h := handler.New()
 	h.SlashCommand("/mj", commands.MjDiscordSlashCommandHandler)
 
+	// Register our button handlers
 	for _, buttonGeneric := range container.GetCollection("button.") {
 		button := buttonGeneric.(domain.Button)
 		h.ButtonComponent(
@@ -191,10 +80,8 @@ func RunDiscordBot(
 		)
 	}
 
-	var err error = nil
-
-	// Connect to Discord and start listening
-	discordClient, err = disgo.New(
+	// Create the Discord client
+	discordClient, err := disgo.New(
 		discordToken,
 		//bot.WithLogger(logger), // requires slog, yet we still use logrus
 		bot.WithGatewayConfigOpts(
@@ -210,53 +97,43 @@ func RunDiscordBot(
 		bot.WithEventListeners(h),
 	)
 	if err != nil {
-		logger.Fatalln("failed building disgo: %s", err)
+		logger.Fatalln("failed building disgo:", err)
 	}
 
-	// Close the client's network connection when the bot exits.
-	cancelClient := func() {
+	// Close the client's network connection when the bot exits
+	closeClient := func() {
 		closeContext, cancelContext := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancelContext()
 		discordClient.Close(closeContext)
 	}
 
-	// Tell Discord about this bot's available commands, via the REST API.
+	// Tell Discord about this bot's available commands, via the REST API
 	if shouldSyncCommands {
-		registerDiscordCommands(discordClient)
+		logger.Infoln("Synchronizing commands with Discord…")
+		var guilds []snowflake.ID // empty == all guilds
+		err := handler.SyncCommands(discordClient, commands.GetDiscordCommands(), guilds)
+		if err != nil {
+			logger.Fatalln("failed to sync commands: %s", err)
+		}
+		logger.Infoln("Done synchronizing commands with Discord.")
 	}
 
-	gatewayContext, cancelGateway := context.WithTimeout(context.Background(), 30*time.Second)
+	// Open a persistent connection to Discord via its Gateway
+	gatewayContext, closeGateway := context.WithTimeout(context.Background(), 30*time.Second)
 	err = discordClient.OpenGateway(gatewayContext)
 	if err != nil {
 		logger.Fatalln("failed to open gateway:", err)
 	}
 
+	// Define the function the parent must call with defer
 	deferrable = func() {
-		cancelClient()
-		cancelGateway()
+		closeClient()
+		closeGateway()
 	}
 
 	return deferrable
 
 	// OLD STUFF BELOW
-
-	// Start the Discord client
-	//discordClient = disgord.New(disgord.Config{
-	//	ProjectName: config.Get("DISCORD_NAME"),
-	//	BotToken:    config.Get("DISCORD_TOKEN"),
-	//	Logger:      logger,
-	//	Intents:     disgord.IntentDirectMessages,
-	//
-	//	// ! Non-functional due to a current bug in disgord, will be fixed upstream someday.
-	//	Presence: &disgord.UpdateStatusPayload{
-	//		Game: &disgord.Activity{
-	//			Name: "Ranking proposals (`/mj`)",
-	//		},
-	//	},
-	//})
-
-	// Heartbeat
-	//defer discordClient.Gateway().StayConnectedUntilInterrupted()
 
 	// Print the link one needs to invite/authorize the bot on their server
 	//permissions := disgord.PermissionSendMessages |
@@ -275,19 +152,4 @@ func RunDiscordBot(
 	//fmt.Println("\nFollow this URL to authorize the bot on your server:")
 	//fmt.Println(authorizeURL)
 	//fmt.Println("")
-
-	//filter, _ := std.NewMsgFilter(noCtx, discordClient)
-	//logFilter, _ := std.NewLogFilter(discordClient)
-
-	// Register slash command once the bot is ready
-	//discordClient.Gateway().BotReady(onBotReady)
-
-	// Handle slash command and other interactions (buttons, selects, …)
-	//discordClient.Gateway().InteractionCreate(onInteraction)
-
-	// Handle (direct) messages
-	//discordClient.Gateway().WithMiddleware(
-	//	filter.NotByBot, // ignore bot messages
-	//	//logFilter.LogMsg,  // logger command message
-	//).MessageCreate(onDirectMessageToMe)
 }

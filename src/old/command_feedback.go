@@ -1,4 +1,4 @@
-package domain
+package old
 
 import (
 	//"github.com/andersfylling/disgord"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/domain"
 	"main/src/provider"
 	"xorm.io/xorm"
 )
@@ -57,20 +58,20 @@ func handleFeedbackCommand(orm *xorm.Engine, input provider.Input) error {
 	messageSent, _ := input.GetOptionString(FeedbackCommandSlug, "message", "")
 	if messageSent == "" {
 		message := "Please provide a message with your feedback."
-		return RespondUserError(input, message)
+		return domain.RespondUserError(input, message)
 	}
 
 	guildVendorId, _ := input.GetGuildVendorId()
 	guild, err := db.GetGuild(orm, guildVendorId)
 	if err != nil {
 		message := "This community never held any poll.  Feedback requires experience."
-		return RespondUserError(input, message)
+		return domain.RespondUserError(input, message)
 	}
 
 	actorVendorId, err := input.GetActorVendorId()
 	if err != nil {
 		message := "I cannot figure out who you are.  Feedback was canceled."
-		return RespondUserError(input, message)
+		return domain.RespondUserError(input, message)
 	}
 	actorName, _ := input.GetActorName()
 
@@ -83,7 +84,7 @@ func handleFeedbackCommand(orm *xorm.Engine, input provider.Input) error {
 	_, err = orm.InsertOne(feedback)
 	if err != nil {
 		message := "I cannot write into my memory anymore.  Please contact my creator in any other way."
-		return RespondServerError(input, message)
+		return domain.RespondServerError(input, message)
 	}
 
 	message := "🤖🗩 _Your feedback was successfully recorded.  **Thank you !**_" +

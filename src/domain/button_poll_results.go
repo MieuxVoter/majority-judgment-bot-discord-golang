@@ -17,19 +17,19 @@ import (
 var buttonPollResultsRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/results$")
 var buttonPollResultsPattern = "/button/poll/{pollId}/results"
 
-type ButtonPollResults struct {
+type PollResultsButton struct {
 	orm *xorm.Engine
 }
 
-func (b ButtonPollResults) GetRegex() *regexp.Regexp {
+func (b PollResultsButton) GetRegex() *regexp.Regexp {
 	return buttonPollResultsRegex
 }
 
-func (b ButtonPollResults) GetPattern() string {
+func (b PollResultsButton) GetPattern() string {
 	return buttonPollResultsPattern
 }
 
-func (b ButtonPollResults) Handle(
+func (b PollResultsButton) Handle(
 	input provider.ButtonInput,
 ) (handled bool, err error) {
 
@@ -182,7 +182,7 @@ func init() {
 	err := container.GetBuilder().Add(di.Def{
 		Name: "button.poll.result",
 		Build: func(ctn di.Container) (interface{}, error) {
-			cmd := &ButtonPollResults{
+			cmd := &PollResultsButton{
 				orm: ctn.Get("database.engine").(*xorm.Engine),
 			}
 			return cmd, nil

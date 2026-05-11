@@ -56,7 +56,7 @@ type ResponderInterface interface {
 
 // GetResponder returns the responder adapter that matches the input provider
 func GetResponder(input Input) ResponderInterface {
-	responders := container.GetCollection("responder")
+	responders := container.GetCollection("responder.")
 	for _, genericResponder := range responders {
 		responder := genericResponder.(ResponderInterface)
 		if responder.Matches(input) {
