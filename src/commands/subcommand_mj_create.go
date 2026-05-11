@@ -148,8 +148,8 @@ func handleCreateCommand(
 		}
 	}
 
-	if len(proposalsNames) < 2 {
-		return domain.RespondUserError(input, "A Poll needs at least two proposals.")
+	if len(proposalsNames) < 1 {
+		return domain.RespondUserError(input, "A Poll needs at least one proposal.")
 	}
 
 	grading, _ := input.GetOptionString("create", "grading", "🤮😐😌😀🤩")
