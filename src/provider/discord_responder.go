@@ -1,13 +1,18 @@
 package provider
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/disgoorg/disgo/discord"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
+	"github.com/mieuxvoter/merit-profile-library-go/merit"
+	"github.com/mskrha/svg2png"
 	"github.com/sarulabs/di"
 	"log"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/security"
+	"time"
 	"xorm.io/xorm"
 )
 
@@ -193,7 +198,7 @@ func (r DiscordResponder) RespondPollView(
 					).WithAccessory(
 						discord.NewSecondaryButton(
 							"Show results",
-							fmt.Sprintf("button_poll_results:%d", poll.Id),
+							fmt.Sprintf("/button/poll/%d/results", poll.Id),
 						).WithEmoji(
 							discord.ComponentEmoji{Name: "🔎"},
 							//discord.ComponentEmoji{Name: "🏆"},
@@ -290,125 +295,165 @@ func (r DiscordResponder) RespondBallotSummary(
 	return RaiseInvalidProviderError("Discord:RespondBallotSummary")
 }
 
-//func (r DiscordResponder) RespondDeliberation(
-//	input provider.Input,
-//	poll *db.Poll,
-//	proposals []db.Proposal,
-//	pollTally *judgment.PollTally,
-//	pollResult *judgment.PollResult,
-//	title string,
-//	message string,
-//	asPrivateMessage bool,
-//	canInspect bool,
-//) error {
-//	if d, isDiscord := input.(provider.DiscordCommandInput); isDiscord {
-//
-//		// Generate the merit profile image URL
-//		imageUrl, errImg := network.GetOas().GetMeritProfileUrl(
-//			poll,
-//			proposals,
-//			pollTally,
-//			pollResult,
-//			"png",
-//			MaxUrlLength,
-//		)
-//		if errImg != nil {
-//			imageUrl = ""
-//		}
-//		imageUrlSvg, errImgSvg := network.GetOas().GetMeritProfileUrl(
-//			poll,
-//			proposals,
-//			pollTally,
-//			pollResult,
-//			"svg",
-//			MaxUrlLength,
-//		)
-//		if errImgSvg != nil {
-//			imageUrlSvg = ""
-//		}
-//
-//		response := &disgord.CreateInteractionResponse{
-//			Type: disgord.InteractionCallbackChannelMessageWithSource,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Content: message,
-//				Flags:   0,
-//				Embeds: []*disgord.Embed{
-//					{
-//						Type:  disgord.EmbedTypeImage,
-//						Title: title,
-//						Image: &disgord.EmbedImage{
-//							// Rule: SVG is NOT allowed here, it appears
-//							// Rule: 256 characters max
-//							URL: imageUrl,
-//						},
-//					},
-//				},
-//			},
-//		}
-//
-//		if asPrivateMessage || canInspect {
-//			response.Data.Components = []*disgord.MessageComponent{
-//				{
-//					Type:       disgord.MessageComponentActionRow,
-//					CustomID:   "deliberate_action_row",
-//					Components: []*disgord.MessageComponent{},
-//				},
-//			}
-//		}
-//		if asPrivateMessage {
-//			//response.Type = disgord.InteractionCallbackChannelMessageWithSource
-//			response.Data.Flags |= disgord.MessageFlagEphemeral
-//
-//			response.Data.Components[0].Components = append(
-//				response.Data.Components[0].Components,
-//				&disgord.MessageComponent{
-//					Type:  disgord.MessageComponentButton,
-//					Style: disgord.Primary,
-//					Label: "Publish",
-//					Emoji: &disgord.Emoji{
-//						Name: "📢",
-//					},
-//					CustomID: fmt.Sprintf("button_publish:%d", poll.Id),
-//				},
-//			)
-//			if imageUrlSvg != "" {
-//				response.Data.Components[0].Components = append(
-//					response.Data.Components[0].Components,
-//					&disgord.MessageComponent{
-//						Type:  disgord.MessageComponentButton,
-//						Style: disgord.Link,
-//						Label: "As SVG",
-//						Emoji: &disgord.Emoji{
-//							Name: "✨",
-//						},
-//						Url: imageUrlSvg,
-//					},
-//				)
-//			}
-//		} else {
-//			response.Data.Flags |= disgord.MessageFlagSourceMessageDeleted
-//		}
-//
-//		if canInspect {
-//			response.Data.Components[0].Components = append(
-//				response.Data.Components[0].Components,
-//				&disgord.MessageComponent{
-//					Type:  disgord.MessageComponentButton,
-//					Style: disgord.Secondary,
-//					Label: "Inspect Ballots",
-//					Emoji: &disgord.Emoji{
-//						Name: "🕵",
-//					},
-//					CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
-//				},
-//			)
-//		}
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondDeliberation")
-//}
+func (r DiscordResponder) RespondPollResult(
+	input Input,
+	poll *db.Poll,
+	proposals []db.Proposal,
+	pollTally *judgment.PollTally,
+	pollResult *judgment.PollResult,
+	title string,
+	message string,
+	asPrivateMessage bool,
+	canInspect bool,
+) error {
+	if d, isDiscord := input.(DiscordInteraction); isDiscord {
+
+		svg, err := merit.RenderLinearProfileSVG(
+			// FIXME: use real data
+			[]merit.Proposal{
+				{
+					Name:  "Jonlukz",
+					Tally: []uint{1, 2, 2, 4, 3},
+				},
+				{
+					Name:  "Bourdella",
+					Tally: []uint{5, 3, 3, 0, 1},
+				},
+				{
+					Name:  "Rempaillot",
+					Tally: []uint{3, 4, 4, 1, 0},
+				},
+			},
+		)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(svg)
+		svgBytes := []byte(svg)
+
+		// Discord does not render SVG files (although it's somewhat safe in img tags)
+		// So we need to create a raster version of our merit profile.
+		// To that effect, we use svg2png which in turn uses inkscape internally.
+		// It's not pretty, but it works.  Docker will help a little.
+		converter := svg2png.New()
+
+		// We can also tell it where our inkscape binary resides.
+		// I've compiled inkscape myself; you probably won't need this.
+		//err = converter.SetBinary("/usr/local/bin/inkscape")
+		//if err != nil {
+		//	fmt.Println(err)
+		//	return err
+		//}
+
+		pngBytes, err := converter.Convert(svgBytes)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		// Debug dump of the generated PNG file.
+		//err = os.WriteFile("merit.png", pngBytes, 0644)
+		//if err != nil {
+		//	fmt.Println(err)
+		//	return err
+		//}
+
+		// TODO: slugify the poll subject, truncate it and append it
+		imageFilename := fmt.Sprintf(
+			`merit-profile-%s`,
+			time.Now().Format("20060102"),
+		)
+		imageDescription := fmt.Sprintf(
+			`Merit Profile of the poll: %s`,
+			poll.Subject,
+		)
+
+		participantsPluralization := ""
+		if pollTally.AmountOfJudges > 1 {
+			participantsPluralization = "s"
+		}
+
+		flags := discord.MessageFlagIsComponentsV2
+		if asPrivateMessage {
+			flags |= discord.MessageFlagEphemeral
+		}
+
+		msg := discord.MessageCreate{
+			Flags: flags,
+			Components: []discord.LayoutComponent{
+				discord.NewContainer(
+					discord.NewTextDisplay("### "+title),
+					discord.NewTextDisplay(message),
+					discord.NewSmallSeparator(),
+					discord.NewMediaGallery(
+						discord.MediaGalleryItem{
+							Media: discord.UnfurledMediaItem{
+								URL: "attachment://" + imageFilename + ".png",
+							},
+							Description: "A merit profile",
+							Spoiler:     false,
+						},
+					),
+					// Shows a link to download the file. (not what we want)
+					//discord.NewFileComponent(
+					//	"attachment://"+imageFilename+".png",
+					//),
+					discord.NewSmallSeparator(),
+					discord.NewSection(
+						discord.NewTextDisplay(
+							fmt.Sprintf(
+								`%d participant%s`,
+								pollTally.AmountOfJudges,
+								participantsPluralization,
+							),
+						),
+					).WithAccessory(
+						discord.NewSecondaryButton(
+							"Publish",
+							fmt.Sprintf("/button/poll/%d/publish", poll.Id),
+						).WithEmoji(
+							discord.ComponentEmoji{Name: "📢"},
+						),
+					),
+				),
+			},
+			Files: []*discord.File{
+				discord.NewFile(
+					imageFilename+".png",
+					imageDescription,
+					bytes.NewReader(pngBytes),
+					discord.FileFlagsNone,
+				),
+				//discord.NewFile(
+				//	imageFilename+".svg",
+				//	imageDescription,
+				//	bytes.NewReader(svgBytes),
+				//	discord.FileFlagsNone,
+				//),
+			},
+		}
+		return d.CreateMessage(msg)
+
+		//if canInspect {
+		//	response.Data.Components[0].Components = append(
+		//		response.Data.Components[0].Components,
+		//		&disgord.MessageComponent{
+		//			Type:  disgord.MessageComponentButton,
+		//			Style: disgord.Secondary,
+		//			Label: "Inspect Ballots",
+		//			Emoji: &disgord.Emoji{
+		//				Name: "🕵",
+		//			},
+		//			CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
+		//		},
+		//	)
+		//}
+	}
+
+	return RaiseInvalidProviderError("Discord:RespondPollResult")
+}
 
 //func (r DiscordResponder) RespondBallotsInspection(
 //	input provider.Input,

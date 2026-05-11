@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/services"
@@ -32,17 +33,17 @@ type ResponderInterface interface {
 		proposals []db.Proposal,
 		judgments []db.Judgment,
 	) error
-	//RespondDeliberation(
-	//	input Input,
-	//	poll *db.Poll,
-	//	proposals []db.Proposal,
-	//	pollTally *judgment.PollTally,
-	//	pollResult *judgment.PollResult,
-	//	title string,
-	//	message string,
-	//	asPrivateMessage bool,
-	//	canInspect bool,
-	//) error
+	RespondPollResult(
+		input Input,
+		poll *db.Poll,
+		proposals []db.Proposal,
+		pollTally *judgment.PollTally,
+		pollResult *judgment.PollResult,
+		title string,
+		message string,
+		asPrivateMessage bool,
+		canInspect bool,
+	) error
 	//RespondBallotsInspection(
 	//	input Input,
 	//	poll *db.Poll,
@@ -63,6 +64,7 @@ func GetResponder(input Input) ResponderInterface {
 		}
 	}
 
+	// This should never happen → that's why it's fatal
 	services.GetLogger().Fatalln("no matching responder found")
 	return nil
 }

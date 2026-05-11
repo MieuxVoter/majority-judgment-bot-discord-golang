@@ -39,7 +39,7 @@ package domain
 //		return false, err
 //	}
 //
-//	handled, err = handleDeliberation(service.orm, input, pollId, false)
+//	handled, err = handlePollResult(service.orm, input, pollId, false)
 //
 //	return
 //}

@@ -29,7 +29,9 @@ func (b PollJudgeButton) GetPattern() string {
 	return buttonPollJudgePattern
 }
 
-func (b PollJudgeButton) Handle(input provider.ButtonInput) (handled bool, err error) {
+func (b PollJudgeButton) Handle(
+	input provider.ButtonInput,
+) (handled bool, err error) {
 
 	handled = false
 	err = nil

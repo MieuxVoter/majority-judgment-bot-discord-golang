@@ -17,27 +17,26 @@ import (
 	"time"
 )
 
-// noCtx is probably a horrible, noob design oversight on my part. Bleh.
-//var noCtx = context.Background()
-
 // config is a local memoization of the [services.Config] service.
-// It requires that the function [RunDiscordBot] is run first. (quite bad design)
+// It requires that the function [RunDiscordBot] is run first.
 var config *services.Config
 
 // logger is a local memoization of the [logrus.Logger] service.
-// It requires that the function [RunDiscordBot] is run first. (quite bad design)
+// It requires that the function [RunDiscordBot] is run first.
 var logger *logrus.Logger
 
+// discordClient connects to the REST HTTP API of Discord.
+// It requires that the function [RunDiscordBot] is run first.
 var discordClient *bot.Client
 
 // checkErr logs errors if not nil, along with a user-specified trace
-func checkErr(err error, trace string) {
-	if err != nil {
-		logger.WithFields(logrus.Fields{
-			"trace": trace,
-		}).Error(err)
-	}
-}
+//func checkErr(err error, trace string) {
+//	if err != nil {
+//		logger.WithFields(logrus.Fields{
+//			"trace": trace,
+//		}).Error(err)
+//	}
+//}
 
 func registerDiscordCommands(client *bot.Client) {
 	logger.Infoln("Synchronizing commands with Discord…")
@@ -48,12 +47,6 @@ func registerDiscordCommands(client *bot.Client) {
 	}
 	logger.Infoln("Done synchronizing commands with Discord.")
 }
-
-//func onBotReady() {
-//	logger.Info("Bot is readying…")
-//	registerDiscordCommands(discordClient)
-//	logger.Info("Bot is ready.")
-//}
 
 //func onInteraction(s disgord.Session, h *disgord.InteractionCreate) {
 //	// Handy debug/exploration snippets
@@ -191,22 +184,17 @@ func RunDiscordBot(
 				}
 				handled, err := button.Handle(input)
 				if !handled {
-					logger.Errorln("not handled by button", button.GetPattern())
+					logger.Errorln("not handled by button", button.GetPattern(), err)
 				}
 				return err
 			},
 		)
 	}
 
-	//h.ButtonComponent("/button/poll/vote/{id}", func(data discord.ButtonInteractionData, e *handler.ComponentEvent) error {
-	//	logger.Infoln("button handled!!")
-	//	return nil
-	//})
-	//h.Command("/test", commands.TestHandler)
-	//h.Autocomplete("/test", commands.TestAutocompleteHandler)
+	var err error = nil
 
 	// Connect to Discord and start listening
-	discordClient, err := disgo.New(
+	discordClient, err = disgo.New(
 		discordToken,
 		//bot.WithLogger(logger), // requires slog, yet we still use logrus
 		bot.WithGatewayConfigOpts(
