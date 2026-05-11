@@ -308,29 +308,37 @@ func (r DiscordResponder) RespondPollResult(
 ) error {
 	if d, isDiscord := input.(DiscordInteraction); isDiscord {
 
+		rendererProposals := make([]merit.Proposal, len(proposals))
+		for i, proposal := range pollResult.ProposalsSorted {
+			rendererProposals[i] = merit.Proposal{
+				Name:  proposals[proposal.Index].Name,
+				Tally: pollTally.Proposals[proposal.Index].Tally,
+			}
+		}
 		svg, err := merit.RenderLinearProfileSVG(
-			// FIXME: use real data
-			[]merit.Proposal{
-				{
-					Name:  "Jonlukz",
-					Tally: []uint{1, 2, 2, 4, 3},
-				},
-				{
-					Name:  "Bourdella",
-					Tally: []uint{5, 3, 3, 0, 1},
-				},
-				{
-					Name:  "Rempaillot",
-					Tally: []uint{3, 4, 4, 1, 0},
-				},
-			},
+			rendererProposals,
+			// fake data for testing
+			//[]merit.Proposal{
+			//	{
+			//		Name:  "Jonlukz",
+			//		Tally: []uint64{1, 2, 2, 4, 3},
+			//	},
+			//	{
+			//		Name:  "Bourdella",
+			//		Tally: []uint64{5, 3, 3, 0, 1},
+			//	},
+			//	{
+			//		Name:  "Rempaillot",
+			//		Tally: []uint64{3, 4, 4, 1, 0},
+			//	},
+			//},
 		)
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(svg)
+		//fmt.Println(svg)
 		svgBytes := []byte(svg)
 
 		// Discord does not render SVG files (although it's somewhat safe in img tags)
