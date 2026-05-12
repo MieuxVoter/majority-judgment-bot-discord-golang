@@ -9,6 +9,7 @@ import (
 	"main/src/domain"
 	"main/src/provider"
 	"main/src/security"
+	"main/src/services"
 	"xorm.io/xorm"
 )
 
@@ -16,7 +17,8 @@ import (
 const CreateCommandSlug = "create"
 
 type CreateCommand struct {
-	orm *xorm.Engine
+	orm      *xorm.Engine
+	gradings *services.Gradings
 }
 
 func (c CreateCommand) GetEmote() string {
@@ -45,6 +47,7 @@ func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption
 		discord.ApplicationCommandOptionString{
 			Name:        "proposal_a",
 			Description: `The name of the first proposal, like "Friday"`,
+			Required:    true,
 		},
 		discord.ApplicationCommandOptionString{
 			Name:        "proposal_b",
@@ -62,31 +65,31 @@ func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption
 			Name:        "proposal_e",
 			Description: `If you need more than five, use | as separator`,
 		},
-		//{
-		//	Type:        disgord.OptionTypeString,
-		//	Name:        "grading",
-		//	Description: "The grades to use in this poll",
-		//	Choices: []*disgord.ApplicationCommandOptionChoice{
-		//		{
-		//			Name:  "👎👍",
-		//			Value: "👎👍",
-		//		},
-		//		{
-		//			Name:  "👎👊👍",
-		//			Value: "👎👊👍",
-		//		},
-		//		{
-		//			Name:  "🤮😐😀🤩",
-		//			Value: "🤮😐😀🤩",
-		//		},
-		//		{
-		//			Name:  "🤮😐😌😀🤩 (default)",
-		//			Value: "🤮😐😌😀🤩",
-		//		},
-		//		// Discord only supports at most 5 buttons per action row,
-		//		// so to add more than 5 grades we need to tweak our judgment UI.
-		//	},
-		//},
+		discord.ApplicationCommandOptionString{
+			Name:        "grading",
+			Description: "The grades to use in this poll",
+			Choices: []discord.ApplicationCommandOptionChoiceString{
+				// All the Values in here must be available as keys in [services.Gradings.Get]
+				{
+					Name:  "👎👍",
+					Value: "👎👍",
+				},
+				{
+					Name:  "👎🤷👍",
+					Value: "👎🤷👍",
+				},
+				{
+					Name:  "🤮😐😀🤩",
+					Value: "🤮😐😀🤩",
+				},
+				{
+					Name:  "🤮😐😌😀🤩 (default)",
+					Value: "🤮😐😌😀🤩",
+				},
+				// Discord only supports at most 5 buttons per action row,
+				// so to add more than 5 grades we need to tweak our judgment UI.
+			},
+		},
 		//{
 		//	Type:        disgord.OptionTypeString,
 		//	Name:        "secrecy",
@@ -169,7 +172,6 @@ func doCreatePoll(
 	secrecy string,
 ) error {
 
-	//responder := provider.GetResponder(input)
 	guildVendorId, _ := input.GetGuildVendorId()
 	guild, err := db.GetOrCreateGuild(orm, guildVendorId)
 	if err != nil {
@@ -234,7 +236,8 @@ func init() {
 		Name: "subcommand.mj." + CreateCommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &CreateCommand{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:      ctn.Get("database.engine").(*xorm.Engine),
+				gradings: ctn.Get("gradings").(*services.Gradings),
 			}
 			return cmd, nil
 		},

@@ -1,8 +1,8 @@
 package database
 
 import (
-	"fmt"
-	"time" // annoying IDE error, but benign
+	"main/src/services"
+	"time"
 )
 
 // Poll is our main (toplevel) model.
@@ -15,7 +15,7 @@ type Poll struct {
 	// Eg: "The Next Meeting Date"
 	// > What do you think of <Proposal> as <Subject> ?
 	Subject string
-	// Grading is a slice of unicode runes, as string.
+	// Grading is a key for [services.Gradings.Get].
 	Grading string
 	// Secrecy is either "public", "admin", or "secret".
 	Secrecy string
@@ -35,17 +35,22 @@ func (poll *Poll) GetGrading() string {
 	return poll.getDefaultGrading()
 }
 
-func (poll *Poll) GetGradingSlice() []string {
-	list := make([]string, 0)
-	for _, grade := range poll.GetGrading() {
-		list = append(list, fmt.Sprintf("%c", grade))
-	}
-
-	return list
+func (poll *Poll) GetGradingSlice(
+	gradings *services.Gradings,
+) []string {
+	return gradings.Get(poll.GetGrading())
+	//list := make([]string, 0)
+	//for _, grade := range poll.GetGrading() {
+	//	list = append(list, fmt.Sprintf("%c", grade))
+	//}
+	//return list
 }
 
-func (poll *Poll) GetGradeIcon(gradeLevel uint8) string {
-	icons := poll.GetGradingSlice()
+func (poll *Poll) GetGradeIcon(
+	gradings *services.Gradings,
+	gradeLevel uint8,
+) string {
+	icons := poll.GetGradingSlice(gradings)
 	gradeLevelInt := int(gradeLevel)
 	if len(icons) <= gradeLevelInt {
 		return "🥚" // easter

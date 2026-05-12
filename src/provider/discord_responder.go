@@ -13,6 +13,7 @@ import (
 	"main/src/container"
 	db "main/src/database"
 	"main/src/security"
+	"main/src/services"
 	"time"
 	"xorm.io/xorm"
 )
@@ -163,8 +164,8 @@ func (r DiscordResponder) RespondPollView(
 ) error {
 	if d, isDiscord := input.(DiscordCommandInput); isDiscord {
 
-		title := "### " + r.sanitizeTitle(poll.Subject)
-		amountOfVotes, _ := db.CountBallots(r.orm, poll)
+		title := "### :scales: " + r.sanitizeTitle(poll.Subject)
+		//amountOfVotes, _ := db.CountBallots(r.orm, poll)
 
 		description := ""
 		if len(proposals) > 0 {
@@ -194,7 +195,8 @@ func (r DiscordResponder) RespondPollView(
 					discord.NewSmallSeparator(),
 					discord.NewSection(
 						discord.NewTextDisplay(
-							fmt.Sprintf("%d votes", amountOfVotes),
+							fmt.Sprintf(":closed_lock_with_key:"),
+							//fmt.Sprintf(":eyes:", amountOfVotes),
 						),
 					).WithAccessory(
 						discord.NewSecondaryButton(
@@ -227,7 +229,7 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 		title := "### " + security.TruncateString(proposal.Name, 256)
 
 		gradeButtons := make([]discord.InteractiveComponent, 0, 5)
-		for gradeLevel, grade := range poll.GetGradingSlice() {
+		for gradeLevel, grade := range poll.GetGradingSlice(services.GetGradings()) {
 			customId := fmt.Sprintf("/button/poll/%d/judge/%d/as/%d", poll.Id, proposal.Id, gradeLevel)
 			emoji := discord.ComponentEmoji{Name: grade}
 			button := discord.NewSecondaryButton("", customId).WithEmoji(emoji)
@@ -274,7 +276,7 @@ func (r DiscordResponder) RespondBallotSummary(
 		message := "Here's the summary of your judgments:"
 		summary := ""
 		for k := range judgments {
-			icon := poll.GetGradeIcon(judgments[k].Grade)
+			icon := poll.GetGradeIcon(services.GetGradings(), judgments[k].Grade)
 			summary += fmt.Sprintf("- %s ⋅ %s\n", icon, proposals[k].Name)
 		}
 
@@ -575,7 +577,7 @@ func (r DiscordResponder) RespondUserError(
 		return r.RespondWithMessage(
 			input,
 			fmt.Sprintf(
-				"### 🍄 **Ooopsie !**\n"+
+				"### 🤖🗯\n"+
 					"\n"+
 					"%s\n"+
 					"",

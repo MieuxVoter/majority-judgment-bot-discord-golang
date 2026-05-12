@@ -9,6 +9,7 @@ import (
 	db "main/src/database"
 	"main/src/provider"
 	"main/src/security"
+	"main/src/services"
 	"regexp"
 	"strconv"
 	"xorm.io/xorm"
@@ -18,7 +19,8 @@ var buttonPollResultsRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/
 var buttonPollResultsPattern = "/button/poll/{pollId}/results"
 
 type PollResultsButton struct {
-	orm *xorm.Engine
+	orm      *xorm.Engine
+	gradings *services.Gradings
 }
 
 func (b PollResultsButton) GetRegex() *regexp.Regexp {
@@ -97,7 +99,7 @@ func handlePollResult(
 	proposalsTallies := make([]*judgment.ProposalTally, 0, len(proposals))
 	for _, proposal := range proposals {
 		proposalGradesTally := make([]uint64, 0)
-		for gradeLevel := range poll.GetGradingSlice() {
+		for gradeLevel := range poll.GetGradingSlice(services.GetGradings()) {
 			gradeAmount, errCount := db.CountGradesReceived(orm, poll, &proposal, uint8(gradeLevel))
 			if errCount != nil {
 				return false, errCount
@@ -191,7 +193,8 @@ func init() {
 		Name: "button.poll.result",
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &PollResultsButton{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:      ctn.Get("database.engine").(*xorm.Engine),
+				gradings: ctn.Get("gradings").(*services.Gradings),
 			}
 			return cmd, nil
 		},

@@ -18,8 +18,9 @@ import (
 // We mostly use this to generate merit profiles.
 // See https://github.com/MieuxVoter/mv-api-server-apiplatform
 type Oas struct {
-	logger *logrus.Logger
-	config *services.Config
+	logger   *logrus.Logger
+	config   *services.Config
+	gradings *services.Gradings
 }
 
 // GetMeritProfileUrl builds the URL to the merit profile image
@@ -41,7 +42,7 @@ func (oas *Oas) GetMeritProfileUrl(
 		if proposalResultIndex > 0 {
 			fileNameNoExt += "_"
 		}
-		for gradeLevel := range poll.GetGradingSlice() {
+		for gradeLevel := range poll.GetGradingSlice(oas.gradings) {
 			gradeAmount := pollTally.Proposals[proposalResult.Index].Tally[gradeLevel]
 
 			if gradeLevel > 0 {
@@ -103,8 +104,9 @@ func init() {
 		Name: "oas",
 		Build: func(ctn di.Container) (interface{}, error) {
 			oas := &Oas{
-				logger: ctn.Get("logger").(*logrus.Logger),
-				config: ctn.Get("config").(*services.Config),
+				logger:   ctn.Get("logger").(*logrus.Logger),
+				config:   ctn.Get("config").(*services.Config),
+				gradings: ctn.Get("gradings").(*services.Gradings),
 			}
 			return oas, nil
 		},
