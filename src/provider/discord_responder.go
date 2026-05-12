@@ -320,37 +320,6 @@ func (r DiscordResponder) RespondPollResult(
 		}
 		svg, err := merit.RenderLinearProfileSVG(
 			rendererProposals,
-			// fake data for testing
-			//[]merit.Proposal{
-			//	{
-			//		Name:  "Jonlukz",
-			//		Tally: []uint64{1, 2, 2, 4, 3},
-			//	},
-			//	{
-			//		Name:  "Bourdella",
-			//		Tally: []uint64{5, 3, 3, 0, 1},
-			//	},
-			//	{
-			//		Name:  "Rempaillot",
-			//		Tally: []uint64{3, 4, 4, 1, 0},
-			//	},
-			//	{
-			//		Name:  "Tonte à Lier",
-			//		Tally: []uint64{2, 5, 3, 2, 0},
-			//	},
-			//	{
-			//		Name:  "Tout Poutoux",
-			//		Tally: []uint64{1, 3, 1, 1, 6},
-			//	},
-			//	{
-			//		Name:  "Passelinot",
-			//		Tally: []uint64{2, 2, 4, 2, 2},
-			//	},
-			//	{
-			//		Name:  "Edouard Ve",
-			//		Tally: []uint64{1, 3, 4, 3, 1},
-			//	},
-			//},
 			merit.WithBgColor(color.RGBA{R: 32, G: 32, B: 32, A: 255}),
 		)
 
@@ -408,52 +377,65 @@ func (r DiscordResponder) RespondPollResult(
 			flags |= discord.MessageFlagEphemeral
 		}
 
-		bottomAccessory := discord.NewSecondaryButton(
-			"Info",
-			fmt.Sprintf("/button/poll/%d/info", poll.Id),
-		).WithEmoji(
-			discord.ComponentEmoji{Name: "ℹ"},
+		footerLeft := discord.NewTextDisplay(fmt.Sprintf(
+			`%d participant%s`,
+			pollTally.AmountOfJudges,
+			participantsPluralization,
+		))
+
+		msgContainer := discord.NewContainer(
+			discord.NewTextDisplay("### "+title),
+			discord.NewTextDisplay(message),
+			discord.NewSmallSeparator(),
+			discord.NewMediaGallery(
+				discord.MediaGalleryItem{
+					Media: discord.UnfurledMediaItem{
+						URL: "attachment://" + imageFilename + ".png",
+					},
+					Description: "A merit profile",
+					Spoiler:     false,
+				},
+			),
+			// Shows a link to download the file. (not what we want)
+			//discord.NewFileComponent(
+			//	"attachment://"+imageFilename+".png",
+			//),
 		)
+
+		//bottomAccessory := discord.NewSecondaryButton(
+		//	"Info",
+		//	fmt.Sprintf("/button/poll/%d/info", poll.Id),
+		//).WithEmoji(
+		//	discord.ComponentEmoji{Name: "ℹ"},
+		//)
+
 		if asPrivateMessage {
-			bottomAccessory = discord.NewSecondaryButton(
-				"Publish",
-				fmt.Sprintf("/button/poll/%d/publish", poll.Id),
-			).WithEmoji(
-				discord.ComponentEmoji{Name: "📢"},
+			// I don't really understand why we need to re-assign msgContainer, but we do.
+			// There are some COW shenanigans at play since we're not handling pointers here.
+			msgContainer = msgContainer.AddComponents(
+				discord.NewSmallSeparator(),
+				discord.NewSection(
+					footerLeft,
+				).WithAccessory(
+					discord.NewSecondaryButton(
+						"Publish",
+						fmt.Sprintf("/button/poll/%d/publish", poll.Id),
+					).WithEmoji(
+						discord.ComponentEmoji{Name: "📢"},
+					),
+				),
+			)
+		} else {
+			msgContainer = msgContainer.AddComponents(
+				discord.NewSmallSeparator(),
+				footerLeft,
 			)
 		}
 
 		msg := discord.MessageCreate{
 			Flags: flags,
 			Components: []discord.LayoutComponent{
-				discord.NewContainer(
-					discord.NewTextDisplay("### "+title),
-					discord.NewTextDisplay(message),
-					discord.NewSmallSeparator(),
-					discord.NewMediaGallery(
-						discord.MediaGalleryItem{
-							Media: discord.UnfurledMediaItem{
-								URL: "attachment://" + imageFilename + ".png",
-							},
-							Description: "A merit profile",
-							Spoiler:     false,
-						},
-					),
-					// Shows a link to download the file. (not what we want)
-					//discord.NewFileComponent(
-					//	"attachment://"+imageFilename+".png",
-					//),
-					discord.NewSmallSeparator(),
-					discord.NewSection(
-						discord.NewTextDisplay(
-							fmt.Sprintf(
-								`%d participant%s`,
-								pollTally.AmountOfJudges,
-								participantsPluralization,
-							),
-						),
-					).WithAccessory(bottomAccessory),
-				),
+				msgContainer,
 			},
 			Files: []*discord.File{
 				discord.NewFile(
