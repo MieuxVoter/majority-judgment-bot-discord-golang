@@ -17,7 +17,7 @@ GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
 # govvv allows version embedding at compile time.
-VFLAG=$(shell govvv -flags -pkg $(shell go list ./src/security))
+FLAGS=$(shell govvv -flags -pkg $(shell go list ./src/security))
 
 .PHONY: clean default depend lint release
 
@@ -26,7 +26,7 @@ VFLAG=$(shell govvv -flags -pkg $(shell go list ./src/security))
 # Instead we need to 'make depend' manually once during the initial setup.
 default: $(NAME)
 $(NAME): $(shell find . -name \*.go)
-	go build -ldflags "$(VFLAG)" -o $(NAME) src/main.go
+	go build -ldflags "$(FLAGS)" -o "$(NAME)" src/main.go
 
 # the standard build produces a "local" executable, a linux tgz, and a darwin (macos) tgz
 # uncomment and join the windows zip if you need it
@@ -49,7 +49,8 @@ build/$(NAME)-%.zip: $(NAME)
 	touch $@
 
 release: $(NAME)
-	strip "./$(NAME)"
+	@# They say we should not strip go builds
+	@#strip "./$(NAME)"
 	upx --ultra-brute "./$(NAME)"
 
 # Installing build dependencies. You will need to run this once manually when you clone the repo.

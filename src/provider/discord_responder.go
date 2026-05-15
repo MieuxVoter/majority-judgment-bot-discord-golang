@@ -320,7 +320,8 @@ func (r DiscordResponder) RespondPollResult(
 		}
 		svg, err := merit.RenderLinearProfileSVG(
 			rendererProposals,
-			merit.WithBgColor(color.RGBA{R: 32, G: 32, B: 32, A: 255}),
+			merit.WithBgColor(color.NRGBA{R: 32, G: 32, B: 32, A: 255}),
+			merit.WithFontFamily("Noto Sans, sans-serif"),
 		)
 
 		if err != nil {

@@ -16,29 +16,6 @@ import (
 	"time"
 )
 
-// Wo do not need these memoization(s).  Remove these comments at some point.
-
-// config is a local memoization of the [services.Config] service.
-// It requires that the function [RunDiscordBot] is run first.
-//var config *services.Config
-
-// logger is a local memoization of the [logrus.Logger] service.
-// It requires that the function [RunDiscordBot] is run first.
-//var logger *logrus.Logger
-
-// discordClient connects to the REST HTTP API of Discord.
-// It requires that the function [RunDiscordBot] is run first.
-//var discordClient *bot.Client
-
-// checkErr logs errors if not nil, along with a user-specified trace
-//func checkErr(err error, trace string) {
-//	if err != nil {
-//		logger.WithFields(logrus.Fields{
-//			"trace": trace,
-//		}).Error(err)
-//	}
-//}
-
 func RunDiscordBot(
 	shouldSyncCommands bool,
 ) (deferrable func()) {
@@ -66,7 +43,6 @@ func RunDiscordBot(
 				data discord.ButtonInteractionData,
 				event *handler.ComponentEvent,
 			) error {
-				//logger.Debugln("button handled:", button.GetPattern())
 				input := provider.DiscordButtonInput{
 					Data:  data,
 					Event: event,
