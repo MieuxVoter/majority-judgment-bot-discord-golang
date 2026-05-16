@@ -35,6 +35,7 @@
 - [ ] Add a `secrecy` scope to allow public ballots
 - [ ] Docker Compose config (optional)
 - [ ] Localization
+- [ ] Integration with Liberapay
 - [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/) — ひとりぼっちのよる
 
 

@@ -111,7 +111,6 @@ func handleInfoCommand(
 
 	//buttons := make([]*provider.ButtonField, 0)
 	//buttons = append(buttons, &provider.ButtonField{
-	//	//Style: disgord.Link,
 	//	Label: "Wish me Well",
 	//	Emote: "🌠",
 	//	Url:   "https://liberapay.com/MajorityJudgmentBot/",
