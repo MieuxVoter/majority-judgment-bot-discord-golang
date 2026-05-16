@@ -8,7 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.3
-	github.com/mieuxvoter/merit-profile-library-go v0.3.1
+	github.com/mieuxvoter/merit-profile-library-go v0.3.2
 	github.com/mskrha/svg2png v0.0.0-20240706085601-64fa78f4eb07
 	github.com/sarulabs/di v2.0.0+incompatible
 	github.com/sirupsen/logrus v1.9.4

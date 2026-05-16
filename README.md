@@ -20,7 +20,7 @@
 
 - [x] Start a poll with `/mj create …`
 - [x] Print some miscellaneous help with `/mj help`
-- [ ] Inform about my status and metrics with `/mj info`
+- [x] Inform about my status and metrics with `/mj info`
 - [ ] Explain briefly how Majority Judgment works `/mj explain`
 - [ ] Record feedback from users with `/mj feedback`
 - [ ] Rerun a past poll with `/mj rerun`
