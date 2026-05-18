@@ -52,7 +52,7 @@ This lack of subtlety has terrible consequences on the quality of the poll and o
 
 In _Majority Judgment polls_, you can give your opinion on each and every proposal.
 
-Now you can finally say you both like bananas **and** strawberries much better than spinach!  Great, isn't it?
+Now you can finally say you like both bananas **and** strawberries better than spinach!  Great, isn't it?
 
 ### 🏆 How are proposals ranked in the end?
 

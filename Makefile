@@ -16,8 +16,8 @@ DATE=$(shell date '+%F %T')
 GO15VENDOREXPERIMENT=1
 export GO15VENDOREXPERIMENT
 
-# govvv allows version embedding at compile time.
-FLAGS=$(shell govvv -flags -pkg $(shell go list ./src/security))
+VERSION=$(shell git describe --tags)
+FLAGS=-X main/src/security.GitSummary=$(VERSION)
 
 .PHONY: clean default depend lint release
 
@@ -26,40 +26,24 @@ FLAGS=$(shell govvv -flags -pkg $(shell go list ./src/security))
 # Instead we need to 'make depend' manually once during the initial setup.
 default: $(NAME)
 $(NAME): $(shell find . -name \*.go)
-	go build -ldflags "$(FLAGS)" -o "$(NAME)" src/main.go
+	@# NOTE: go-sqlite3 requires cgo to work (so we can't use Alpine)
+	GOOS=linux GARCH=amd64 CGO_ENABLED=1 \
+		go build \
+		-ldflags "$(FLAGS)" \
+		-o "$(NAME)" \
+		src/main.go
 
 # the standard build produces a "local" executable, a linux tgz, and a darwin (macos) tgz
 # uncomment and join the windows zip if you need it
 build: $(NAME)
-# build/$(NAME)-linux-amd64.tgz build/$(NAME)-darwin-amd64.tgz
-# build/$(NAME)-linux-arm.tgz build/$(NAME)-windows-amd64.zip
-
-# create a tgz with the binary and any artifacts that are necessary
-# note the hack to allow for various GOOS & GOARCH combos, sigh
-build/$(NAME)-%.tgz: $(NAME)
-	rm -rf build/$(NAME)
-	mkdir -p build/$(NAME)
-	tgt=$*; GOOS=$${tgt%-*} GOARCH=$${tgt#*-} go build -ldflags "$(VFLAG)" -o build/$(NAME)/$(NAME) .
-	chmod +x build/$(NAME)/$(NAME)
-	cp README.md build/$(NAME)/
-	tar -zcf $@ -C build ./$(NAME)
-	rm -r build/$(NAME)
-
-build/$(NAME)-%.zip: $(NAME)
-	touch $@
 
 release: $(NAME)
 	@# They say we should not strip go builds
 	@#strip "./$(NAME)"
 	upx --ultra-brute "./$(NAME)"
 
-# Installing build dependencies. You will need to run this once manually when you clone the repo.
-depend:
-	go get -v $(DEPEND)
-	glide install
-
 clean:
-	rm -rf build .vendor/pkg
+	rm --force $(NAME)
 
 # Run gofmt and complain if a file is out of compliance
 # Run go vet and similarly complain if there are issues

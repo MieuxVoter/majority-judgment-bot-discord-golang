@@ -28,13 +28,10 @@
 - [x] Enforce quotas per guild
 - [x] Choose a `grading` (ex: 👍👎) per poll
 - [ ] Add a `secrecy` scope to allow public ballots
-- [ ] Docker Compose config (optional)
+- [x] Docker Compose config (optional)
 - [ ] Localization
 - [ ] Integration with Liberapay
 - [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/) — ひとりぼっちのよる
-
-
-![](./doc/screen_01.png)
 
 
 ## Installation
@@ -72,7 +69,7 @@ $ ./mjbot
 
 > [!TIP]
 > `mjbot` is about 17Mio at the moment, which is way too much.
-> We use `upx` in `make release` and it shrinks to `4.5Mio` but it's still too big.
+> We use `upx` in `make release` and it shrinks to `4.5Mio` but it's still quite big.
 
 
 ## Using docker

@@ -1,0 +1,22 @@
+# Usage
+# =====
+#
+# Make sure you created and configured your `.env.local` file, and then run:
+#
+#     docker compose up --detach
+#
+# And during dev:
+#
+#     docker compose --progress plain up --build --force-recreate
+#
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: runner
+    container_name: mjbot
+    restart: unless-stopped
+    volumes:
+    - "./docker/volumes/var/:/bot/var/"

@@ -2,10 +2,8 @@ package security
 
 import "strings"
 
-// Doc: https://github.com/ahmetb/govvv#build-variables
-
 var (
-	// GitSummary is populated at compile time by govvv.
+	// GitSummary is populated at compile time by ldflags (see Makefile)
 	GitSummary string
 )
 
