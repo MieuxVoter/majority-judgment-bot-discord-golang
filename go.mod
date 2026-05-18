@@ -18,6 +18,7 @@ require (
 
 require (
 	github.com/ajstarks/gensvg v0.0.0-20210923152200-4042c242e95e // indirect
+	github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f // indirect
 	github.com/disgoorg/godave v0.1.0 // indirect
 	github.com/disgoorg/json/v2 v2.0.0 // indirect
 	github.com/disgoorg/omit v1.0.0 // indirect
@@ -26,6 +27,7 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
+	github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2 // indirect
 	github.com/sasha-s/go-csync v0.0.0-20240107134140-fcbab37b09ad // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	golang.org/x/crypto v0.51.0 // indirect

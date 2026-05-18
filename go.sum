@@ -4,6 +4,8 @@ gitea.com/xorm/sqlfiddle v0.0.0-20180821085327-62ce714f951a h1:lSA0F4e9A2NcQSqGq
 gitea.com/xorm/sqlfiddle v0.0.0-20180821085327-62ce714f951a/go.mod h1:EXuID2Zs0pAQhH8yz+DNjUbjppKQzKFAn28TMYPB6IU=
 github.com/ajstarks/gensvg v0.0.0-20210923152200-4042c242e95e h1:450GYH87+/+YEC6/RRshDbWgm3uzl5U8SOdOoDl+gaw=
 github.com/ajstarks/gensvg v0.0.0-20210923152200-4042c242e95e/go.mod h1:PtU6ofchbU0VxGlg+klpebsi0DY7V9GrxtYeMJkWutM=
+github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f h1:Km7aXA1/+77OZ6mq8VV/QJ9nP6y4OUwxj+GQ5nW7X5Y=
+github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f/go.mod h1:u13M4umOwLc1fTX2itKxGff/6S+YWc7l15kJGtm2IJY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -47,6 +49,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-sqlite3 v1.14.44 h1:3VSe+xafpbzsLbdr2AWlAZk9yRHiBhTBakioXaCKTF8=
 github.com/mattn/go-sqlite3 v1.14.44/go.mod h1:pjEuOr8IwzLJP2MfGeTb0A35jauH+C2kbHKBr7yXKVQ=
+github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2 h1:YocNLcTBdEdvY3iDK6jfWXvEaM5OCKkjxPKoJRdB3Gg=
+github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2/go.mod h1:76rfSfYPWj01Z85hUf/ituArm797mNKcvINh1OlsZKo=
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3 h1:BtzXQaCa65B60+BQghss5RVdqkFSFYv/RP/wtLTRn2o=
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3/go.mod h1:3WukXYakDhUFmGHmDP0escphOjNZE2lYaEHcqZ7fc28=
 github.com/mieuxvoter/merit-profile-library-go v0.3.1 h1:YoCjESah3z4jdU7wryXNUl0S2ZRu8S8LMdwEmdZIUec=

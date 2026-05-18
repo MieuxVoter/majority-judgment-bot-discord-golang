@@ -6,9 +6,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
-	"github.com/mskrha/svg2png"
 	"github.com/sarulabs/di"
-	"image/color"
 	"log"
 	"main/src/container"
 	db "main/src/database"
@@ -31,7 +29,8 @@ import (
 
 // DiscordResponder implements provider.ResponderInterface for Discord
 type DiscordResponder struct {
-	orm *xorm.Engine
+	orm      *xorm.Engine
+	analysis *services.Analysis
 }
 
 func (r DiscordResponder) sanitizeTitle(title string) string {
@@ -318,38 +317,41 @@ func (r DiscordResponder) RespondPollResult(
 				Tally: pollTally.Proposals[proposal.Index].Tally,
 			}
 		}
-		svg, err := merit.RenderLinearProfileSVG(
-			rendererProposals,
-			merit.WithBgColor(color.NRGBA{R: 32, G: 32, B: 32, A: 255}),
-			merit.WithFontFamily("Noto Sans, sans-serif"),
-		)
 
+		// Discord does not render SVG files (although it's somewhat safe in img tags, right?)
+		// So we need to create a raster version of our merit profile.
+		pngBytes, err := r.analysis.GenerateMeritProfilePNG(
+			rendererProposals,
+		)
 		if err != nil {
 			return err
 		}
 
+		//svg, err := merit.RenderLinearProfileSVG(
+		//	rendererProposals,
+		//	merit.WithBgColor(color.NRGBA{R: 32, G: 32, B: 32, A: 255}),
+		//	merit.WithFontFamily("Noto Sans, sans-serif"),
+		//)
+		//if err != nil {
+		//	return err
+		//}
+
 		//fmt.Println(svg)
-		svgBytes := []byte(svg)
+		//svgBytes := []byte(svg)
 
-		// Discord does not render SVG files (although it's somewhat safe in img tags)
-		// So we need to create a raster version of our merit profile.
-		// To that effect, we use svg2png which in turn uses inkscape internally.
-		// It's not pretty, but it works.  Docker will help a little.
-		converter := svg2png.New()
-
+		//inkscape_converter := inkscape_svg2png.New()
 		// We can also tell it where our inkscape binary resides.
 		// I've compiled inkscape myself; you probably won't need this.
-		//err = converter.SetBinary("/usr/local/bin/inkscape")
+		//err = inkscape_converter.SetBinary("/usr/local/bin/inkscape")
 		//if err != nil {
 		//	fmt.Println(err)
 		//	return err
 		//}
-
-		pngBytes, err := converter.Convert(svgBytes)
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
+		//pngBytes, err := inkscape_converter.Convert(svgBytes)
+		//if err != nil {
+		//	fmt.Println(err)
+		//	return err
+		//}
 
 		// Debug dump of the generated PNG file.
 		//err = os.WriteFile("merit.png", pngBytes, 0644)
@@ -578,7 +580,8 @@ func init() {
 		Name: "responder.discord",
 		Build: func(ctn di.Container) (interface{}, error) {
 			responder := &DiscordResponder{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:      ctn.Get("database.engine").(*xorm.Engine),
+				analysis: ctn.Get("analysis").(*services.Analysis),
 			}
 			return responder, nil
 		},

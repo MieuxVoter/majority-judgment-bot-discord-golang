@@ -107,9 +107,21 @@ func RunDiscordBot(
 		closeGateway()
 	}
 
+	// Dump the required permissions' integer — dev utility
+	//logger.Infoln(
+	//	fmt.Sprintf(
+	//		"Permissions: %d",
+	//		discord.PermissionSendMessages|
+	//			discord.PermissionAttachFiles|
+	//			discord.PermissionEmbedLinks,
+	//		//discord.PermissionSendTTSMessages|
+	//		//discord.PermissionSendMessagesInThreads|
+	//	),
+	//)
+
 	return deferrable
 
-	// OLD STUFF BELOW
+	// OLD STUFF BELOW — can't figure out how to dump the URL using the new disgo
 
 	// Print the link one needs to invite/authorize the bot on their server
 	//permissions := disgord.PermissionSendMessages |
