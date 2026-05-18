@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/sarulabs/di/v2"
@@ -65,7 +64,7 @@ func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, even
 		)
 	}
 
-	fmt.Println("Guild:", event.GuildID())
+	//fmt.Println("Guild:", event.GuildID())
 
 	input := provider.DiscordCommandInput{
 		Data:  data,

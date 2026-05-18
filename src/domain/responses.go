@@ -5,6 +5,18 @@ import (
 	"main/src/provider"
 )
 
+func RespondWithMessage(
+	input provider.Input,
+	message string,
+	ephemeral bool,
+) error {
+	return provider.GetResponder(input).RespondWithMessage(
+		input,
+		message,
+		ephemeral,
+	)
+}
+
 func RespondPollView(
 	input provider.Input,
 	poll *db.Poll,

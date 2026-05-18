@@ -13,17 +13,17 @@
 
 ## Feature Wishlist
 
+- [x] Be discreet : do not read messages
+- [x] Use _slash_ (`/`) commands
 - [x] Start a poll with `/mj create …`
 - [x] Print some miscellaneous help with `/mj help`
 - [x] Inform about my status and metrics with `/mj info`
-- [ ] Explain briefly how Majority Judgment works `/mj explain`
-- [ ] Record feedback from users with `/mj feedback`
-- [ ] Rerun a past poll with `/mj rerun`
+- [x] Explain briefly how Majority Judgment works `/mj explain`
+- [ ] ~~Record feedback from users with `/mj feedback`~~
+- [ ] ~~Rerun a past poll with `/mj rerun`~~
 - [x] Vote on a poll using buttons
 - [x] Look at a poll's result using a button
 - [x] Publish a poll's result using a button
-- [x] Use only _slash_ (`/`) commands
-- [x] Be discreet : do not read messages
 - [x] Scope polls per guild (privacy!)
 - [x] Enforce quotas per guild
 - [x] Choose a `grading` (ex: 👍👎) per poll
@@ -57,7 +57,10 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
    ```shell
    $ go run src/main.go
    ```
-5. Visit the OAuth URL that was printed in the output
+5. Visit the OAuth URL
+   Replace `{{CLIENT_ID}}` by the Application ID that you created in the Discord dev portal.
+   https://discord.com/api/oauth2/authorize?client_id={{CLIENT_ID}}&permissions=51200&scope=bot+applications.commands
+   The bot scope is not mandatory, but it's nice to have the bot show up in the list of connected people.
 
 
 ## Build
@@ -67,6 +70,7 @@ $ make
 $ ./mjbot
 ```
 
+> [!TIP]
 > `mjbot` is about 17Mio at the moment, which is way too much.
 > We use `upx` in `make release` and it shrinks to `4.5Mio` but it's still too big.
 
