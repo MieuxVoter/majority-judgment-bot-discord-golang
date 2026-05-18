@@ -3,7 +3,7 @@ package network
 import (
 	"fmt"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"github.com/sirupsen/logrus"
 	"log"
 	"main/src/container"

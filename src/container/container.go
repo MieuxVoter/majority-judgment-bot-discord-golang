@@ -1,7 +1,7 @@
 package container
 
 import (
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"strings"
 )

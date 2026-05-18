@@ -3,13 +3,14 @@ module main
 go 1.25.0
 
 require (
+	github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f
 	github.com/disgoorg/disgo v0.19.3
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.3
 	github.com/mieuxvoter/merit-profile-library-go v0.3.4
-	github.com/sarulabs/di v2.0.0+incompatible
+	github.com/sarulabs/di/v2 v2.5.2
 	github.com/sirupsen/logrus v1.9.4
 	xorm.io/builder v0.3.13
 	xorm.io/xorm v1.3.11
@@ -17,7 +18,6 @@ require (
 
 require (
 	github.com/ajstarks/gensvg v0.0.0-20210923152200-4042c242e95e // indirect
-	github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f // indirect
 	github.com/disgoorg/godave v0.1.0 // indirect
 	github.com/disgoorg/json/v2 v2.0.0 // indirect
 	github.com/disgoorg/omit v1.0.0 // indirect

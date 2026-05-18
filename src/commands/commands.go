@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
 	"main/src/provider"

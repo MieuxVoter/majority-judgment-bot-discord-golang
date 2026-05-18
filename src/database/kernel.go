@@ -2,7 +2,7 @@ package database
 
 import (
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
 	"main/src/services"

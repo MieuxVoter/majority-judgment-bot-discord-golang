@@ -53,15 +53,8 @@ github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2 h1:YocNLcTBdEd
 github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2/go.mod h1:76rfSfYPWj01Z85hUf/ituArm797mNKcvINh1OlsZKo=
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3 h1:BtzXQaCa65B60+BQghss5RVdqkFSFYv/RP/wtLTRn2o=
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3/go.mod h1:3WukXYakDhUFmGHmDP0escphOjNZE2lYaEHcqZ7fc28=
-github.com/mieuxvoter/merit-profile-library-go v0.3.1 h1:YoCjESah3z4jdU7wryXNUl0S2ZRu8S8LMdwEmdZIUec=
-github.com/mieuxvoter/merit-profile-library-go v0.3.1/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
-github.com/mieuxvoter/merit-profile-library-go v0.3.2 h1:f1XXq4BtQeuIO7l5VtIXTRFvcTdcT48kSGZSrqus2Uo=
-github.com/mieuxvoter/merit-profile-library-go v0.3.2/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
-github.com/mieuxvoter/merit-profile-library-go v0.3.3 h1:kSYPjC4NMz6QjuyN6Mfjp/C87rwzrACXorpXeHROrkY=
-github.com/mieuxvoter/merit-profile-library-go v0.3.3/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
+github.com/mieuxvoter/merit-profile-library-go v0.3.4 h1:21oGzREXrtc8TOqh0WkaC/rdMk6wABV1m+20UoCsBNM=
 github.com/mieuxvoter/merit-profile-library-go v0.3.4/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
-github.com/mskrha/svg2png v0.0.0-20240706085601-64fa78f4eb07 h1:7fan6wzUXasMPMHho2ePSkB+QTEb0Rh/f6B+IkkP1Sc=
-github.com/mskrha/svg2png v0.0.0-20240706085601-64fa78f4eb07/go.mod h1:KFdfdIgpr48ODxdkxKvpcYwuyLpQ6rfkAsFB2UQ6jD4=
 github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
 github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
@@ -73,8 +66,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
-github.com/sarulabs/di v2.0.0+incompatible h1:gsiKbengnJvdA+XkdV7SqlH3kFQMaIqKD+rgefIRwS0=
-github.com/sarulabs/di v2.0.0+incompatible/go.mod h1:w5YAFs2sBoVzwDsWaBqJ2NzOmUHo/EZKdB3DOJ+BmHI=
+github.com/sarulabs/di/v2 v2.5.2 h1:Gc/ytg54ikKXg2dR4+iLWKZw35t5IdQAxDqBmALk88c=
+github.com/sarulabs/di/v2 v2.5.2/go.mod h1:u+6Y0O5XqKzzjLz2zXdqxgfO1TnEYivLVqgScAgKQa8=
 github.com/sasha-s/go-csync v0.0.0-20240107134140-fcbab37b09ad h1:qIQkSlF5vAUHxEmTbaqt1hkJ/t6skqEGYiMag343ucI=
 github.com/sasha-s/go-csync v0.0.0-20240107134140-fcbab37b09ad/go.mod h1:/pA7k3zsXKdjjAiUhB5CjuKib9KJGCaLvZwtxGC8U0s=
 github.com/sirupsen/logrus v1.9.4 h1:TsZE7l11zFCLZnZ+teH4Umoq5BhEIfIzfRDZ1Uzql2w=

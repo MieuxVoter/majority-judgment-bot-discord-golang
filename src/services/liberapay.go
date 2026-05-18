@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	//"github.com/andersfylling/disgord/json"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"io"
 	"log"
 	"main/src/container"

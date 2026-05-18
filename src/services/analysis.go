@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/canhlinh/svg2png"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"github.com/sirupsen/logrus"
 	"image/color"
 	"log"

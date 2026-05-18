@@ -6,7 +6,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
 	db "main/src/database"

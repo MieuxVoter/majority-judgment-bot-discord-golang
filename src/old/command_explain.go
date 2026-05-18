@@ -3,7 +3,7 @@ package old
 //
 //import (
 //	//"github.com/andersfylling/disgord"
-//	"github.com/sarulabs/di"
+//	"github.com/sarulabs/di/v2"
 //	"log"
 //	"main/src/container"
 //	"main/src/provider"

@@ -3,7 +3,7 @@ package domain
 import (
 	"fmt"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
 	db "main/src/database"

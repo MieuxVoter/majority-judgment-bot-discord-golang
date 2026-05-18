@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/sarulabs/di"
+	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
 	"main/src/provider"
