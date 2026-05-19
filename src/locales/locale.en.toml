@@ -1,0 +1,11 @@
+[FeedbackBotIsRunningPressCtrlC]
+other = "MJ Bot is running. Press CTRL+C to exit."
+
+[FeedbackBotShuttingDown]
+other = "Shutting down…"
+
+[FeedbackBotSynchronizingCommands]
+other = "Synchronizing commands with Discord…"
+
+[FeedbackBotDoneSynchronizingCommands]
+other = "Done synchronizing commands with Discord."

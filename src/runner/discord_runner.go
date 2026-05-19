@@ -11,6 +11,7 @@ import (
 	"main/src/commands"
 	"main/src/container"
 	"main/src/domain"
+	"main/src/locales"
 	"main/src/provider"
 	"main/src/services"
 	"time"
@@ -23,6 +24,7 @@ func RunDiscordBot(
 	// Fetch the services we're going to use
 	config := services.GetConfig()
 	logger := services.GetLogger()
+	localizer := locales.GetServerLocalizer()
 
 	// Read the Discord token from environment
 	discordToken := config.Get("DISCORD_TOKEN")
@@ -85,13 +87,13 @@ func RunDiscordBot(
 
 	// Tell Discord about this bot's available commands, via the REST API
 	if shouldSyncCommands {
-		logger.Infoln("Synchronizing commands with Discord…")
+		logger.Infoln(localizer.T("FeedbackBotSynchronizingCommands"))
 		var guilds []snowflake.ID // empty == all guilds
-		err := handler.SyncCommands(discordClient, commands.GetDiscordCommands(), guilds)
+		err = handler.SyncCommands(discordClient, commands.GetDiscordCommands(), guilds)
 		if err != nil {
 			logger.Fatalln("failed to sync commands: %s", err)
 		}
-		logger.Infoln("Done synchronizing commands with Discord.")
+		logger.Infoln(localizer.T("FeedbackBotDoneSynchronizingCommands"))
 	}
 
 	// Open a persistent connection to Discord via its Gateway
@@ -130,13 +132,12 @@ func RunDiscordBot(
 	//	disgord.PermissionAttachFiles |
 	//	disgord.PermissionEmbedLinks
 	//authorizeURL, err := discordClient.BotAuthorizeURL(permissions, []string{
-	//	//"bot", // we're trying our best to remove this bot scope, and only use applications.commands
+	//	"bot",
 	//	"applications.commands",
 	//})
 	//if err != nil {
 	//	logger.Fatal(err)
 	//}
-
 	//fmt.Println("\nFollow this URL to authorize the bot on your server:")
 	//fmt.Println(authorizeURL)
 	//fmt.Println("")

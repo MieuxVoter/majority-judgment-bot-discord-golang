@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"main/src/container"
 	"main/src/database"
+	"main/src/locales"
 	"main/src/runner"
 	"main/src/security"
 	"main/src/services"
@@ -20,6 +21,7 @@ import (
 func main() {
 	// Collect services we're going to use here
 	logger := services.GetLogger()
+	localizer := locales.GetServerLocalizer()
 
 	// Parse command-line flags
 	shouldSyncCommands := flag.Bool( // this one is not overly useful
@@ -31,7 +33,7 @@ func main() {
 
 	// Greet the dev
 	fmt.Printf("=== ⚖ MAJORITY JUDGMENT BOT 🤖 v%s ===\n", security.GetVersion())
-	fmt.Printf("Synchronizing commands = %v\n", *shouldSyncCommands)
+	//fmt.Printf("Synchronizing commands = %v\n", *shouldSyncCommands)
 
 	// Synchronize the database schema with the Go models
 	err := database.Sync()
@@ -46,11 +48,11 @@ func main() {
 	// Perhaps later start the Telegram/Fediverse business of the bot here
 
 	// Finally, start waiting for an interrupting system signal
-	logger.Infoln("Bot is running. Press CTRL-C to exit.")
+	logger.Infoln(localizer.T("FeedbackBotIsRunningPressCtrlC"))
 	waitingChannel := make(chan os.Signal, 1)
 	signal.Notify(waitingChannel, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-waitingChannel
-	logger.Infoln("Shutting down…")
+	logger.Infoln(localizer.T("FeedbackBotShuttingDown"))
 }
 
 func init() {

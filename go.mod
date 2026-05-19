@@ -3,6 +3,7 @@ module main
 go 1.25.0
 
 require (
+	github.com/BurntSushi/toml v1.6.0
 	github.com/canhlinh/svg2png v0.0.0-20201124065332-6ba87c82371f
 	github.com/disgoorg/disgo v0.19.3
 	github.com/disgoorg/snowflake/v2 v2.0.3
@@ -10,8 +11,10 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.3
 	github.com/mieuxvoter/merit-profile-library-go v0.3.4
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/sarulabs/di/v2 v2.5.2
 	github.com/sirupsen/logrus v1.9.4
+	golang.org/x/text v0.37.0
 	xorm.io/builder v0.3.13
 	xorm.io/xorm v1.3.11
 )
