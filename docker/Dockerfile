@@ -6,21 +6,45 @@ RUN --mount=type=cache,sharing=locked,target=/go/pkg/mod \
     --mount=type=cache,sharing=locked,target=/root/.cache/go-build \
     make build
 
-#FROM dhi.io/alpine-base:3.23 AS runner  # NOPE: sqlite-go requires CGO_ENABLED
-#FROM dhi.io/debian-base:trixie AS runner  # NOPE: we need to install chromium
-FROM dhi.io/debian-base:trixie-dev AS runner
-WORKDIR /bot
-# We need chromium to convert SVG to PNG (inkscape does not cut it)
+
+FROM dhi.io/debian-base:trixie-dev AS provider
 RUN --mount=type=cache,sharing=locked,target=/var/lib/apt/lists \
     --mount=type=cache,sharing=locked,target=/var/cache/apt \
     ls -FlAh /etc/apt/apt.conf.d/ \
     && rm -f /etc/apt/apt.conf.d/docker-clean \
     && apt-get update \
     && apt-get --yes --no-install-recommends install \
-        chromium
-# We cannot copy chromium from that image, the build complains about the CPU lacking sse3
-#COPY --from=linuxserver/chromium:latest /usr/bin/chromium /usr/bin/chromium
-COPY --from=builder /build/.env .
-COPY --from=builder /build/.env.local .
-COPY --from=builder /build/mjbot .
+        fonts-noto \
+        fonts-noto-cjk \
+        fonts-noto-cjk-extra \
+        fonts-noto-color-emoji \
+        fonts-noto-extra \
+        fonts-noto-mono \
+        fonts-noto-ui-core \
+        fonts-noto-ui-extra \
+        fonts-noto-unhinted
+
+
+#FROM dhi.io/alpine-base:3.23 AS runner  # NOPE: sqlite-go requires CGO_ENABLED
+FROM dhi.io/debian-base:trixie AS runner
+WORKDIR /bot
+
+# We tried a bunch of things to convert SVG to PNG
+# - inkscape does not cut it
+# - chromium works, but it's BIG
+# - resvg works great
+RUN mkdir -p ./lib/
+COPY ./lib/resvg ./lib/
+
+# resvg will need the Noto fonts since that the ones we decided to use
+COPY --from=provider /etc/fonts/conf.d/70-fonts-noto-cjk.conf /etc/fonts/conf.d
+COPY --from=provider /etc/fonts/conf.avail/30-droid-noto.conf /etc/fonts/conf.avail
+COPY --from=provider /etc/fonts/conf.avail/30-droid-noto-mono.conf /etc/fonts/conf.avail
+COPY --from=provider /usr/share/fonts/opentype/noto/ /usr/share/fonts/opentype/noto/
+COPY --from=provider /usr/share/fonts/truetype/noto/ /usr/share/fonts/truetype/noto/
+
+# And now we copy the bot itself and its config
+COPY --from=builder /build/.env ./
+COPY --from=builder /build/.env.local ./
+COPY --from=builder /build/mjbot ./
 CMD ["/bot/mjbot"]

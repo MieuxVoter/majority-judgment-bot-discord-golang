@@ -6,6 +6,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"main/src/container"
 	"main/src/database"
 	"main/src/runner"
@@ -56,4 +57,19 @@ func init() {
 	// Each service registers into the container in their own init.
 	// init() of main is always last, so let's build the container.
 	container.Build()
+
+	// Now that the container has been built, let's test our most finicky bits.
+	// This helps us catch errors early rather than late.
+	runInitTests()
+}
+
+func runInitTests() {
+	logger := container.Get("logger").(*logrus.Logger)
+
+	// The rasterizer has a vendored dependency on resvg that can fail in many ways.
+	rasterizer := container.Get("rasterizer").(*services.Rasterizer)
+	err := rasterizer.Test()
+	if err != nil {
+		logger.Errorln("rasterizer fails:", err)
+	}
 }

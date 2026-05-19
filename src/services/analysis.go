@@ -1,26 +1,20 @@
 package services
 
 import (
-	"errors"
-	"fmt"
-	"github.com/canhlinh/svg2png"
+	"context"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
 	"github.com/sarulabs/di/v2"
 	"github.com/sirupsen/logrus"
 	"image/color"
 	"log"
 	"main/src/container"
-	"math"
-	"os"
-	"regexp"
-	"strconv"
-	"time"
 )
 
-var svgDimensionsRegex = regexp.MustCompile(`<svg width="(?P<width>[^"]+)" height="(?P<height>[^"]+)"`)
+//var svgDimensionsRegex = regexp.MustCompile(`<svg width="(?P<width>[^"]+)" height="(?P<height>[^"]+)"`)
 
 type Analysis struct {
-	logger *logrus.Logger
+	logger     *logrus.Logger
+	rasterizer *Rasterizer
 }
 
 func (service *Analysis) GenerateMeritProfileSVG(
@@ -30,9 +24,11 @@ func (service *Analysis) GenerateMeritProfileSVG(
 	svg, err = merit.RenderLinearProfileSVG(
 		proposals,
 		merit.WithWidth(600),
+		merit.WithGradeHeight(48),
 		merit.WithBgColor(color.NRGBA{R: 32, G: 32, B: 32, A: 255}),
 		merit.WithFontFamily("Noto Sans, sans-serif"),
-		merit.WithTallyFontSize("1em"),
+		merit.WithProposalFontSize("28"),
+		merit.WithTallyFontSize("20"),
 	)
 	if err != nil {
 		return
@@ -42,6 +38,7 @@ func (service *Analysis) GenerateMeritProfileSVG(
 }
 
 func (service *Analysis) GenerateMeritProfilePNG(
+	ctx context.Context,
 	proposals []merit.Proposal,
 ) (png []byte, err error) {
 
@@ -50,52 +47,7 @@ func (service *Analysis) GenerateMeritProfilePNG(
 		return
 	}
 
-	matches := svgDimensionsRegex.FindStringSubmatch(svg)
-	if matches == nil {
-		err = errors.New("cannot find dimensions in svg")
-		return
-	}
-
-	widthString := matches[1]
-	heightString := matches[2]
-	widthFloat, err := strconv.ParseFloat(widthString, 64)
-	if err != nil {
-		return
-	}
-	heightFloat, err := strconv.ParseFloat(heightString, 64)
-	if err != nil {
-		return
-	}
-
-	now := time.Now().UnixNano()
-	tmpDir := "/tmp"
-
-	svgPath := fmt.Sprintf("%s/profile%d.svg", tmpDir, now)
-	pngPath := fmt.Sprintf("%s/profile%d.png", tmpDir, now)
-
-	err = os.WriteFile(
-		svgPath,
-		[]byte(svg),
-		0664,
-	)
-	if err != nil {
-		return
-	}
-
-	chromiumConverter := svg2png.NewChrome().
-		SetWith(int(math.Round(widthFloat))).
-		SetHeight(int(math.Round(heightFloat)))
-	err = chromiumConverter.Screenshoot(
-		svgPath,
-		pngPath,
-	)
-
-	png, err = os.ReadFile(pngPath)
-
-	_ = os.Remove(svgPath)
-	_ = os.Remove(pngPath)
-
-	return
+	return service.rasterizer.ConvertSVGToPNG(ctx, []byte(svg))
 }
 
 func init() {
@@ -103,7 +55,8 @@ func init() {
 		Name: "analysis",
 		Build: func(ctn di.Container) (interface{}, error) {
 			service := &Analysis{
-				logger: ctn.Get("logger").(*logrus.Logger),
+				logger:     ctn.Get("logger").(*logrus.Logger),
+				rasterizer: ctn.Get("rasterizer").(*Rasterizer),
 			}
 			return service, nil
 		},

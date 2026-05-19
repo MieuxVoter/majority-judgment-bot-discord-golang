@@ -2,6 +2,7 @@ package provider
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
@@ -16,17 +17,6 @@ import (
 	"xorm.io/xorm"
 )
 
-//func getInteractionEvent(input Input) (*handler.InteractionEvent, error) {
-//	discordCommandInput, isDiscordCommandInput := (input).(DiscordCommandInput)
-//	if isDiscordCommandInput {
-//		interactionEvent, isInteractionEvent := (*discordCommandInput.Event).(*handler.InteractionEvent)
-//		if isInteractionEvent {
-//			return &interactionEvent, nil
-//		}
-//	}
-//	//_, isDiscord = (input).(DiscordButtonInput)
-//}
-
 // DiscordResponder implements provider.ResponderInterface for Discord
 type DiscordResponder struct {
 	orm      *xorm.Engine
@@ -36,29 +26,6 @@ type DiscordResponder struct {
 func (r DiscordResponder) sanitizeTitle(title string) string {
 	return security.TruncateString(title, 256)
 }
-
-//func (r DiscordResponder) convertButtonField(field *provider.ButtonField) *disgord.MessageComponent {
-//	component := &disgord.MessageComponent{
-//		Type:     disgord.MessageComponentButton,
-//		Style:    field.Style,
-//		Label:    field.Label,
-//		CustomID: field.Id,
-//	}
-//
-//	if field.Url != "" {
-//		component.Url = field.Url
-//		component.Style = disgord.Link
-//		component.CustomID = ""
-//	}
-//
-//	if field.Emote != "" {
-//		component.Emoji = &disgord.Emoji{
-//			Name: field.Emote,
-//		}
-//	}
-//
-//	return component
-//}
 
 func (r DiscordResponder) Matches(input Input) bool {
 	_, isDiscord := (input).(DiscordCommandInput)
@@ -318,11 +285,12 @@ func (r DiscordResponder) RespondPollResult(
 			}
 		}
 
+		ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
+		defer cancel()
+
 		// Discord does not render SVG files (although it's somewhat safe in img tags, right?)
 		// So we need to create a raster version of our merit profile.
-		pngBytes, err := r.analysis.GenerateMeritProfilePNG(
-			rendererProposals,
-		)
+		pngBytes, err := r.analysis.GenerateMeritProfilePNG(ctx, rendererProposals)
 		if err != nil {
 			return err
 		}
