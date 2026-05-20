@@ -29,3 +29,9 @@ other = "Vote"
 
 [ActionShowResults]
 other = "Show results"
+
+[CommandMjCreateName]
+other = "create"
+
+[CommandMjCreateDescription]
+other = "Create a new poll"

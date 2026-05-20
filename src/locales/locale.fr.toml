@@ -29,3 +29,9 @@ other = "Voter"
 
 [ActionShowResults]
 other = "Voir les résultats"
+
+[CommandMjCreateName]
+other = "créer"
+
+[CommandMjCreateDescription]
+other = "Créer un scrutin"

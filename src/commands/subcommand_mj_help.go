@@ -13,6 +13,10 @@ const HelpCommandSlug = "help"
 
 type HelpCommand struct{}
 
+func (c HelpCommand) GetTranslationKey() string {
+	return "MjHelp"
+}
+
 func (c HelpCommand) GetEmote() string {
 	return "👁"
 }

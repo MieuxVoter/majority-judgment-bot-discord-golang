@@ -21,6 +21,10 @@ type CreateCommand struct {
 	gradings *services.Gradings
 }
 
+func (c CreateCommand) GetTranslationKey() string {
+	return "MjCreate"
+}
+
 func (c CreateCommand) GetEmote() string {
 	return "➕"
 }

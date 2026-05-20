@@ -13,6 +13,10 @@ const ExplainCommandSlug = "explain"
 
 type ExplainCommand struct{}
 
+func (c ExplainCommand) GetTranslationKey() string {
+	return "MjExplain"
+}
+
 func (c ExplainCommand) GetEmote() string {
 	return "📖"
 }

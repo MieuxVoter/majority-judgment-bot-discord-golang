@@ -26,6 +26,10 @@ type InfoCommand struct {
 	logger    *logrus.Logger
 }
 
+func (c InfoCommand) GetTranslationKey() string {
+	return "MjInfo"
+}
+
 func (c InfoCommand) GetEmote() string {
 	return "🤖"
 }
@@ -39,12 +43,7 @@ func (c InfoCommand) GetDescription() string {
 }
 
 func (c InfoCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
-	return []discord.ApplicationCommandOption{
-		//discord.ApplicationCommandOptionString{
-		//	Name:        c.GetName(),
-		//	Description: c.GetEmote() + " " + c.GetDescription(),
-		//},
-	}
+	return []discord.ApplicationCommandOption{}
 }
 
 func (c InfoCommand) Matches(command string) bool {
