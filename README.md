@@ -29,14 +29,14 @@
 - [x] Choose a `grading` (ex: 👍👎) per poll
 - [ ] Add a `secrecy` scope to allow public ballots
 - [x] Docker Compose config (optional)
-- [ ] Localization
+- [x] Localization
 - [ ] Integration with Liberapay
 - [ ] Survive — [🤖🗩 Help!](https://liberapay.com/MajorityJudgmentBot/) — ひとりぼっちのよる
 
 
 ## Installation
 
-This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/rAAQG9S) and ask around for an invitation !
+This bot is in the _public beta_ stage.  Join us on [Discord](https://discord.gg/rAAQG9S) and ask around for an invitation !
 
 
 ## Usage
@@ -56,7 +56,9 @@ This bot is in the public beta stage.  Join us on [Discord](https://discord.gg/r
    ```
 5. Visit the OAuth URL
    Replace `{{CLIENT_ID}}` by the Application ID that you created in the Discord dev portal.
+   ```
    https://discord.com/api/oauth2/authorize?client_id={{CLIENT_ID}}&permissions=51200&scope=bot+applications.commands
+   ```
    The bot scope is not mandatory, but it's nice to have the bot show up in the list of connected people.
 
 

@@ -14,4 +14,12 @@ other = "Fin de la synchronisation des commandes avec Discord."
 other = "À Voté !"
 
 [BallotSummaryHereIsSummary]
-other = "Voilà un récapitulatif de vos jugements :"
+other = "Voilà un récapitulatif de votre bulletin de vote :"
+
+[DescriptionOfMeritProfileOfPoll]
+other = "Profil de mérite du scrutin «{{.Name}}»"
+
+[SomeParticipants]
+zero = "Aucun participantion"
+one = "Une participation"
+other = "{{.Amount}} participations"

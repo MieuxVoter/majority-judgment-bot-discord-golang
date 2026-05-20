@@ -7,6 +7,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
+	"github.com/mozillazg/go-slugify"
 	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
@@ -14,6 +15,7 @@ import (
 	"main/src/locales"
 	"main/src/security"
 	"main/src/services"
+	"strings"
 	"time"
 	"xorm.io/xorm"
 )
@@ -66,7 +68,7 @@ func (r DiscordResponder) RespondPollView(
 	if d, isDiscord := input.(DiscordCommandInput); isDiscord {
 
 		title := "### :scales: " + r.sanitizeTitle(poll.Subject)
-		//amountOfVotes, _ := db.CountBallots(r.orm, poll)
+		//amountOfVotes, _ := db.CountBallots(r.orm, poll) // always zero at this point
 
 		description := ""
 		if len(proposals) > 0 {
@@ -172,6 +174,7 @@ func (r DiscordResponder) RespondBallotSummary(
 	judgments []db.Judgment,
 ) error {
 	if d, isDiscord := input.(DiscordInteraction); isDiscord {
+
 		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
 
 		title := fmt.Sprintf("### ✅ **%s**", localizer.T("BallotSummaryVoteRecorded"))
@@ -213,6 +216,8 @@ func (r DiscordResponder) RespondPollResult(
 ) error {
 	if d, isDiscord := input.(DiscordInteraction); isDiscord {
 
+		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
+
 		rendererProposals := make([]merit.Proposal, len(proposals))
 		for i, proposal := range pollResult.ProposalsSorted {
 			rendererProposals[i] = merit.Proposal{
@@ -231,31 +236,39 @@ func (r DiscordResponder) RespondPollResult(
 			return err
 		}
 
-		// TODO: slugify the poll subject, truncate it and append it
-		imageFilename := fmt.Sprintf(
-			`merit-profile-%s`,
-			time.Now().Format("20060102"),
+		pollSlug := strings.Trim(
+			security.TruncateString(
+				slugify.Slugify(poll.Subject),
+				128,
+			),
+			"-",
 		)
-		imageDescription := fmt.Sprintf(
-			`Merit Profile of the poll: %s`,
-			poll.Subject,
+		if len(pollSlug) == 0 {
+			pollSlug = "unnamed"
+		}
+		imageFilenameNoExt := fmt.Sprintf(
+			`merit-profile-%s-%s`,
+			time.Now().Format("20060102"),
+			pollSlug,
+		)
+		imageDescription := localizer.Tf(
+			"DescriptionOfMeritProfileOfPoll",
+			map[string]interface{}{
+				"Name": poll.Subject,
+			},
 		)
 
-		participantsPluralization := ""
-		if pollTally.AmountOfJudges > 1 {
-			participantsPluralization = "s"
-		}
+		footerLeft := discord.NewTextDisplay(
+			localizer.Tp(
+				"SomeParticipants",
+				pollTally.AmountOfJudges,
+			),
+		)
 
 		flags := discord.MessageFlagIsComponentsV2
 		if asPrivateMessage {
 			flags |= discord.MessageFlagEphemeral
 		}
-
-		footerLeft := discord.NewTextDisplay(fmt.Sprintf(
-			`%d participant%s`,
-			pollTally.AmountOfJudges,
-			participantsPluralization,
-		))
 
 		msgContainer := discord.NewContainer(
 			discord.NewTextDisplay("### "+title),
@@ -264,7 +277,7 @@ func (r DiscordResponder) RespondPollResult(
 			discord.NewMediaGallery(
 				discord.MediaGalleryItem{
 					Media: discord.UnfurledMediaItem{
-						URL: "attachment://" + imageFilename + ".png",
+						URL: "attachment://" + imageFilenameNoExt + ".png",
 					},
 					Description: imageDescription,
 					Spoiler:     false,
@@ -272,16 +285,9 @@ func (r DiscordResponder) RespondPollResult(
 			),
 			// Shows a link to download the file. (not what we want)
 			//discord.NewFileComponent(
-			//	"attachment://"+imageFilename+".png",
+			//	"attachment://"+imageFilenameNoExt+".png",
 			//),
 		)
-
-		//bottomAccessory := discord.NewSecondaryButton(
-		//	"Info",
-		//	fmt.Sprintf("/button/poll/%d/info", poll.Id),
-		//).WithEmoji(
-		//	discord.ComponentEmoji{Name: "ℹ"},
-		//)
 
 		if asPrivateMessage {
 			msgContainer = msgContainer.AddComponents(
@@ -311,13 +317,13 @@ func (r DiscordResponder) RespondPollResult(
 			},
 			Files: []*discord.File{
 				discord.NewFile(
-					imageFilename+".png",
+					imageFilenameNoExt+".png",
 					imageDescription,
 					bytes.NewReader(pngBytes),
 					discord.FileFlagsNone,
 				),
 				//discord.NewFile(
-				//	imageFilename+".svg",
+				//	imageFilenameNoExt+".svg",
 				//	imageDescription,
 				//	bytes.NewReader(svgBytes),
 				//	discord.FileFlagsNone,

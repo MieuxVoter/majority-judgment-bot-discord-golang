@@ -15,3 +15,11 @@ other = "Vote Recorded!"
 
 [BallotSummaryHereIsSummary]
 other = "Here's the summary of your judgments:"
+
+[DescriptionOfMeritProfileOfPoll]
+other = "Merit profile of the poll «{{.Name}}»"
+
+[SomeParticipants]
+zero = "No participants"
+one = "One participant"
+other = "{{.Amount}} participants"

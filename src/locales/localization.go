@@ -33,8 +33,44 @@ type Localizer struct {
 	Localizer *i18n.Localizer
 }
 
+// T translates the message identified by its key
 func (l *Localizer) T(key string) string {
 	s, _ := l.Localizer.LocalizeMessage(&i18n.Message{ID: key})
+	return s
+}
+
+// Tf translates and formats the message identified by its key
+func (l *Localizer) Tf(key string, data map[string]interface{}) string {
+	s, _ := l.Localizer.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{ID: key},
+		TemplateData:   data,
+	})
+	return s
+}
+
+// Tp translates and pluralizes the message identified by its key
+func (l *Localizer) Tp(
+	key string,
+	amount interface{},
+) string {
+	s, _ := l.Localizer.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{ID: key},
+		PluralCount:    amount,
+	})
+	return s
+}
+
+// Tfp translates, formats and pluralizes the message identified by its key
+func (l *Localizer) Tfp(
+	key string,
+	amount interface{},
+	data map[string]interface{},
+) string {
+	s, _ := l.Localizer.Localize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{ID: key},
+		TemplateData:   data,
+		PluralCount:    amount,
+	})
 	return s
 }
 

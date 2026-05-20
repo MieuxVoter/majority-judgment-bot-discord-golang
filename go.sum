@@ -57,6 +57,10 @@ github.com/mieuxvoter/majority-judgment-library-go v0.3.3 h1:BtzXQaCa65B60+BQghs
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3/go.mod h1:3WukXYakDhUFmGHmDP0escphOjNZE2lYaEHcqZ7fc28=
 github.com/mieuxvoter/merit-profile-library-go v0.3.4 h1:21oGzREXrtc8TOqh0WkaC/rdMk6wABV1m+20UoCsBNM=
 github.com/mieuxvoter/merit-profile-library-go v0.3.4/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
+github.com/mozillazg/go-slugify v0.2.0 h1:SIhqDlnJWZH8OdiTmQgeXR28AOnypmAXPeOTcG7b9lk=
+github.com/mozillazg/go-slugify v0.2.0/go.mod h1:z7dPH74PZf2ZPFkyxx+zjPD8CNzRJNa1CGacv0gg8Ns=
+github.com/mozillazg/go-unidecode v0.2.0 h1:vFGEzAH9KSwyWmXCOblazEWDh7fOkpmy/Z4ArmamSUc=
+github.com/mozillazg/go-unidecode v0.2.0/go.mod h1:zB48+/Z5toiRolOZy9ksLryJ976VIwmDmpQ2quyt1aA=
 github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
 github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/nicksnyder/go-i18n/v2 v2.6.1 h1:JDEJraFsQE17Dut9HFDHzCoAWGEQJom5s0TRd17NIEQ=

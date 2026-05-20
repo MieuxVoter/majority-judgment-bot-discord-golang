@@ -11,6 +11,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/mieuxvoter/majority-judgment-library-go v0.3.3
 	github.com/mieuxvoter/merit-profile-library-go v0.3.4
+	github.com/mozillazg/go-slugify v0.2.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/sarulabs/di/v2 v2.5.2
 	github.com/sirupsen/logrus v1.9.4
@@ -30,6 +31,7 @@ require (
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/mcuadros/go-version v0.0.0-20190830083331-035f6764e8d2 // indirect
+	github.com/mozillazg/go-unidecode v0.2.0 // indirect
 	github.com/sasha-s/go-csync v0.0.0-20240107134140-fcbab37b09ad // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	golang.org/x/crypto v0.51.0 // indirect

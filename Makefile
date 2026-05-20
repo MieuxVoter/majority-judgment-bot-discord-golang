@@ -5,16 +5,16 @@ NAME=mjbot
 
 # Dependencies that are used by the build & test processes.
 # These need to be installed in the global Go env and not in the vendor sub-tree.
-DEPEND=golang.org/x/tools/cmd/cover github.com/onsi/ginkgo/ginkgo \
-       github.com/onsi/gomega github.com/rlmcpherson/s3gof3r/gof3r \
-       github.com/Masterminds/glide github.com/golang/lint/golint
+#DEPEND=golang.org/x/tools/cmd/cover github.com/onsi/ginkgo/ginkgo \
+#       github.com/onsi/gomega github.com/rlmcpherson/s3gof3r/gof3r \
+#       github.com/Masterminds/glide github.com/golang/lint/golint
 
 # Eg: 2026-05-21 19:17:44
 DATE=$(shell date '+%F %T')
 
 # We might not need this anymore.
-GO15VENDOREXPERIMENT=1
-export GO15VENDOREXPERIMENT
+#GO15VENDOREXPERIMENT=1
+#export GO15VENDOREXPERIMENT
 
 VERSION=$(shell git describe --tags)
 FLAGS=-X main/src/security.GitSummary=$(VERSION)
@@ -56,15 +56,3 @@ lint:
 	#go tool vet -v -composites=false **/*.go
 	for pkg in $$(go list ./... |grep -v /vendor/); do golint $$pkg; done
 
-# upload assumes you have AWS_ACCESS_KEY_ID and AWS_SECRET_KEY env variables set,
-# which happens in the .travis.yml for CI. Yup, that means you can't run it from your laptop,
-# which is a good thing!
-#upload:
-#	@which gof3r >/dev/null || (echo 'Please "go get github.com/rlmcpherson/s3gof3r/gof3r"'; false)
-#	(cd build; set -ex; \
-#	  for f in *.tgz; do \
-#	    gof3r put --no-md5 --acl=$(ACL) -b ${BUCKET} -k rsbin/$(NAME)/$(TRAVIS_COMMIT)/$$f <$$f; \
-#	    if [ "$(TRAVIS_PULL_REQUEST)" = "false" ]; then \
-#	      gof3r put --no-md5 --acl=$(ACL) -b ${BUCKET} -k rsbin/$(NAME)/$(TRAVIS_BRANCH)/$$f <$$f; \
-#	    fi; \
-#	  done)

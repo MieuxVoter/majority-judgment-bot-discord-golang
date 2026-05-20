@@ -4,7 +4,7 @@ These are vendors we use.
 
 It's not great to have those here ; if you manage to remove them, please make a MR.
 
-> Keep in mind that we need a setup that works both natively and in docker.
+> Keep in mind that we need a setup that works both natively and in Docker.
 
 ## resvg
 

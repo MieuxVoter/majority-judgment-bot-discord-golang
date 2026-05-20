@@ -3,6 +3,7 @@ package security
 import (
 	"regexp"
 	"strings"
+	"unicode/utf8"
 )
 
 const NoLimit = -1
@@ -34,12 +35,14 @@ func EscapeCsvValue(value string) string {
 
 // TruncateString truncates a string value to a maximum length
 func TruncateString(value string, maxLength int) string {
-	actualLength := len(value)
-	if actualLength > maxLength {
-		actualLength = maxLength
+	var size, x int
+
+	for i := 0; i < maxLength && x < len(value); i++ {
+		_, size = utf8.DecodeRuneInString(value[x:])
+		x += size
 	}
 
-	return value[:actualLength]
+	return value[:x]
 }
 
 // TruncateEllipsis returns a truncated string with a trailing ellipsis (…) if relevant
