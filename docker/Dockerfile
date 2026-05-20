@@ -31,12 +31,12 @@ WORKDIR /bot
 
 # We tried a bunch of things to convert SVG to PNG
 # - inkscape does not cut it
-# - chromium works, but it's BIG
+# - chromium works, but it's huge
 # - resvg works great
 RUN mkdir -p ./lib/
 COPY ./lib/resvg ./lib/
 
-# resvg will need the Noto fonts since that the ones we decided to use
+# resvg will need the Noto fonts since they are the ones we decided to use
 COPY --from=provider /etc/fonts/conf.d/70-fonts-noto-cjk.conf /etc/fonts/conf.d
 COPY --from=provider /etc/fonts/conf.avail/30-droid-noto.conf /etc/fonts/conf.avail
 COPY --from=provider /etc/fonts/conf.avail/30-droid-noto-mono.conf /etc/fonts/conf.avail
@@ -44,7 +44,7 @@ COPY --from=provider /usr/share/fonts/opentype/noto/ /usr/share/fonts/opentype/n
 COPY --from=provider /usr/share/fonts/truetype/noto/ /usr/share/fonts/truetype/noto/
 
 # And now we copy the bot itself and its config
+COPY --from=builder /build/mjbot ./
 COPY --from=builder /build/.env ./
 COPY --from=builder /build/.env.local ./
-COPY --from=builder /build/mjbot ./
 CMD ["/bot/mjbot"]

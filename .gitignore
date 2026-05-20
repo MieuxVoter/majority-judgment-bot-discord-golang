@@ -1,6 +1,9 @@
 # Secrets
 /.env.local
 
+# Overrides
+compose.override.yaml
+
 # Dev binaries
 /mjbot*
 
