@@ -36,8 +36,8 @@ func (c CreateCommand) GetDescription() string {
 func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{
 		discord.ApplicationCommandOptionString{
-			Name:        "subject",
-			Description: "The poll's subject, such as \"Meeting date\"",
+			Name:        `subject`,
+			Description: `The poll's subject, such as "Meeting date"`,
 			Required:    true,
 		},
 		// *How to get variadism here, for proposals?*
@@ -91,10 +91,9 @@ func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption
 			},
 		},
 		//{
-		//	Type:        disgord.OptionTypeString,
 		//	Name:        "secrecy",
 		//	Description: "Whether individual votes are kept secret or not. (default is secret)",
-		//	Choices: []*disgord.ApplicationCommandOptionChoice{
+		//	Choices: []*discord.ApplicationCommandOptionChoiceString{
 		//		{
 		//			Name:  "secret for all (default)",
 		//			Value: "secret",

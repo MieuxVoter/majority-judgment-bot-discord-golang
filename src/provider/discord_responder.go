@@ -67,6 +67,8 @@ func (r DiscordResponder) RespondPollView(
 ) error {
 	if d, isDiscord := input.(DiscordCommandInput); isDiscord {
 
+		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
+
 		title := "### :scales: " + r.sanitizeTitle(poll.Subject)
 		//amountOfVotes, _ := db.CountBallots(r.orm, poll) // always zero at this point
 
@@ -89,7 +91,7 @@ func (r DiscordResponder) RespondPollView(
 						discord.NewTextDisplay(description),
 					).WithAccessory(
 						discord.NewPrimaryButton(
-							"Vote",
+							localizer.T("ActionVote"),
 							fmt.Sprintf("/button/poll/%d/vote", poll.Id),
 						).WithEmoji(
 							discord.ComponentEmoji{Name: "🗳"},
@@ -103,7 +105,7 @@ func (r DiscordResponder) RespondPollView(
 						),
 					).WithAccessory(
 						discord.NewSecondaryButton(
-							"Show results",
+							localizer.T("ActionShowResults"),
 							fmt.Sprintf("/button/poll/%d/results", poll.Id),
 						).WithEmoji(
 							discord.ComponentEmoji{Name: "🔎"},

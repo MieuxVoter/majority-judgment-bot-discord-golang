@@ -23,3 +23,9 @@ other = "Profil de mérite du scrutin «{{.Name}}»"
 zero = "Aucun participantion"
 one = "Une participation"
 other = "{{.Amount}} participations"
+
+[ActionVote]
+other = "Voter"
+
+[ActionShowResults]
+other = "Voir les résultats"

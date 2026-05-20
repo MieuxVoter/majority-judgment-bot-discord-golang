@@ -23,3 +23,9 @@ other = "Merit profile of the poll «{{.Name}}»"
 zero = "No participants"
 one = "One participant"
 other = "{{.Amount}} participants"
+
+[ActionVote]
+other = "Vote"
+
+[ActionShowResults]
+other = "Show results"
