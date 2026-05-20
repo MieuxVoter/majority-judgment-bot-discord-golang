@@ -11,16 +11,18 @@ import (
 // ResponderInterface should be implemented by our vendor output adapters.
 type ResponderInterface interface {
 	Matches(input Input) bool
-	RespondWithMessage(input Input, message string, ephemeral bool) error
-	//RespondWithMessageAndImage(input Input, message string, imageUrl string, ephemeral bool) error
-	//RespondWithMessageAndButtons(input Input, message string, buttons []*ButtonField, ephemeral bool) error
+	RespondMessage(
+		input Input,
+		message string,
+		ephemeral bool,
+	) error
 	RespondPollView(
 		input Input,
 		poll *db.Poll,
 		proposals []*db.Proposal,
 		replaceMessage bool,
 	) error
-	RespondWithJudgmentUi(
+	RespondJudgmentUi(
 		input Input,
 		proposal *db.Proposal,
 		poll *db.Poll,

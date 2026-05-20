@@ -7,6 +7,7 @@ type Input interface {
 	GetOptionString(subcommand string, name string, defaultValue string) (string, error)
 	GetActorVendorId() (string, error)
 	GetActorName() (string, error)
+	GetActorLanguage() string
 	GetGuildVendorId() (string, error)
 	IsDirectMessage() bool
 }

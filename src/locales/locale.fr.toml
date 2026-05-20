@@ -9,3 +9,9 @@ other = "Synchronisation des commandes avec Discord…"
 
 [FeedbackBotDoneSynchronizingCommands]
 other = "Fin de la synchronisation des commandes avec Discord."
+
+[BallotSummaryVoteRecorded]
+other = "À Voté !"
+
+[BallotSummaryHereIsSummary]
+other = "Voilà un récapitulatif de vos jugements :"

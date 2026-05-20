@@ -116,7 +116,7 @@ func handleInfoCommand(
 	//	Url:   "https://liberapay.com/MajorityJudgmentBot/",
 	//})
 
-	return provider.GetResponder(input).RespondWithMessage(
+	return provider.GetResponder(input).RespondMessage(
 		input,
 		message,
 		true,

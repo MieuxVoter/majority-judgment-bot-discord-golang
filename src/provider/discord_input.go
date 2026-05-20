@@ -7,11 +7,6 @@ import (
 	"github.com/disgoorg/disgo/rest"
 )
 
-//  ___  _                   _
-// |   \(_)___ __ ___ _ _ __| |
-// | |) | (_-</ _/ _ \ '_/ _` |
-// |___/|_/__/\__\___/_| \__,_|
-
 // DiscordInteraction is an interface for both [DiscordCommandInput] and [DiscordButtonInput].
 // It helps us to get out (somewhat gracefully) of our typing woes.
 type DiscordInteraction interface {
@@ -54,6 +49,10 @@ func (d DiscordCommandInput) GetActorName() (string, error) {
 		return member.User.Username, nil
 	}
 	return "", fmt.Errorf("actor name is unavailable")
+}
+
+func (d DiscordCommandInput) GetActorLanguage() string {
+	return d.Event.Locale().Code()
 }
 
 func (d DiscordCommandInput) GetGuildVendorId() (string, error) {
@@ -104,6 +103,10 @@ func (d DiscordButtonInput) GetActorName() (string, error) {
 		return member.User.Username, nil
 	}
 	return "", fmt.Errorf("actor name is unavailable")
+}
+
+func (d DiscordButtonInput) GetActorLanguage() string {
+	return d.Event.Locale().Code()
 }
 
 func (d DiscordButtonInput) GetGuildVendorId() (string, error) {

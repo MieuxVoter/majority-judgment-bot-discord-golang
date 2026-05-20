@@ -91,7 +91,7 @@ func handleFeedbackCommand(orm *xorm.Engine, input provider.Input) error {
 		"\n" +
 		""
 
-	return provider.GetResponder(input).RespondWithMessage(input, message, true)
+	return provider.GetResponder(input).RespondMessage(input, message, true)
 }
 
 func init() {

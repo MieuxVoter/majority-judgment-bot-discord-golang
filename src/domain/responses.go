@@ -10,7 +10,7 @@ func RespondWithMessage(
 	message string,
 	ephemeral bool,
 ) error {
-	return provider.GetResponder(input).RespondWithMessage(
+	return provider.GetResponder(input).RespondMessage(
 		input,
 		message,
 		ephemeral,
@@ -38,7 +38,7 @@ func RespondWithJudgmentUi(
 	previousJudgment *db.Judgment,
 	replaceMessage bool,
 ) error {
-	return provider.GetResponder(input).RespondWithJudgmentUi(
+	return provider.GetResponder(input).RespondJudgmentUi(
 		input,
 		proposal,
 		poll,

@@ -9,3 +9,9 @@ other = "Synchronizing commands with Discord…"
 
 [FeedbackBotDoneSynchronizingCommands]
 other = "Done synchronizing commands with Discord."
+
+[BallotSummaryVoteRecorded]
+other = "Vote Recorded!"
+
+[BallotSummaryHereIsSummary]
+other = "Here's the summary of your judgments:"

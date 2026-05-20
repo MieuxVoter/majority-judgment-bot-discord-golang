@@ -11,6 +11,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/locales"
 	"main/src/security"
 	"main/src/services"
 	"time"
@@ -19,8 +20,9 @@ import (
 
 // DiscordResponder implements provider.ResponderInterface for Discord
 type DiscordResponder struct {
-	orm      *xorm.Engine
-	analysis *services.Analysis
+	orm          *xorm.Engine
+	analysis     *services.Analysis
+	localization *locales.Localization
 }
 
 func (r DiscordResponder) sanitizeTitle(title string) string {
@@ -35,7 +37,11 @@ func (r DiscordResponder) Matches(input Input) bool {
 	return isDiscord
 }
 
-func (r DiscordResponder) RespondWithMessage(input Input, message string, ephemeral bool) error {
+func (r DiscordResponder) RespondMessage(
+	input Input,
+	message string,
+	ephemeral bool,
+) error {
 	if d, isDiscord := (input).(DiscordInteraction); isDiscord {
 		msg := discord.MessageCreate{
 			Content: message,
@@ -48,79 +54,8 @@ func (r DiscordResponder) RespondWithMessage(input Input, message string, epheme
 		return d.CreateMessage(msg)
 	}
 
-	return RaiseInvalidProviderError("Discord:RespondWithMessage")
+	return RaiseInvalidProviderError("Discord:RespondMessage")
 }
-
-//func (r DiscordResponder) RespondWithMessageAndImage(
-//	input provider.Input,
-//	message string,
-//	imageUrl string,
-//	ephemeral bool,
-//) error {
-//	if d, isDiscord := (input).(provider.DiscordCommandInput); isDiscord {
-//		response := &disgord.CreateInteractionResponse{
-//			Type: disgord.InteractionCallbackChannelMessageWithSource,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Content: message,
-//				Embeds: []*disgord.Embed{
-//					{
-//						Type: disgord.EmbedTypeImage,
-//						//Title: title,
-//						Image: &disgord.EmbedImage{
-//							URL: imageUrl,
-//						},
-//					},
-//				},
-//			},
-//		}
-//		if ephemeral {
-//			response.Data.Flags |= disgord.MessageFlagEphemeral
-//		}
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
-//}
-
-//func (r DiscordResponder) RespondWithMessageAndButtons(
-//	input provider.Input,
-//	message string,
-//	buttons []*provider.ButtonField,
-//	ephemeral bool,
-//) error {
-//	if d, isDiscord := (input).(provider.DiscordCommandInput); isDiscord {
-//		response := &disgord.CreateInteractionResponse{
-//			Type: disgord.InteractionCallbackChannelMessageWithSource,
-//			Data: &disgord.CreateInteractionResponseData{
-//				Content: message,
-//			},
-//		}
-//
-//		if ephemeral {
-//			response.Data.Flags |= disgord.MessageFlagEphemeral
-//		}
-//
-//		if len(buttons) > 0 {
-//			row := &disgord.MessageComponent{
-//				Type:       disgord.MessageComponentActionRow,
-//				CustomID:   "message_action_row",
-//				Components: make([]*disgord.MessageComponent, 0),
-//			}
-//
-//			for _, button := range buttons {
-//				row.Components = append(row.Components, r.convertButtonField(button))
-//			}
-//
-//			response.Data.Components = make([]*disgord.MessageComponent, 0)
-//			response.Data.Components = append(response.Data.Components, row)
-//		}
-//
-//		return d.Session.SendInteractionResponse(d.Context, d.Interaction, response)
-//	}
-//
-//	return provider.RaiseInvalidProviderError("Discord:RespondWithMessage")
-//}
 
 func (r DiscordResponder) RespondPollView(
 	input Input,
@@ -183,7 +118,7 @@ func (r DiscordResponder) RespondPollView(
 	return RaiseInvalidProviderError("Discord:RespondPollView")
 }
 
-func (r DiscordResponder) RespondWithJudgmentUi(
+func (r DiscordResponder) RespondJudgmentUi(
 	input Input,
 	proposal *db.Proposal,
 	poll *db.Poll,
@@ -227,7 +162,7 @@ func (r DiscordResponder) RespondWithJudgmentUi(
 		})
 	}
 
-	return RaiseInvalidProviderError("Discord:RespondWithJudgmentUi")
+	return RaiseInvalidProviderError("Discord:RespondJudgmentUi")
 }
 
 func (r DiscordResponder) RespondBallotSummary(
@@ -237,13 +172,14 @@ func (r DiscordResponder) RespondBallotSummary(
 	judgments []db.Judgment,
 ) error {
 	if d, isDiscord := input.(DiscordInteraction); isDiscord {
+		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
 
-		title := "### ✅ **A VOTÉ**"
-		message := "Here's the summary of your judgments:"
+		title := fmt.Sprintf("### ✅ **%s**", localizer.T("BallotSummaryVoteRecorded"))
+		message := localizer.T("BallotSummaryHereIsSummary")
 		summary := ""
 		for k := range judgments {
-			icon := poll.GetGradeIcon(services.GetGradings(), judgments[k].Grade)
-			summary += fmt.Sprintf("- %s ⋅ %s\n", icon, proposals[k].Name)
+			grade := poll.GetGradeIcon(services.GetGradings(), judgments[k].Grade)
+			summary += fmt.Sprintf("- %s ⋅ %s\n", grade, proposals[k].Name)
 		}
 
 		flags := discord.MessageFlagIsComponentsV2 | discord.MessageFlagEphemeral
@@ -295,39 +231,6 @@ func (r DiscordResponder) RespondPollResult(
 			return err
 		}
 
-		//svg, err := merit.RenderLinearProfileSVG(
-		//	rendererProposals,
-		//	merit.WithBgColor(color.NRGBA{R: 32, G: 32, B: 32, A: 255}),
-		//	merit.WithFontFamily("Noto Sans, sans-serif"),
-		//)
-		//if err != nil {
-		//	return err
-		//}
-
-		//fmt.Println(svg)
-		//svgBytes := []byte(svg)
-
-		//inkscape_converter := inkscape_svg2png.New()
-		// We can also tell it where our inkscape binary resides.
-		// I've compiled inkscape myself; you probably won't need this.
-		//err = inkscape_converter.SetBinary("/usr/local/bin/inkscape")
-		//if err != nil {
-		//	fmt.Println(err)
-		//	return err
-		//}
-		//pngBytes, err := inkscape_converter.Convert(svgBytes)
-		//if err != nil {
-		//	fmt.Println(err)
-		//	return err
-		//}
-
-		// Debug dump of the generated PNG file.
-		//err = os.WriteFile("merit.png", pngBytes, 0644)
-		//if err != nil {
-		//	fmt.Println(err)
-		//	return err
-		//}
-
 		// TODO: slugify the poll subject, truncate it and append it
 		imageFilename := fmt.Sprintf(
 			`merit-profile-%s`,
@@ -363,7 +266,7 @@ func (r DiscordResponder) RespondPollResult(
 					Media: discord.UnfurledMediaItem{
 						URL: "attachment://" + imageFilename + ".png",
 					},
-					Description: "A merit profile",
+					Description: imageDescription,
 					Spoiler:     false,
 				},
 			),
@@ -381,8 +284,6 @@ func (r DiscordResponder) RespondPollResult(
 		//)
 
 		if asPrivateMessage {
-			// I don't really understand why we need to re-assign msgContainer, but we do.
-			// There are some COW shenanigans at play since we're not handling pointers here.
 			msgContainer = msgContainer.AddComponents(
 				discord.NewSmallSeparator(),
 				discord.NewSection(
@@ -507,7 +408,7 @@ func (r DiscordResponder) RespondServerError(
 	message string,
 ) error {
 	if _, isDiscord := input.(DiscordInteraction); isDiscord {
-		return r.RespondWithMessage(
+		return r.RespondMessage(
 			input,
 			fmt.Sprintf(
 				"### 💥 **BOOM !**\n"+
@@ -527,7 +428,7 @@ func (r DiscordResponder) RespondUserError(
 	message string,
 ) error {
 	if _, isDiscord := input.(DiscordInteraction); isDiscord {
-		return r.RespondWithMessage(
+		return r.RespondMessage(
 			input,
 			fmt.Sprintf(
 				"### 🤖🗯\n"+
@@ -548,8 +449,9 @@ func init() {
 		Name: "responder.discord",
 		Build: func(ctn di.Container) (interface{}, error) {
 			responder := &DiscordResponder{
-				orm:      ctn.Get("database.engine").(*xorm.Engine),
-				analysis: ctn.Get("analysis").(*services.Analysis),
+				orm:          ctn.Get("database.engine").(*xorm.Engine),
+				analysis:     ctn.Get("analysis").(*services.Analysis),
+				localization: ctn.Get("localization").(*locales.Localization),
 			}
 			return responder, nil
 		},
