@@ -35,3 +35,21 @@ other = "create"
 
 [CommandMjCreateDescription]
 other = "Create a new poll"
+
+[CommandMjExplainName]
+other = "explain"
+
+[CommandMjExplainDescription]
+other = "Explain Majority Judgment like you're five years old"
+
+[CommandMjHelpName]
+other = "help"
+
+[CommandMjHelpDescription]
+other = "General help about how to interact with me"
+
+[CommandMjInfoName]
+other = "info"
+
+[CommandMjInfoDescription]
+other = "Display miscellaneous information about me on this server"

@@ -33,9 +33,9 @@ func (c CreateCommand) GetName() string {
 	return CreateCommandSlug
 }
 
-func (c CreateCommand) GetDescription() string {
-	return "Create a new poll"
-}
+//func (c CreateCommand) GetDescription() string {
+//	return "Create a new poll"
+//}
 
 func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{

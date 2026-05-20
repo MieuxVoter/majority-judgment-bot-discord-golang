@@ -1,9 +1,11 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 	"main/src/container"
+	"main/src/locales"
 	"main/src/provider"
 )
 
@@ -16,11 +18,41 @@ func DefineCommandForDiscord(c Command) discord.SlashCommandCreate {
 }
 
 func DefineSubcommandForDiscord(sc Subcommand) discord.ApplicationCommandOption {
-	return discord.ApplicationCommandOptionSubCommand{
-		Name:        sc.GetName(),
-		Description: sc.GetEmote() + " " + sc.GetDescription(),
-		Options:     sc.GetOptionsForDiscord(),
+	dsc := discord.ApplicationCommandOptionSubCommand{
+		Name:    sc.GetName(), // must be constant; used to detect subcommand when handling
+		Options: sc.GetOptionsForDiscord(),
 	}
+
+	localization := locales.GetLocalization()
+	nameLocalizations := make(map[discord.Locale]string, 0)
+	descriptionLocalizations := make(map[discord.Locale]string, 0)
+
+	for languageIndex, language := range localization.GetLanguages() {
+		localizer := localization.GetLocalizer(language)
+		locale := discord.Locale(language)
+
+		nameLocalization := localizer.T(
+			fmt.Sprintf("Command%sName", sc.GetTranslationKey()),
+		)
+		descriptionLocalization := localizer.T(
+			fmt.Sprintf("Command%sDescription", sc.GetTranslationKey()),
+		)
+		if languageIndex == 0 { // the default language is always the first in the list
+			//dsc.Name = nameLocalization
+			dsc.Description = descriptionLocalization
+		}
+		if nameLocalization != "" {
+			nameLocalizations[locale] = nameLocalization
+		}
+		if descriptionLocalization != "" {
+			descriptionLocalizations[locale] = sc.GetEmote() + " " + descriptionLocalization
+		}
+	}
+
+	dsc.NameLocalizations = nameLocalizations
+	dsc.DescriptionLocalizations = descriptionLocalizations
+
+	return dsc
 }
 
 func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, event *handler.CommandEvent) error {

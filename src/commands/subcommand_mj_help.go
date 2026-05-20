@@ -25,9 +25,9 @@ func (c HelpCommand) GetName() string {
 	return HelpCommandSlug
 }
 
-func (c HelpCommand) GetDescription() string {
-	return "General help about how to interact with me"
-}
+//func (c HelpCommand) GetDescription() string {
+//	return "General help about how to interact with me"
+//}
 
 func (c HelpCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{}

@@ -80,7 +80,7 @@ type Localization struct {
 }
 
 func (l *Localization) Init() {
-	l.bundle = i18n.NewBundle(language.English)
+	l.bundle = i18n.NewBundle(language.AmericanEnglish)
 	l.bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	dirEntries, err := LocaleFS.ReadDir(".")
@@ -102,6 +102,15 @@ func (l *Localization) Init() {
 
 func (l *Localization) GetLocalizer(languages ...string) *Localizer {
 	return &Localizer{Localizer: i18n.NewLocalizer(l.bundle, languages...)}
+}
+
+// GetLanguages returns the available languages, starting with the default one.
+func (l *Localization) GetLanguages() []string {
+	languages := make([]string, 0)
+	for _, tag := range l.bundle.LanguageTags() {
+		languages = append(languages, tag.String())
+	}
+	return languages
 }
 
 func init() {

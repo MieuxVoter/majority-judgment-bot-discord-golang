@@ -38,9 +38,9 @@ func (c InfoCommand) GetName() string {
 	return InfoCommandSlug
 }
 
-func (c InfoCommand) GetDescription() string {
-	return "Display miscellaneous information about me on this server"
-}
+//func (c InfoCommand) GetDescription() string {
+//	return "Display miscellaneous information about me on this server"
+//}
 
 func (c InfoCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{}

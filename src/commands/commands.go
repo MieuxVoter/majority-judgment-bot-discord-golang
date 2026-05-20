@@ -16,7 +16,7 @@ type Subcommand interface {
 	GetTranslationKey() string
 	GetEmote() string
 	GetName() string
-	GetDescription() string
+	//GetDescription() string
 	Matches(subCommandName string) bool
 	Handle(input provider.Input) error
 	// GetOptionsForDiscord defines options for Discord, as an abstraction layer for this is work. (maybe later?)

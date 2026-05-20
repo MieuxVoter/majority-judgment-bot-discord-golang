@@ -34,4 +34,22 @@ other = "Voir les résultats"
 other = "créer"
 
 [CommandMjCreateDescription]
-other = "Créer un scrutin"
+other = "Créer un nouveau scrutin au Jugement Majoritaire"
+
+[CommandMjExplainName]
+other = "explications"
+
+[CommandMjExplainDescription]
+other = "Je t'explique le Jugement Majoritaire comme si tu avais cinq ans"
+
+[CommandMjHelpName]
+other = "aide"
+
+[CommandMjHelpDescription]
+other = "Consulter le manuel d'utilisation du bot (qui fait ça ?)"
+
+[CommandMjInfoName]
+other = "info"
+
+[CommandMjInfoDescription]
+other = "Informations diverses sur ma présence sur ce serveur"

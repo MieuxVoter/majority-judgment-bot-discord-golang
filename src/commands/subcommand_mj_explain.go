@@ -25,9 +25,9 @@ func (c ExplainCommand) GetName() string {
 	return ExplainCommandSlug
 }
 
-func (c ExplainCommand) GetDescription() string {
-	return "Explain Majority Judgment like you're five years old"
-}
+//func (c ExplainCommand) GetDescription() string {
+//	return "Explain Majority Judgment like you're five years old"
+//}
 
 func (c ExplainCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{}
