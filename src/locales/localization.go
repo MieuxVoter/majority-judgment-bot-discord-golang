@@ -3,6 +3,7 @@ package locales
 import (
 	"embed"
 	"github.com/BurntSushi/toml"
+	"github.com/disgoorg/disgo/discord"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sarulabs/di/v2"
 	"github.com/sirupsen/logrus"
@@ -25,7 +26,7 @@ func GetLocalizer(languages ...string) *Localizer {
 
 func GetServerLocalizer() *Localizer {
 	return GetLocalizer(
-		guesser.DetectLanguagesFromEnv(language.English)...,
+		guesser.DetectLanguagesFromEnv(language.AmericanEnglish)...,
 	)
 }
 
@@ -111,6 +112,23 @@ func (l *Localization) GetLanguages() []string {
 		languages = append(languages, tag.String())
 	}
 	return languages
+}
+
+func (l *Localization) GetTranslations(
+	key string,
+) map[discord.Locale]string {
+	all := make(map[discord.Locale]string, 0)
+
+	for _, lang := range l.GetLanguages() {
+		localizer := l.GetLocalizer(lang)
+		locale := discord.Locale(lang)
+		localized := localizer.T(key)
+		if localized != "" {
+			all[locale] = localized
+		}
+	}
+
+	return all
 }
 
 func init() {

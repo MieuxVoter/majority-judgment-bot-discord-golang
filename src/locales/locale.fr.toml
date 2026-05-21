@@ -126,3 +126,39 @@ Le Jugement Majoritaire a été découvert par deux scientifiques _(Michel Balin
 
 Si tu penses avoir trouvé comment l'arnaquer, ou comment améliorer ce bot, viens nous en parler !
 """
+
+[ParameterSubject]
+other = "sujet"
+
+[ParameterSubjectDescription]
+other = "Le sujet du scrutin, comme \"Date du Rendez-Vous\""
+
+[ParameterProposalA]
+other = "proposition_a"
+
+[ParameterProposalADescription]
+other = "Le nom de la première proposition, exemple: \"Vendredi\""
+
+[ParameterProposalB]
+other = "proposition_b"
+
+[ParameterProposalBDescription]
+other = "Le nom de la deuxième proposition, exemple: \"Pizza\""
+
+[ParameterProposalC]
+other = "proposition_c"
+
+[ParameterProposalCDescription]
+other = "Le nom de la troisième proposition, exemple: \"Beaujolais\""
+
+[ParameterProposalD]
+other = "proposition_d"
+
+[ParameterProposalDDescription]
+other = "Le nom de la quatrième proposition, exemple: \"Michel\""
+
+[ParameterProposalE]
+other = "proposition_e"
+
+[ParameterProposalEDescription]
+other = "S'il vous faut plus de propositions, séparez-les par |"

@@ -126,3 +126,39 @@ Majority Judgment was discovered by two scientists _(Michel Balinski & Rida Lara
 
 If you think you figured out a way to cheat or to improve this bot, come over on our Discord.
 """
+
+[ParameterSubject]
+other = "subject"
+
+[ParameterSubjectDescription]
+other = "The poll's subject, such as \"Meeting date\""
+
+[ParameterProposalA]
+other = "proposal_a"
+
+[ParameterProposalADescription]
+other = "The name of the first proposal, like \"Friday\""
+
+[ParameterProposalB]
+other = "proposal_b"
+
+[ParameterProposalBDescription]
+other = "The name of the second proposal, like \"Pizza\""
+
+[ParameterProposalC]
+other = "proposal_c"
+
+[ParameterProposalCDescription]
+other = "The name of the third proposal, like \"Beaujolais\""
+
+[ParameterProposalD]
+other = "proposal_d"
+
+[ParameterProposalDDescription]
+other = "The name of the fourth proposal, like \"Michel\""
+
+[ParameterProposalE]
+other = "proposal_e"
+
+[ParameterProposalEDescription]
+other = "If you need more proposals, use | as separator"

@@ -7,67 +7,77 @@ import (
 	"main/src/container"
 	db "main/src/database"
 	"main/src/domain"
+	"main/src/locales"
 	"main/src/provider"
 	"main/src/security"
 	"main/src/services"
 	"xorm.io/xorm"
 )
 
-// CreateCommandSlug is locale-insensitive (and should stay that way)
-const CreateCommandSlug = "create"
+// CreateMjSubcommandSlug is locale-insensitive (and should stay that way)
+const CreateMjSubcommandSlug = "create"
 
-type CreateCommand struct {
-	orm      *xorm.Engine
-	gradings *services.Gradings
+type CreateMjSubcommand struct {
+	orm          *xorm.Engine
+	gradings     *services.Gradings
+	localization *locales.Localization
 }
 
-func (c CreateCommand) GetTranslationKey() string {
+func (c CreateMjSubcommand) GetTranslationKey() string {
 	return "MjCreate"
 }
 
-func (c CreateCommand) GetEmote() string {
+func (c CreateMjSubcommand) GetEmote() string {
 	return "➕"
 }
 
-func (c CreateCommand) GetName() string {
-	return CreateCommandSlug
+func (c CreateMjSubcommand) GetName() string {
+	return CreateMjSubcommandSlug
 }
 
-//func (c CreateCommand) GetDescription() string {
-//	return "Create a new poll"
-//}
-
-func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
+func (c CreateMjSubcommand) GetOptionsForDiscord() []discord.ApplicationCommandOption {
 	return []discord.ApplicationCommandOption{
+		// Note: we cannot use spaces or uppercase in Name (2026-05)
 		discord.ApplicationCommandOptionString{
-			Name:        `subject`,
-			Description: `The poll's subject, such as "Meeting date"`,
-			Required:    true,
+			Name:                     `subject`,
+			Description:              `The poll's subject, such as "Meeting date"`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterSubject"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterSubjectDescription"),
+			Required:                 true,
 		},
 		// *How to get variadism here, for proposals?*
 		// Right now we work around the limitation with a hack,
 		// by supporting adding multiple proposals per field using | as separator.
-		// Note: we cannot use spaces in Name (in 2026-05)
 		discord.ApplicationCommandOptionString{
-			Name:        "proposal_a",
-			Description: `The name of the first proposal, like "Friday"`,
-			Required:    true,
+			Name:                     "proposal_a",
+			Description:              `The name of the first proposal, like "Friday"`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalA"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalADescription"),
+			Required:                 true,
 		},
 		discord.ApplicationCommandOptionString{
-			Name:        "proposal_b",
-			Description: `The name of the second proposal, like "Pizza"`,
+			Name:                     "proposal_b",
+			Description:              `The name of the second proposal, like "Pizza"`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalB"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalBDescription"),
 		},
 		discord.ApplicationCommandOptionString{
-			Name:        "proposal_c",
-			Description: `The name of the third proposal, like "Beaujolais"`,
+			Name:                     "proposal_c",
+			Description:              `The name of the third proposal, like "Beaujolais"`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalC"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalCDescription"),
 		},
 		discord.ApplicationCommandOptionString{
-			Name:        "proposal_d",
-			Description: `The name of the fourth proposal, like "Michel"`,
+			Name:                     "proposal_d",
+			Description:              `The name of the fourth proposal, like "Michel"`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalD"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalDDescription"),
 		},
 		discord.ApplicationCommandOptionString{
-			Name:        "proposal_e",
-			Description: `If you need more than five, use | as separator`,
+			Name:                     "proposal_e",
+			Description:              `If you need more than five, use | as separator`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalE"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalEDescription"),
 		},
 		discord.ApplicationCommandOptionString{
 			Name:        "grading",
@@ -115,11 +125,11 @@ func (c CreateCommand) GetOptionsForDiscord() []discord.ApplicationCommandOption
 	}
 }
 
-func (c CreateCommand) Matches(command string) bool {
+func (c CreateMjSubcommand) Matches(command string) bool {
 	return command == c.GetName()
 }
 
-func (c CreateCommand) Handle(input provider.Input) error {
+func (c CreateMjSubcommand) Handle(input provider.Input) error {
 	if input.IsDirectMessage() {
 		message := "I can't create a poll just for you and I.  🤷  Try again in a channel with other people?"
 		return provider.GetResponder(input).RespondUserError(input, message)
@@ -236,17 +246,18 @@ func doCreatePoll(
 
 func init() {
 	err := container.GetBuilder().Add(di.Def{
-		Name: "subcommand.mj." + CreateCommandSlug,
+		Name: "subcommand.mj." + CreateMjSubcommandSlug,
 		Build: func(ctn di.Container) (interface{}, error) {
-			cmd := &CreateCommand{
-				orm:      ctn.Get("database.engine").(*xorm.Engine),
-				gradings: ctn.Get("gradings").(*services.Gradings),
+			cmd := &CreateMjSubcommand{
+				orm:          ctn.Get("database.engine").(*xorm.Engine),
+				gradings:     ctn.Get("gradings").(*services.Gradings),
+				localization: ctn.Get("localization").(*locales.Localization),
 			}
 			return cmd, nil
 		},
 	})
 
 	if err != nil {
-		log.Fatalf("subcommand.mj.%s failed to build : %s\n", CreateCommandSlug, err)
+		log.Fatalf("subcommand.mj.%s failed to build : %s\n", CreateMjSubcommandSlug, err)
 	}
 }
