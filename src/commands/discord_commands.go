@@ -84,17 +84,17 @@ func MjDiscordSlashCommandHandler(data discord.SlashCommandInteractionData, even
 	)
 }
 
-// discordCommands are also collected and injected in here dynamically, see GetDiscordCommands.
+// discordCommands are collected and memoized in here dynamically, see GetDiscordCommands.
 var discordCommands []discord.ApplicationCommandCreate
 
 // areDiscordCommandsCollected marks whether the commands have been collected already.
-// We could probably dispense of this boolean and instead check whether discordCommands is empty.
+// We could probably dispense of this boolean and instead check whether discordCommands is empty?
 var areDiscordCommandsCollected = false
 
 // GetDiscordCommands lists all commands from services available in the container.
 func GetDiscordCommands() []discord.ApplicationCommandCreate {
 	if !areDiscordCommandsCollected {
-		// Inject /mj command and it subcommands from the tagged services.
+		// Collect /mj command and it subcommands from the tagged services.
 		mjDiscordSlashCommand := DefineCommandForDiscord(container.Get("command.mj").(Command))
 		mjSubcommandsServices := container.GetCollection("subcommand.mj.")
 		for _, subcommandGeneric := range mjSubcommandsServices {
@@ -106,7 +106,7 @@ func GetDiscordCommands() []discord.ApplicationCommandCreate {
 		}
 		discordCommands = append(discordCommands, mjDiscordSlashCommand)
 
-		// Inject other root Discord commands later on (if any; none is envisioned).
+		// Collect other root Discord commands (if any; none is envisioned).
 		// …
 
 		// Finally, toggle our memoization marker.

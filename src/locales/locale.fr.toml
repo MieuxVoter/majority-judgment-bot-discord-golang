@@ -46,10 +46,83 @@ other = "Je t'explique le Jugement Majoritaire comme si tu avais cinq ans"
 other = "aide"
 
 [CommandMjHelpDescription]
-other = "Consulter le manuel d'utilisation du bot (qui fait ça ?)"
+other = "Consulter le manuel d'utilisation du bot"
 
 [CommandMjInfoName]
 other = "info"
 
 [CommandMjInfoDescription]
 other = "Informations diverses sur ma présence sur ce serveur"
+
+[HelpHello]
+other = "Bonjour !"
+
+[HelpMyPurposeIs]
+other = "Je suis là pour vous aider à organiser des scrutins au Jugement Majoritaire."
+
+[HelpWhatIsMj]
+other = "Qu'est-ce donc que le Jugement Majoritaire ?"
+
+[HelpWhatIsMjAnswer]
+other = "C'est un **mode de scrutin** aux petits oignons, utilisé notamment dans les concours de vin. 🍷  Il est simple, juste, subtil, avec une belle robe mais aucune note de citron."
+
+[HelpCanBotReadMessage]
+other = "Est-ce que ce bot peut lire nos messages ?"
+
+[HelpCanBotReadMessageAnswer]
+other = "**Non.**  Afin de protéger votre vie privée, ce bot n'a pas la permission de lire les messages, mais seulemernt de répondre aux commandes `/mj`."
+
+[HelpCanUseMoreThanFiveGrades]
+other = "Peut-on utiliser plus de 5 mentions ?"
+
+[HelpCanUseMoreThanFiveGradesAnswer]
+other = "**Pas pour l'instant.**  Discord limite le nombre de boutons à 5, donc il va falloir bidouiler pour en avoir plus."
+
+[HelpCanUseMoreProposals]
+other = "Peut-on juger plus de 5 propositions ?"
+
+[HelpCanUseMoreProposalsAnswer]
+other = "**Oui.**  Discord ne gère pas les commandes variadiques pour l'instant, mais vous pouvez spécifier plusieurs propositions dans chaque champ en les séparant par le caractère `|`."
+
+[ExplainWhyMj]
+other = "Pourquoi le Jugement Majoritaire ?"
+
+[ExplainWhyMjSubtitle]
+other = "Parce que c'est le pire mode de scrutin à l'exception de tous les autres !  :rainbow: :poop:"
+
+[ExplainWhyMjParagraph]
+other = """\
+Dans les scrutins uninominaux classiques, tu dois choisir une _— et une seule —_ proposaition, et rejeter toutes les autres, même si tu en préfères certaines à d'autres.
+
+Ce manque de subtilité a des conséquences terribles sur la qualité des scrutins et par conséquent de la démocratie en général, comme par exemple le système _bipartisan_ aux États-Unis d'Amérique du Nord, et le _vote utile_ en France.
+
+Dans un scrutin au Jugement Majoritaire, tu donnes ton avis sur chacune des propositions.
+
+Et tu peux enfin affirmer que tu préfères les bananes **et** les fraises plutôt que les épinards.  Pas mal, hein ?
+"""
+
+[ExplainHowMj]
+other = "Comment classe-t-on les candidats, du coup ?"
+
+[ExplainHowMjSubtitle]
+other = "Par magie, bien sûr !  :magic_wand:  _(je plaisante)_"
+
+[ExplainHowMjParagraph]
+other = """\
+Les candidats sont classés par leur _mention médiane_, aptement nommée _mention majoritaire_.
+
+La mention médiane est la mention qui est pile au milieu, parmi les mentions reçues par le candidat ; c'est pour cette raison qu'on affiche une ligne verticale au milieu, dans les profils de mérite.
+"""
+
+[ExplainCheatMj]
+other = "Ça se gruge, le Jugement Majoritaire, ou pas ?"
+
+[ExplainCheatMjSubtitle]
+other = "Pas que je sache.  :sauropod: :seedling:"
+
+[ExplainCheatMjParagraph]
+other = """\
+Le Jugement Majoritaire a été découvert par deux scientifiques _(Michel Balinski & Rida Laraki)_ en 2003, dont le but était justement de trouver un mode de scrutin _anti-stratégique_.
+
+Si tu penses avoir trouvé comment l'arnaquer, ou comment améliorer ce bot, viens nous en parler !
+"""

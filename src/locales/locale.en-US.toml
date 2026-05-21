@@ -53,3 +53,76 @@ other = "info"
 
 [CommandMjInfoDescription]
 other = "Display miscellaneous information about me on this server"
+
+[HelpHello]
+other = "Hello!"
+
+[HelpMyPurposeIs]
+other = "My purpose is to help you create Majority Judgment polls."
+
+[HelpWhatIsMj]
+other = "What is Majority Judgment?"
+
+[HelpWhatIsMjAnswer]
+other = "A pretty rad **voting system.**  It is used in french :flag_fr: wine 🍷 contests.  It is simple, subtle and fair."
+
+[HelpCanBotReadMessage]
+other = "Can this bot read our messages?"
+
+[HelpCanBotReadMessageAnswer]
+other = "**No.**  For extra privacy, this modern bot is NOT allowed to read messages, only react to its own `/mj` command and button interactions."
+
+[HelpCanUseMoreThanFiveGrades]
+other = "Can I use more than 5 grades?"
+
+[HelpCanUseMoreThanFiveGradesAnswer]
+other = "**Not for now.**  Discord limits messages to 5 buttons per action row, so we'll need more wit to support more grades."
+
+[HelpCanUseMoreProposals]
+other = "Can I use more than 5 proposals?"
+
+[HelpCanUseMoreProposalsAnswer]
+other = "**Yes.**  Discord does not allow variadic application commands, for now, but as a workaround you may specify multiple proposals per field, using the character `|` as separator."
+
+[ExplainWhyMj]
+other = "Why Majority Judgment?"
+
+[ExplainWhyMjSubtitle]
+other = "Because it is so great that it literally poops rainbows!  :rainbow: :poop:"
+
+[ExplainWhyMjParagraph]
+other = """\
+In common _single-choice polls_, you have to choose one _— and only one —_ proposal, and equally reject all the others, even though you probably prefer one to another amongst those rejected.
+
+This lack of subtlety has terrible consequences on the quality of the poll and of democracy in general, such as the widely despised _bipartisan system_ in the USA and the equally hated _useful vote_ in France.
+
+In _Majority Judgment polls_, you can give your opinion on each and every proposal.
+
+Now you can finally say you like both bananas **and** strawberries better than spinach!  Great, isn't it?
+"""
+
+[ExplainHowMj]
+other = "How are proposals ranked in the end?"
+
+[ExplainHowMjSubtitle]
+other = "Magic, of course!  :magic_wand:  _(just kidding)_"
+
+[ExplainHowMjParagraph]
+other = """\
+Proposals are ranked by their _median grade_, also nicknamed _majority grade_.
+
+The median grade is the grade that's right in the middle ; this is why we show a vertical line in the middle of the merit profiles.
+"""
+
+[ExplainCheatMj]
+other = "Can I cheat?"
+
+[ExplainCheatMjSubtitle]
+other = "Not that we know of.  :sauropod: :seedling:"
+
+[ExplainCheatMjParagraph]
+other = """\
+Majority Judgment was discovered by two scientists _(Michel Balinski & Rida Laraki)_ in 2003, and their goal was precisely to find a voting system that was _anti-strategic_.
+
+If you think you figured out a way to cheat or to improve this bot, come over on our Discord.
+"""
