@@ -190,3 +190,9 @@ other = "Oh non !  Ce scrutin a probablement été supprimé."
 
 [ErrorNoParticipants]
 other = "Personne n'a participé à ce scrutin.  Essaye plus tard, quand qualequ'un aura participé."
+
+[ErrorPollHasNoProposals]
+other = "Attends une seconde…  Ce scrutin n'a pas de propositions !?"
+
+[ErrorPollCannotCountBallots]
+other = "Impossible de compter les bulletins !?  Préviens l'administrateur du bot, steuplé."

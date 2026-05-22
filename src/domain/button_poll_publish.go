@@ -14,6 +14,7 @@ import (
 var buttonPollPublishRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/publish$")
 var buttonPollPublishPattern = "/button/poll/{pollId}/publish"
 
+// PollPublishButton is the button the user presses when they want to publish the results publicly
 type PollPublishButton struct {
 	orm          *xorm.Engine
 	localization *locales.Localization

@@ -96,13 +96,13 @@ func handlePollResult(
 		return false, err
 	}
 	if len(proposals) == 0 {
-		err = RespondServerError(input, "Wait a minute…  This poll has no proposals !?")
+		err = RespondServerError(input, localizer.T("ErrorPollHasNoProposals"))
 		return
 	}
 
 	amountOfJudges, err := db.CountBallots(orm, poll)
 	if err != nil {
-		err = RespondServerError(input, "Failed to count the ballots!?  Please warn your admin.")
+		err = RespondServerError(input, localizer.T("ErrorPollCannotCountBallots"))
 		return
 	}
 

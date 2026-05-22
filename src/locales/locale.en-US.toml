@@ -190,3 +190,8 @@ other = "Oh noes!  This poll was probably deleted."
 [ErrorNoParticipants]
 other = "No-one participated to this poll.  Try again when the poll has had participants."
 
+[ErrorPollHasNoProposals]
+other = "Wait a minute…  This poll has no proposals !?"
+
+[ErrorPollCannotCountBallots]
+other = "Failed to count the ballots!?  Please warn your admin."
