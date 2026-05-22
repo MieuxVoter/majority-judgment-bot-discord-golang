@@ -261,9 +261,12 @@ func (r DiscordResponder) RespondPollResult(
 		)
 
 		footerLeft := discord.NewTextDisplay(
-			localizer.Tp(
+			localizer.Tfp(
 				"SomeParticipants",
-				pollTally.AmountOfJudges,
+				map[string]interface{}{
+					"Amount": int(pollTally.AmountOfJudges),
+				},
+				int(pollTally.AmountOfJudges),
 			),
 		)
 

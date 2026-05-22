@@ -31,6 +31,7 @@ func GetServerLocalizer() *Localizer {
 }
 
 type Localizer struct {
+	logger    *logrus.Logger
 	Localizer *i18n.Localizer
 }
 
@@ -64,14 +65,17 @@ func (l *Localizer) Tp(
 // Tfp translates, formats and pluralizes the message identified by its key
 func (l *Localizer) Tfp(
 	key string,
-	amount interface{},
 	data map[string]interface{},
+	amount interface{},
 ) string {
-	s, _ := l.Localizer.Localize(&i18n.LocalizeConfig{
+	s, err := l.Localizer.Localize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{ID: key},
 		TemplateData:   data,
 		PluralCount:    amount,
 	})
+	if err != nil {
+		l.logger.Warn(err)
+	}
 	return s
 }
 
@@ -102,7 +106,10 @@ func (l *Localization) Init() {
 }
 
 func (l *Localization) GetLocalizer(languages ...string) *Localizer {
-	return &Localizer{Localizer: i18n.NewLocalizer(l.bundle, languages...)}
+	return &Localizer{
+		logger:    l.logger,
+		Localizer: i18n.NewLocalizer(l.bundle, languages...),
+	}
 }
 
 // GetLanguages returns the available languages, starting with the default one.

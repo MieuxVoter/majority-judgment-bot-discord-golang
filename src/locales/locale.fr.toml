@@ -20,7 +20,7 @@ other = "Voilà un récapitulatif de votre bulletin de vote :"
 other = "Profil de mérite du scrutin «{{.Name}}»"
 
 [SomeParticipants]
-zero = "Aucun participantion"
+#zero = "Aucune participation"
 one = "Une participation"
 other = "{{.Amount}} participations"
 
@@ -92,9 +92,10 @@ other = "Parce que c'est le pire mode de scrutin à l'exception de tous les autr
 
 [ExplainWhyMjParagraph]
 other = """\
-Dans les scrutins uninominaux classiques, tu dois choisir une _— et une seule —_ proposaition, et rejeter toutes les autres, même si tu en préfères certaines à d'autres.
+Dans les scrutins uninominaux classiques, tu dois choisir une _— et une seule —_ proposition, et rejeter toutes les autres, même si tu en préfères certaines à d'autres.
 
-Ce manque de subtilité a des conséquences terribles sur la qualité des scrutins et par conséquent de la démocratie en général, comme par exemple le système _bipartisan_ aux États-Unis d'Amérique du Nord, et le _vote utile_ en France.
+Ce manque de subtilité a des conséquences terribles sur la qualité des scrutins, et par conséquent sur la qualité de la démocratie en général.
+Il est responsable de vices comme la _bipartisanité_ aux États-Unis d'Amérique du Nord, et le _vote utile_ en France.
 
 Dans un scrutin au Jugement Majoritaire, tu donnes ton avis sur chacune des propositions.
 
@@ -109,16 +110,16 @@ other = "Par magie, bien sûr !  :magic_wand:  _(je plaisante)_"
 
 [ExplainHowMjParagraph]
 other = """\
-Les candidats sont classés par leur _mention médiane_, aptement nommée _mention majoritaire_.
+Les candidats sont classés par leur _mention médiane_, aussi nommée _mention majoritaire_.
 
-La mention médiane est la mention qui est pile au milieu, parmi les mentions reçues par le candidat ; c'est pour cette raison qu'on affiche une ligne verticale au milieu, dans les profils de mérite.
+La mention médiane est la mention qui est pile au milieu des mentions reçues par le candidat ; c'est pour cette raison qu'on affiche une ligne verticale au milieu dans les profils de mérite.
 """
 
 [ExplainCheatMj]
 other = "Ça se gruge, le Jugement Majoritaire, ou pas ?"
 
 [ExplainCheatMjSubtitle]
-other = "Pas que je sache.  :sauropod: :seedling:"
+other = "Pas que je sache.  :sauropod: :seedling:  (et _nous sachons_)"
 
 [ExplainCheatMjParagraph]
 other = """\
