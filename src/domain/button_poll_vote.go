@@ -5,6 +5,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/locales"
 	"main/src/provider"
 	"regexp"
 	"strconv"
@@ -13,7 +14,8 @@ import (
 
 // PollVoteButton is the button the user presses to start voting.
 type PollVoteButton struct {
-	orm *xorm.Engine
+	orm          *xorm.Engine
+	localization *locales.Localization
 }
 
 var buttonPollVotePattern = "/button/poll/{pollId}/vote"
@@ -113,7 +115,8 @@ func init() {
 		Name: "button.poll.vote",
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &PollVoteButton{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:          ctn.Get("database.engine").(*xorm.Engine),
+				localization: ctn.Get("localization").(*locales.Localization),
 			}
 			return cmd, nil
 		},

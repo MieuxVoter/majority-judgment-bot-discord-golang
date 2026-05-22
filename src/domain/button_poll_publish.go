@@ -4,6 +4,7 @@ import (
 	"github.com/sarulabs/di/v2"
 	"log"
 	"main/src/container"
+	"main/src/locales"
 	"main/src/provider"
 	"regexp"
 	"strconv"
@@ -14,7 +15,8 @@ var buttonPollPublishRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/
 var buttonPollPublishPattern = "/button/poll/{pollId}/publish"
 
 type PollPublishButton struct {
-	orm *xorm.Engine
+	orm          *xorm.Engine
+	localization *locales.Localization
 }
 
 func (b PollPublishButton) GetRegex() *regexp.Regexp {
@@ -47,7 +49,13 @@ func (b PollPublishButton) Handle(input provider.ButtonInput) (handled bool, err
 		return
 	}
 
-	handled, err = handlePollResult(b.orm, input, pollId, false)
+	handled, err = handlePollResult(
+		b.orm,
+		b.localization,
+		input,
+		pollId,
+		false,
+	)
 
 	return
 }
@@ -57,7 +65,8 @@ func init() {
 		Name: "button.poll.publish",
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &PollPublishButton{
-				orm: ctn.Get("database.engine").(*xorm.Engine),
+				orm:          ctn.Get("database.engine").(*xorm.Engine),
+				localization: ctn.Get("localization").(*locales.Localization),
 			}
 			return cmd, nil
 		},

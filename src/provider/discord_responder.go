@@ -301,7 +301,7 @@ func (r DiscordResponder) RespondPollResult(
 					footerLeft,
 				).WithAccessory(
 					discord.NewSecondaryButton(
-						"Publish",
+						localizer.T("ActionPublish"),
 						fmt.Sprintf("/button/poll/%d/publish", poll.Id),
 					).WithEmoji(
 						discord.ComponentEmoji{Name: "📢"},
@@ -336,21 +336,6 @@ func (r DiscordResponder) RespondPollResult(
 			},
 		}
 		return d.CreateMessage(msg)
-
-		//if canInspect {
-		//	response.Data.Components[0].Components = append(
-		//		response.Data.Components[0].Components,
-		//		&disgord.MessageComponent{
-		//			Type:  disgord.MessageComponentButton,
-		//			Style: disgord.Secondary,
-		//			Label: "Inspect Ballots",
-		//			Emoji: &disgord.Emoji{
-		//				Name: "🕵",
-		//			},
-		//			CustomID: fmt.Sprintf("button_inspect:%d", poll.Id),
-		//		},
-		//	)
-		//}
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondPollResult")

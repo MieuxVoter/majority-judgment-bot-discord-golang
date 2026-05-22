@@ -52,7 +52,7 @@ func handleHelpCommand(input provider.Input) error {
 	message += fmt.Sprintf("> %s\n\n", localizer.T("HelpCanBotReadMessageAnswer"))
 	message += fmt.Sprintf("### ❺ %s\n", localizer.T("HelpCanUseMoreThanFiveGrades"))
 	message += fmt.Sprintf("> %s\n\n", localizer.T("HelpCanUseMoreThanFiveGradesAnswer"))
-	message += fmt.Sprintf("### ❺ %s\n", localizer.T("HelpCanUseMoreProposals"))
+	message += fmt.Sprintf("### ➏ %s\n", localizer.T("HelpCanUseMoreProposals"))
 	message += fmt.Sprintf("> %s\n\n", localizer.T("HelpCanUseMoreProposalsAnswer"))
 
 	return provider.GetResponder(input).RespondMessage(input, message, true)

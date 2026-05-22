@@ -24,11 +24,20 @@ zero = "No participants"
 one = "One participant"
 other = "{{.Amount}} participants"
 
+[TheFavoriteProposalIs]
+other = "The favorite proposal is"
+
+[TheFavoriteProposalsAre]
+other = "The favorite proposals are"
+
 [ActionVote]
 other = "Vote"
 
 [ActionShowResults]
 other = "Show results"
+
+[ActionPublish]
+other = "Publish"
 
 [CommandMjCreateName]
 other = "create"
@@ -161,4 +170,23 @@ other = "The name of the fourth proposal, like \"Michel\""
 other = "proposal_e"
 
 [ParameterProposalEDescription]
+other = "The name of the fifth proposal, like \"Coline\""
+
+[ParameterProposalF]
+other = "proposal_f"
+
+[ParameterProposalFDescription]
 other = "If you need more proposals, use | as separator"
+
+[ParameterGrading]
+other = "grading"
+
+[ParameterGradingDescription]
+other = "The grades to use in this poll"
+
+[ErrorPollNotFound]
+other = "Oh noes!  This poll was probably deleted."
+
+[ErrorNoParticipants]
+other = "No-one participated to this poll.  Try again when the poll has had participants."
+

@@ -1,6 +1,6 @@
 package main
 
-// A Bot for Discord to create polls, using majority judgment.
+// A Bot for Discord to create Majority Judgment polls.
 // Usage:   /mj create <subject> <proposalA> <proposalB> …
 
 import (
@@ -62,10 +62,10 @@ func init() {
 
 	// Now that the container has been built, let's test our most finicky bits.
 	// This helps us catch errors early rather than late.
-	runInitTests()
+	runInitChecks()
 }
 
-func runInitTests() {
+func runInitChecks() {
 	logger := container.Get("logger").(*logrus.Logger)
 
 	// The rasterizer has a vendored dependency on resvg that can fail in many ways.

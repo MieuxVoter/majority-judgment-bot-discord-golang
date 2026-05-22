@@ -17,6 +17,7 @@ import (
 var buttonPollJudgeRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/judge/(?P<proposalId>\\d+)/as/(?P<gradeLevel>\\d+)$")
 var buttonPollJudgePattern = "/button/poll/{pollId}/judge/{proposalId}/as/{gradeLevel}"
 
+// PollJudgeButton is the button users press when grading a single proposal
 type PollJudgeButton struct {
 	orm *xorm.Engine
 }

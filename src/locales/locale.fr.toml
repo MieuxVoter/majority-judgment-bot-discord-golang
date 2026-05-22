@@ -20,15 +20,24 @@ other = "Voilà un récapitulatif de votre bulletin de vote :"
 other = "Profil de mérite du scrutin «{{.Name}}»"
 
 [SomeParticipants]
-#zero = "Aucune participation"
+zero = "Aucune participation"
 one = "Une participation"
 other = "{{.Amount}} participations"
+
+[TheFavoriteProposalIs]
+other = "La proposition favorite est"
+
+[TheFavoriteProposalsAre]
+other = "Les propositions favorites sont"
 
 [ActionVote]
 other = "Voter"
 
 [ActionShowResults]
 other = "Voir les résultats"
+
+[ActionPublish]
+other = "Publier"
 
 [CommandMjCreateName]
 other = "créer"
@@ -162,4 +171,22 @@ other = "Le nom de la quatrième proposition, exemple: \"Michel\""
 other = "proposition_e"
 
 [ParameterProposalEDescription]
+other = "Le nom de la cinquième proposition, exemple: \"Adèle\""
+
+[ParameterProposalF]
+other = "proposition_f"
+
+[ParameterProposalFDescription]
 other = "S'il vous faut plus de propositions, séparez-les par |"
+
+[ParameterGrading]
+other = "mentions"
+
+[ParameterGradingDescription]
+other = "Les mentions à utiliser dans ce scrutin"
+
+[ErrorPollNotFound]
+other = "Oh non !  Ce scrutin a probablement été supprimé."
+
+[ErrorNoParticipants]
+other = "Personne n'a participé à ce scrutin.  Essaye plus tard, quand qualequ'un aura participé."

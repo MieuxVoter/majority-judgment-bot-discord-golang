@@ -45,9 +45,10 @@ func (c CreateMjSubcommand) GetOptionsForDiscord() []discord.ApplicationCommandO
 			DescriptionLocalizations: c.localization.GetTranslations("ParameterSubjectDescription"),
 			Required:                 true,
 		},
-		// *How to get variadism here, for proposals?*
+		// *How can we get variadism here, for proposals?*
 		// Right now we work around the limitation with a hack,
 		// by supporting adding multiple proposals per field using | as separator.
+		// We could also add a few more hardcoded fields, I guess ?
 		discord.ApplicationCommandOptionString{
 			Name:                     "proposal_a",
 			Description:              `The name of the first proposal, like "Friday"`,
@@ -75,13 +76,21 @@ func (c CreateMjSubcommand) GetOptionsForDiscord() []discord.ApplicationCommandO
 		},
 		discord.ApplicationCommandOptionString{
 			Name:                     "proposal_e",
-			Description:              `If you need more than five, use | as separator`,
+			Description:              `The name of the fifth proposal, like "Coline"`,
 			NameLocalizations:        c.localization.GetTranslations("ParameterProposalE"),
 			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalEDescription"),
 		},
 		discord.ApplicationCommandOptionString{
-			Name:        "grading",
-			Description: "The grades to use in this poll",
+			Name:                     "proposal_f",
+			Description:              `If you need more than six, use | as separator`,
+			NameLocalizations:        c.localization.GetTranslations("ParameterProposalF"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterProposalFDescription"),
+		},
+		discord.ApplicationCommandOptionString{
+			Name:                     "grading",
+			Description:              "The grades to use in this poll",
+			NameLocalizations:        c.localization.GetTranslations("ParameterGrading"),
+			DescriptionLocalizations: c.localization.GetTranslations("ParameterGradingDescription"),
 			Choices: []discord.ApplicationCommandOptionChoiceString{
 				// All the Values in here must be available as keys in [services.Gradings.Get]
 				{
@@ -104,10 +113,10 @@ func (c CreateMjSubcommand) GetOptionsForDiscord() []discord.ApplicationCommandO
 				// so to add more than 5 grades we need to tweak our judgment UI.
 			},
 		},
-		//{
+		//discord.ApplicationCommandOptionString{
 		//	Name:        "secrecy",
 		//	Description: "Whether individual votes are kept secret or not. (default is secret)",
-		//	Choices: []*discord.ApplicationCommandOptionChoiceString{
+		//	Choices: []discord.ApplicationCommandOptionChoiceString{
 		//		{
 		//			Name:  "secret for all (default)",
 		//			Value: "secret",
@@ -149,7 +158,7 @@ func handleCreateCommand(
 	}
 
 	proposalsNames := make([]string, 0)
-	for _, v := range []string{"a", "b", "c", "d", "e"} { // :(|) ooOOk?
+	for _, v := range []string{"a", "b", "c", "d", "e", "f"} { // :(|) ooOOk?
 		rawProposalName, _ := input.GetOptionString("create", "proposal_"+v, "")
 		if rawProposalName == "" {
 			continue

@@ -7,6 +7,7 @@ import (
 	"log"
 	"main/src/container"
 	db "main/src/database"
+	"main/src/locales"
 	"main/src/provider"
 	"main/src/security"
 	"main/src/services"
@@ -18,9 +19,11 @@ import (
 var buttonPollResultsRegex = regexp.MustCompile("^/button/poll/(?P<pollId>\\d+)/results$")
 var buttonPollResultsPattern = "/button/poll/{pollId}/results"
 
+// PollResultsButton is the button the user presses to (privately) see the results
 type PollResultsButton struct {
-	orm      *xorm.Engine
-	gradings *services.Gradings
+	orm          *xorm.Engine
+	gradings     *services.Gradings
+	localization *locales.Localization
 }
 
 func (b PollResultsButton) GetRegex() *regexp.Regexp {
@@ -55,28 +58,36 @@ func (b PollResultsButton) Handle(
 		return false, errParse
 	}
 
-	handled, err = handlePollResult(b.orm, input, pollId, true)
+	handled, err = handlePollResult(
+		b.orm,
+		b.localization,
+		input,
+		pollId,
+		true,
+	)
 
 	return
 }
 
 func handlePollResult(
 	orm *xorm.Engine,
+	localization *locales.Localization,
 	input provider.Input,
 	pollId uint64,
 	asPrivateMessage bool,
 ) (handled bool, err error) {
 
+	localizer := localization.GetLocalizer(input.GetActorLanguage())
 	handled = true
 
 	poll := &db.Poll{Id: pollId}
 	hasFoundPoll, err := orm.Get(poll)
 	if !hasFoundPoll {
-		err = RespondServerError(input, "Oh noes!  This poll was probably deleted.")
+		err = RespondServerError(input, localizer.T("ErrorPollNotFound"))
 		return
 	}
 	if err != nil {
-		err = RespondServerError(input, "Ooops.  This poll was probably deleted.")
+		err = RespondServerError(input, localizer.T("ErrorPollNotFound"))
 		return
 	}
 
@@ -132,7 +143,7 @@ func handlePollResult(
 
 	// Rule: GTFO if there are no judgments
 	if pollTally.AmountOfJudges == 0 {
-		message := "No-one participated to this poll.  Try again when the poll has had participants."
+		message := localizer.T("ErrorNoParticipants")
 		err = RespondUserError(input, message)
 		return
 	}
@@ -159,13 +170,13 @@ func handlePollResult(
 	if len(winnersSlice) > 1 {
 		content += fmt.Sprintf(
 			`_%s_ %s`,
-			`The favorite proposals are`,
+			localizer.T("TheFavoriteProposalsAre"),
 			winners,
 		)
 	} else {
 		content += fmt.Sprintf(
 			`_%s_ %s`,
-			`The favorite proposal is`,
+			localizer.T("TheFavoriteProposalIs"),
 			winners,
 		)
 	}
@@ -193,8 +204,9 @@ func init() {
 		Name: "button.poll.result",
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmd := &PollResultsButton{
-				orm:      ctn.Get("database.engine").(*xorm.Engine),
-				gradings: ctn.Get("gradings").(*services.Gradings),
+				orm:          ctn.Get("database.engine").(*xorm.Engine),
+				gradings:     ctn.Get("gradings").(*services.Gradings),
+				localization: ctn.Get("localization").(*locales.Localization),
 			}
 			return cmd, nil
 		},
