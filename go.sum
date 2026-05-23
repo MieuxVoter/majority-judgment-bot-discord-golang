@@ -57,6 +57,8 @@ github.com/mieuxvoter/majority-judgment-library-go v0.3.3 h1:BtzXQaCa65B60+BQghs
 github.com/mieuxvoter/majority-judgment-library-go v0.3.3/go.mod h1:3WukXYakDhUFmGHmDP0escphOjNZE2lYaEHcqZ7fc28=
 github.com/mieuxvoter/merit-profile-library-go v0.3.4 h1:21oGzREXrtc8TOqh0WkaC/rdMk6wABV1m+20UoCsBNM=
 github.com/mieuxvoter/merit-profile-library-go v0.3.4/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
+github.com/mieuxvoter/merit-profile-library-go v1.0.0 h1:OHL1lGXPb+AspyOlEuh6Sk3Q4F18RG1kEqNSrus0CLk=
+github.com/mieuxvoter/merit-profile-library-go v1.0.0/go.mod h1:cJf8AeJpQLUYdn7fHdo+CQvpySh34pSBNAHSeR4gpTI=
 github.com/mozillazg/go-slugify v0.2.0 h1:SIhqDlnJWZH8OdiTmQgeXR28AOnypmAXPeOTcG7b9lk=
 github.com/mozillazg/go-slugify v0.2.0/go.mod h1:z7dPH74PZf2ZPFkyxx+zjPD8CNzRJNa1CGacv0gg8Ns=
 github.com/mozillazg/go-unidecode v0.2.0 h1:vFGEzAH9KSwyWmXCOblazEWDh7fOkpmy/Z4ArmamSUc=

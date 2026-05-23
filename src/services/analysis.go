@@ -29,6 +29,7 @@ func (service *Analysis) GenerateMeritProfileSVG(
 		merit.WithFontFamily("Noto Sans, sans-serif"),
 		merit.WithProposalFontSize("28"),
 		merit.WithTallyFontSize("20"),
+		merit.WithBestGradeOnLeft(true),
 	)
 	if err != nil {
 		return
