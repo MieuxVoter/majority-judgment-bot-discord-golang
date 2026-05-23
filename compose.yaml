@@ -5,18 +5,25 @@
 #
 #     docker compose up --detach
 #
+# Note: if you make changes in your .env.local file you will need to rebuild the container.
+#
 # And during dev:
 #
 #     docker compose --progress plain up --build --force-recreate
 #
+# To run with admin tools: (disabled)
+#
+#    docker compose --profile admin up
+#
 
 services:
+
+  # The bot itself, a single Golang-built binary running in a hardened Debian.
   bot:
     build:
       context: .
       dockerfile: docker/Dockerfile
       target: runner
-    container_name: mjbot
     restart: unless-stopped
     volumes:
     - "./docker/volumes/var/:/bot/var/"
