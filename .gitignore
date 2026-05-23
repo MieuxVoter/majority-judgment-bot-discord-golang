@@ -1,8 +1,11 @@
 # Secrets
 /.env.local
 
-# Overrides
-compose.override.yaml
+# Careful, those are not handled by the Go bot nor Docker, they're just for convenience
+/.env.*.local
+
+# Docker Override
+/compose.override.yaml
 
 # Dev binaries
 /mjbot*
