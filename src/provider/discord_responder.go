@@ -221,7 +221,9 @@ func (r DiscordResponder) RespondPollResult(
 		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
 
 		rendererProposals := make([]merit.Proposal, len(proposals))
+		gradesOutlines := make([][]uint8, len(proposals))
 		for i, proposal := range pollResult.ProposalsSorted {
+			gradesOutlines[i] = []uint8{proposal.Analysis.MedianGrade}
 			rendererProposals[i] = merit.Proposal{
 				Name:  proposals[proposal.Index].Name,
 				Tally: pollTally.Proposals[proposal.Index].Tally,
@@ -233,7 +235,11 @@ func (r DiscordResponder) RespondPollResult(
 
 		// Discord does not render SVG files (although it's somewhat safe in img tags, right?)
 		// So we need to create a raster version of our merit profile.
-		pngBytes, err := r.analysis.GenerateMeritProfilePNG(ctx, rendererProposals)
+		pngBytes, err := r.analysis.GenerateMeritProfilePNG(
+			ctx,
+			rendererProposals,
+			gradesOutlines,
+		)
 		if err != nil {
 			return err
 		}

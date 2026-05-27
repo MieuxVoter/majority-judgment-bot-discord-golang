@@ -19,7 +19,17 @@ type Analysis struct {
 
 func (service *Analysis) GenerateMeritProfileSVG(
 	proposals []merit.Proposal,
+	gradesOutlines [][]uint8,
 ) (svg string, err error) {
+
+	// Type conversion [][]uint8 → [][]int
+	intGradesOutlines := make([][]int, len(gradesOutlines))
+	for i, uint8Grades := range gradesOutlines {
+		intGradesOutlines[i] = make([]int, len(uint8Grades))
+		for j, uintGrade := range uint8Grades {
+			intGradesOutlines[i][j] = int(uintGrade)
+		}
+	}
 
 	svg, err = merit.RenderLinearProfileSVG(
 		proposals,
@@ -30,6 +40,9 @@ func (service *Analysis) GenerateMeritProfileSVG(
 		merit.WithProposalFontSize("28"),
 		merit.WithTallyFontSize("20"),
 		merit.WithBestGradeOnLeft(true),
+		merit.WithGradesOutlines(intGradesOutlines),
+		merit.WithGradesOutlinesWidth(3.0),
+		merit.WithGradesOutlinesColor(color.White),
 	)
 	if err != nil {
 		return
@@ -41,9 +54,10 @@ func (service *Analysis) GenerateMeritProfileSVG(
 func (service *Analysis) GenerateMeritProfilePNG(
 	ctx context.Context,
 	proposals []merit.Proposal,
+	gradesOutlines [][]uint8,
 ) (png []byte, err error) {
 
-	svg, err := service.GenerateMeritProfileSVG(proposals)
+	svg, err := service.GenerateMeritProfileSVG(proposals, gradesOutlines)
 	if err != nil {
 		return
 	}
