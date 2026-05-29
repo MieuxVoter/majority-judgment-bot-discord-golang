@@ -13,8 +13,7 @@ import (
 	"time"
 )
 
-//var svgDimensionsRegex = regexp.MustCompile(`<svg width="(?P<width>[^"]+)" height="(?P<height>[^"]+)"`)
-
+// Rasterizer is the service that helps convert vector images to raster images.
 type Rasterizer struct {
 	logger    *logrus.Logger
 	resvgPath string

@@ -230,6 +230,14 @@ func (r DiscordResponder) RespondPollResult(
 			}
 		}
 
+		isAnyMedianAmbiguous := false
+		for _, proposalResult := range pollResult.ProposalsSorted {
+			if r.analysis.IsMedianAmbiguous(proposalResult) {
+				isAnyMedianAmbiguous = true
+				break
+			}
+		}
+
 		ctx, cancel := context.WithTimeout(context.TODO(), 20*time.Second)
 		defer cancel()
 
@@ -299,6 +307,12 @@ func (r DiscordResponder) RespondPollResult(
 			//	"attachment://"+imageFilenameNoExt+".png",
 			//),
 		)
+
+		if isAnyMedianAmbiguous {
+			msgContainer = msgContainer.AddComponents(
+				discord.NewTextDisplay("> 🔬 " + localizer.T("InformAboutAmbiguousMedian")),
+			)
+		}
 
 		if asPrivateMessage {
 			msgContainer = msgContainer.AddComponents(

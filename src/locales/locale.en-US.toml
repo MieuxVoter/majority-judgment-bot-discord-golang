@@ -30,6 +30,9 @@ other = "The favorite proposal is"
 [TheFavoriteProposalsAre]
 other = "The favorite proposals are"
 
+[InformAboutAmbiguousMedian]
+other = "The amount of judgments is even, therefore we have to choose one of two medians.  In our case, the two medians are of different grades.  The poll is configured to pick the lowest one (we slightly favor contestation), which is a sensible precautionary principle."
+
 [ActionVote]
 other = "Vote"
 

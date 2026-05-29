@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
 	"github.com/sarulabs/di/v2"
 	"github.com/sirupsen/logrus"
@@ -10,8 +11,7 @@ import (
 	"main/src/container"
 )
 
-//var svgDimensionsRegex = regexp.MustCompile(`<svg width="(?P<width>[^"]+)" height="(?P<height>[^"]+)"`)
-
+// Analysis is the service that helps analyse the results of a poll
 type Analysis struct {
 	logger     *logrus.Logger
 	rasterizer *Rasterizer
@@ -63,6 +63,48 @@ func (service *Analysis) GenerateMeritProfilePNG(
 	}
 
 	return service.rasterizer.ConvertSVGToPNG(ctx, []byte(svg))
+}
+
+func (service *Analysis) IsAmountOfJudgmentsEven(
+	proposalResult *judgment.ProposalResult,
+) bool {
+	return proposalResult.Tally.CountJudgments()%2 == 0
+}
+
+func (service *Analysis) IsMedianAmbiguous(
+	proposalResult *judgment.ProposalResult,
+) bool {
+	if !service.IsAmountOfJudgmentsEven(proposalResult) {
+		return false
+	}
+
+	total := proposalResult.Tally.CountJudgments()
+	if total == 0 {
+		return false
+	}
+
+	highMedianIndex := total / 2 // Euclidean division
+	lowMedianIndex := highMedianIndex - 1
+	highMedianGrade := 0
+	lowMedianGrade := 0
+	startIndex := uint64(0)
+	cursorIndex := uint64(0)
+	for gradeIndex, gradeTally := range proposalResult.Tally.Tally {
+		if 0 == gradeTally {
+			continue
+		}
+
+		startIndex = cursorIndex
+		cursorIndex += gradeTally
+		if (startIndex <= highMedianIndex) && (highMedianIndex < cursorIndex) {
+			highMedianGrade = gradeIndex
+		}
+		if (startIndex <= lowMedianIndex) && (lowMedianIndex < cursorIndex) {
+			lowMedianGrade = gradeIndex
+		}
+	}
+
+	return highMedianGrade != lowMedianGrade
 }
 
 func init() {

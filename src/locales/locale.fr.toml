@@ -30,6 +30,9 @@ other = "La proposition favorite est"
 [TheFavoriteProposalsAre]
 other = "Les propositions favorites sont"
 
+[InformAboutAmbiguousMedian]
+other = "Le nombre de jugements est pair, et donc nous devons choisir parmi deux médianes.  Dans notre cas, ces deux médianes ont des mentions différentes.  Le scrutin est configuré pour choisir la plus basse (nous favorisons légèrement la contestation), ce qui est une forme de principe de précaution raisonnable."
+
 [ActionVote]
 other = "Voter"
 
