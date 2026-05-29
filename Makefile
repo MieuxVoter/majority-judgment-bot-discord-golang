@@ -19,7 +19,7 @@ DATE=$(shell date '+%F %T')
 VERSION=$(shell git describe --tags)
 FLAGS=-X main/src/security.GitSummary=$(VERSION)
 
-.PHONY: clean default depend lint release
+.PHONY: clean default depend lint start
 
 # The default target builds a binary in the top-level dir for whatever the local OS is.
 # It does not depend on 'depend' 'cause it's a pain to have that run every time we hit 'make'.
@@ -56,3 +56,5 @@ lint:
 	#go tool vet -v -composites=false **/*.go
 	for pkg in $$(go list ./... |grep -v /vendor/); do golint $$pkg; done
 
+start:
+	docker compose --progress plain up --build --force-recreate --detach
