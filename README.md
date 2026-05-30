@@ -65,6 +65,9 @@ This bot is in the _public beta_ stage.  Join us on [Discord](https://discord.gg
 
 ### Translations
 
+> [!WARNING]
+> Discord only allows a specific list of language codes : https://docs.discord.com/developers/reference#locales
+
 [![Weblate Statistics about this project](https://hosted.weblate.org/widget/majority-judgment-bot-discord/287x66-black.png)](https://hosted.weblate.org/engage/majority-judgment-bot-discord)
 
 We're using the amazing _Weblate_ for translations : https://hosted.weblate.org/engage/majority-judgment-bot-discord/
