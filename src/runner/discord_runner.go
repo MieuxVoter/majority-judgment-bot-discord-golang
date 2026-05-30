@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"bufio"
 	"context"
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
@@ -9,7 +8,6 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/snowflake/v2"
-	"log/slog"
 	"main/src/commands"
 	"main/src/container"
 	"main/src/domain"
@@ -29,18 +27,19 @@ func RunDiscordBot(
 	logger := services.GetLogger()
 	localizer := locales.GetServerLocalizer()
 
-	logHandler := slog.NewTextHandler(
-		bufio.NewWriter(os.Stdout),
-		&slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	)
-	slogger := slog.New(logHandler)
+	//logHandler := slog.NewTextHandler(
+	//	bufio.NewWriter(os.Stdout),
+	//	&slog.HandlerOptions{
+	//		Level: slog.LevelDebug,
+	//	},
+	//)
+	//slogger := slog.New(logHandler)
 
 	// Read the Discord token from environment
 	discordToken := config.Get("DISCORD_TOKEN")
 	if discordToken == "" {
-		logger.Fatalln("DISCORD_TOKEN environment variable is required")
+		logger.Error("DISCORD_TOKEN environment variable is required.")
+		os.Exit(1)
 	}
 
 	// Register our slash command(s)
@@ -62,7 +61,7 @@ func RunDiscordBot(
 				}
 				handled, err := button.Handle(input)
 				if !handled {
-					logger.Errorln("not handled by button", button.GetPattern(), err)
+					logger.Error("not handled by button", "button", button.GetPattern(), "err", err)
 				}
 				return err
 			},
@@ -72,7 +71,7 @@ func RunDiscordBot(
 	// Create the Discord client
 	discordClient, err := disgo.New(
 		discordToken,
-		bot.WithLogger(slogger),
+		bot.WithLogger(logger),
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
 				gateway.IntentGuildMessages,
@@ -86,7 +85,8 @@ func RunDiscordBot(
 		bot.WithEventListeners(h),
 	)
 	if err != nil {
-		logger.Fatalln("failed building disgo:", err)
+		logger.Error("failed building disgo", "err", err)
+		os.Exit(1)
 	}
 
 	// Close the client's network connection when the bot exits
@@ -98,20 +98,22 @@ func RunDiscordBot(
 
 	// Tell Discord about this bot's available commands, via the REST API
 	if shouldSyncCommands {
-		logger.Infoln(localizer.T("FeedbackBotSynchronizingCommands"))
+		logger.Info(localizer.T("FeedbackBotSynchronizingCommands"))
 		var guilds []snowflake.ID // empty == all guilds
 		err = handler.SyncCommands(discordClient, commands.GetDiscordCommands(), guilds)
 		if err != nil {
-			logger.Fatalln("failed to sync commands: %s", err)
+			logger.Error("failed to sync commands", "err", err)
+			os.Exit(1)
 		}
-		logger.Infoln(localizer.T("FeedbackBotDoneSynchronizingCommands"))
+		logger.Info(localizer.T("FeedbackBotDoneSynchronizingCommands"))
 	}
 
 	// Open a persistent connection to Discord via its Gateway
 	gatewayContext, closeGateway := context.WithTimeout(context.Background(), 30*time.Second)
 	err = discordClient.OpenGateway(gatewayContext)
 	if err != nil {
-		logger.Fatalln("failed to open gateway:", err)
+		logger.Error("failed to open gateway", "err", err)
+		os.Exit(1)
 	}
 
 	// Define the function the parent must call with defer

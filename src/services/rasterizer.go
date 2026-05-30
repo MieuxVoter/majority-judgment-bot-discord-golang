@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"log"
+	"log/slog"
 	"main/src/container"
 	"os"
 	"os/exec"
@@ -15,7 +15,7 @@ import (
 
 // Rasterizer is the service that helps convert vector images to raster images.
 type Rasterizer struct {
-	logger    *logrus.Logger
+	logger    *slog.Logger
 	resvgPath string
 	tmpDir    string
 }
@@ -173,7 +173,7 @@ func init() {
 		Name: "rasterizer",
 		Build: func(ctn di.Container) (interface{}, error) {
 			service := &Rasterizer{
-				logger: ctn.Get("logger").(*logrus.Logger),
+				logger: ctn.Get("logger").(*slog.Logger),
 			}
 			service.guessResvgPath()
 			service.guessTmpDir()

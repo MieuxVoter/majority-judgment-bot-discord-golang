@@ -6,9 +6,9 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/text/language"
 	"log"
+	"log/slog"
 	"main/src/container"
 	"main/src/locales/guesser"
 )
@@ -31,7 +31,7 @@ func GetServerLocalizer() *Localizer {
 }
 
 type Localizer struct {
-	logger    *logrus.Logger
+	logger    *slog.Logger
 	Localizer *i18n.Localizer
 }
 
@@ -74,13 +74,13 @@ func (l *Localizer) Tfp(
 		PluralCount:    amount,
 	})
 	if err != nil {
-		l.logger.Warn(err)
+		l.logger.Warn("failed to localize", "err", err)
 	}
 	return s
 }
 
 type Localization struct {
-	logger *logrus.Logger
+	logger *slog.Logger
 	bundle *i18n.Bundle
 }
 
@@ -124,7 +124,7 @@ func (l *Localization) GetLanguages() []string {
 func (l *Localization) GetTranslations(
 	key string,
 ) map[discord.Locale]string {
-	all := make(map[discord.Locale]string, 0)
+	all := make(map[discord.Locale]string)
 
 	for _, lang := range l.GetLanguages() {
 		localizer := l.GetLocalizer(lang)
@@ -143,7 +143,7 @@ func init() {
 		Name: "localization",
 		Build: func(ctn di.Container) (interface{}, error) {
 			service := &Localization{
-				logger: ctn.Get("logger").(*logrus.Logger),
+				logger: ctn.Get("logger").(*slog.Logger),
 			}
 			service.Init()
 			return service, nil

@@ -24,8 +24,8 @@ func DefineSubcommandForDiscord(sc Subcommand) discord.ApplicationCommandOption 
 	}
 
 	localization := locales.GetLocalization()
-	nameLocalizations := make(map[discord.Locale]string, 0)
-	descriptionLocalizations := make(map[discord.Locale]string, 0)
+	nameLocalizations := make(map[discord.Locale]string)
+	descriptionLocalizations := make(map[discord.Locale]string)
 
 	for languageIndex, language := range localization.GetLanguages() {
 		localizer := localization.GetLocalizer(language)

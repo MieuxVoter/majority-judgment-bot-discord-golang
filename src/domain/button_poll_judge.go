@@ -62,7 +62,7 @@ func (b PollJudgeButton) Handle(
 	guildVendorId, err := input.GetGuildVendorId()
 	guild, err := db.GetGuild(b.orm, guildVendorId)
 	if err != nil {
-		services.GetLogger().Errorln(err)
+		services.GetLogger().Error("failed to fetch the guild:", "err", err)
 		err = RespondServerError(input, "Oh snap!  This guild is not registered.")
 		return
 	}

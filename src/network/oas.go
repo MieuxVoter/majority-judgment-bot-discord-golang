@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"log"
+	"log/slog"
 	"main/src/container"
 	"main/src/database"
 	"main/src/security"
@@ -18,7 +18,7 @@ import (
 // We mostly use this to generate merit profiles.
 // See https://github.com/MieuxVoter/mv-api-server-apiplatform
 type Oas struct {
-	logger   *logrus.Logger
+	logger   *slog.Logger
 	config   *services.Config
 	gradings *services.Gradings
 }
@@ -104,7 +104,7 @@ func init() {
 		Name: "oas",
 		Build: func(ctn di.Container) (interface{}, error) {
 			oas := &Oas{
-				logger:   ctn.Get("logger").(*logrus.Logger),
+				logger:   ctn.Get("logger").(*slog.Logger),
 				config:   ctn.Get("config").(*services.Config),
 				gradings: ctn.Get("gradings").(*services.Gradings),
 			}

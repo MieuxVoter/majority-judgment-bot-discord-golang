@@ -2,20 +2,20 @@ package services
 
 import (
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"log"
+	"log/slog"
 	"main/src/container"
 )
 
 // Gradings provides the various gradings available to the polls.
 // The gradings ABSOLUTELY MUST be unambiguously ordered.
 type Gradings struct {
-	logger *logrus.Logger
+	logger *slog.Logger
 }
 
 // Get a grading.
 func (service *Gradings) Get(key string) []string {
-	// Right now these are hardcoded but we could load them from config or something.
+	// Right now these are hardcoded, but we could load them from config or something.
 	switch key {
 	case `👎👍`:
 		return []string{"👎", "👍"}
@@ -39,7 +39,7 @@ func init() {
 		Name: "gradings",
 		Build: func(ctn di.Container) (interface{}, error) {
 			gradings := &Gradings{
-				logger: ctn.Get("logger").(*logrus.Logger),
+				logger: ctn.Get("logger").(*slog.Logger),
 			}
 			return gradings, nil
 		},

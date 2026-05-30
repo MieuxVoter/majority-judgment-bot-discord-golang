@@ -5,15 +5,15 @@ import (
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/mieuxvoter/merit-profile-library-go/merit"
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"image/color"
 	"log"
+	"log/slog"
 	"main/src/container"
 )
 
 // Analysis is the service that helps analyse the results of a poll
 type Analysis struct {
-	logger     *logrus.Logger
+	logger     *slog.Logger
 	rasterizer *Rasterizer
 }
 
@@ -112,7 +112,7 @@ func init() {
 		Name: "analysis",
 		Build: func(ctn di.Container) (interface{}, error) {
 			service := &Analysis{
-				logger:     ctn.Get("logger").(*logrus.Logger),
+				logger:     ctn.Get("logger").(*slog.Logger),
 				rasterizer: ctn.Get("rasterizer").(*Rasterizer),
 			}
 			return service, nil

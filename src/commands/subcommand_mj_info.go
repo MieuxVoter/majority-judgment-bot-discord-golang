@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di/v2"
-	"github.com/sirupsen/logrus"
 	"log"
+	"log/slog"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/domain"
@@ -23,7 +23,7 @@ const InfoCommandSlug = "info"
 type InfoCommand struct {
 	orm       *xorm.Engine
 	liberapay *services.Liberapay
-	logger    *logrus.Logger
+	logger    *slog.Logger
 }
 
 func (c InfoCommand) GetTranslationKey() string {
@@ -129,7 +129,7 @@ func init() {
 			cmd := &InfoCommand{
 				orm:       ctn.Get("database.engine").(*xorm.Engine),
 				liberapay: ctn.Get("liberapay").(*services.Liberapay),
-				logger:    ctn.Get("logger").(*logrus.Logger),
+				logger:    ctn.Get("logger").(*slog.Logger),
 			}
 			return cmd, nil
 		},

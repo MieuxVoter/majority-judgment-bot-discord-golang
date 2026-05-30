@@ -143,7 +143,7 @@ func GetJudgmentsByJudgeOnPoll(orm *xorm.Engine, judge string, poll *Poll) ([]Ju
 	return judgments, nil
 }
 
-func CountGradesReceived(orm *xorm.Engine, poll *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
+func CountGradesReceived(orm *xorm.Engine, _ *Poll, proposal *Proposal, gradeLevel uint8) (uint64, error) {
 	rows := make([]int64, 0, 1)
 	err := orm.Table("judgment").
 		Select("COUNT(*) as amount").
@@ -182,7 +182,7 @@ func CountBallots(orm *xorm.Engine, poll *Poll) (uint64, error) {
 	return uint64(rows[0]), nil
 }
 
-func CollectAllJudgmentsOnPoll(orm *xorm.Engine, poll *Poll, proposals []Proposal) ([]Judgment, error) {
+func CollectAllJudgmentsOnPoll(orm *xorm.Engine, _ *Poll, proposals []Proposal) ([]Judgment, error) {
 	var proposalsIds = make([]uint64, 0)
 	for _, proposal := range proposals {
 		proposalsIds = append(proposalsIds, proposal.Id)

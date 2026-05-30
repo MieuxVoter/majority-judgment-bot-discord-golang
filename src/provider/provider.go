@@ -6,6 +6,7 @@ import (
 	"main/src/container"
 	db "main/src/database"
 	"main/src/services"
+	"os"
 )
 
 // ResponderInterface should be implemented by our vendor output adapters.
@@ -46,12 +47,14 @@ type ResponderInterface interface {
 		asPrivateMessage bool,
 		canInspect bool,
 	) error
+
 	//RespondBallotsInspection(
 	//	input Input,
 	//	poll *db.Poll,
 	//	proposals []db.Proposal,
 	//	judgments []db.Judgment,
 	//) error
+
 	RespondUserError(input Input, message string) error
 	RespondServerError(input Input, message string) error
 }
@@ -66,8 +69,8 @@ func GetResponder(input Input) ResponderInterface {
 		}
 	}
 
-	// This should never happen → that's why it's fatal
-	services.GetLogger().Fatalln("no matching responder found")
+	services.GetLogger().Error("no matching responder found")
+	os.Exit(1) // This should never happen → that's why it's fatal
 	return nil
 }
 

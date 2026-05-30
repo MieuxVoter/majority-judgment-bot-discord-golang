@@ -14,7 +14,6 @@ require (
 	github.com/mozillazg/go-slugify v0.2.0
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/sarulabs/di/v2 v2.5.2
-	github.com/sirupsen/logrus v1.9.4
 	golang.org/x/text v0.37.0
 	xorm.io/builder v0.3.13
 	xorm.io/xorm v1.3.11

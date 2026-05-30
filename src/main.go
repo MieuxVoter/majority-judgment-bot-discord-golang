@@ -6,7 +6,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"main/src/container"
 	"main/src/database"
 	"main/src/locales"
@@ -38,7 +38,8 @@ func main() {
 	// Synchronize the database schema with the Go models
 	err := database.Sync()
 	if err != nil {
-		logger.Fatalln(err)
+		logger.Error("failed to synchronize db schema", "err", err)
+		os.Exit(1)
 	}
 
 	// Start the Discord business of the bot
@@ -48,11 +49,11 @@ func main() {
 	// Perhaps later start the Telegram/Fediverse business of the bot here
 
 	// Finally, start waiting for an interrupting system signal
-	logger.Infoln(localizer.T("FeedbackBotIsRunningPressCtrlC"))
+	logger.Info(localizer.T("FeedbackBotIsRunningPressCtrlC"))
 	waitingChannel := make(chan os.Signal, 1)
 	signal.Notify(waitingChannel, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-waitingChannel
-	logger.Infoln(localizer.T("FeedbackBotShuttingDown"))
+	logger.Info(localizer.T("FeedbackBotShuttingDown"))
 }
 
 func init() {
@@ -66,12 +67,12 @@ func init() {
 }
 
 func runInitChecks() {
-	logger := container.Get("logger").(*logrus.Logger)
+	logger := container.Get("logger").(*slog.Logger)
 
 	// The rasterizer has a vendored dependency on resvg that can fail in many ways.
 	rasterizer := container.Get("rasterizer").(*services.Rasterizer)
 	err := rasterizer.Test()
 	if err != nil {
-		logger.Errorln("rasterizer fails:", err)
+		logger.Error("rasterizer fails", "err", err)
 	}
 }
