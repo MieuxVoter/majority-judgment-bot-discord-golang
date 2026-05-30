@@ -61,6 +61,21 @@ This bot is in the _public beta_ stage.  Join us on [Discord](https://discord.gg
    ```
    The bot scope is not mandatory, but it's nice to have the bot show up in the list of connected people.
 
+## Contribute
+
+### Translations
+
+[![Weblate Statistics about this project](https://hosted.weblate.org/widget/majority-judgment-bot-discord-golang/287x66-black.png)](https://hosted.weblate.org/engage/majority-judgment-bot-discord-golang)
+
+We're using the amazing _Weblate_ for translations : https://hosted.weblate.org/engage/majority-judgment-bot-discord-golang/
+
+> 💬 You can add a new language or edit existing translations without ever touching any code.
+
+[![Plot of the translations completions by language](https://hosted.weblate.org/widget/majority-judgment-bot-discord-golang/multi-auto.svg)](https://hosted.weblate.org/engage/majority-judgment-bot-discord-golang/)
+
+> 💡 If you see a sub-100% language you're comfortable with, please consider helping with translations.
+> You don't have to do everything.  Every little bit helps.  🥜🐜🐜🐜
+
 
 ## Build
 
