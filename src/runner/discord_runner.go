@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bufio"
 	"context"
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
@@ -8,12 +9,14 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/snowflake/v2"
+	"log/slog"
 	"main/src/commands"
 	"main/src/container"
 	"main/src/domain"
 	"main/src/locales"
 	"main/src/provider"
 	"main/src/services"
+	"os"
 	"time"
 )
 
@@ -26,10 +29,18 @@ func RunDiscordBot(
 	logger := services.GetLogger()
 	localizer := locales.GetServerLocalizer()
 
+	logHandler := slog.NewTextHandler(
+		bufio.NewWriter(os.Stdout),
+		&slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		},
+	)
+	slogger := slog.New(logHandler)
+
 	// Read the Discord token from environment
 	discordToken := config.Get("DISCORD_TOKEN")
 	if discordToken == "" {
-		logger.Fatalln("DISCORD_TOKEN environment variable not found")
+		logger.Fatalln("DISCORD_TOKEN environment variable is required")
 	}
 
 	// Register our slash command(s)
@@ -61,7 +72,7 @@ func RunDiscordBot(
 	// Create the Discord client
 	discordClient, err := disgo.New(
 		discordToken,
-		//bot.WithLogger(logger), // requires slog, yet we still use logrus
+		bot.WithLogger(slogger),
 		bot.WithGatewayConfigOpts(
 			gateway.WithIntents(
 				gateway.IntentGuildMessages,
