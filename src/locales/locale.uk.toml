@@ -1,0 +1,182 @@
+
+[FeedbackBotIsRunningPressCtrlC]
+other = "MJ Bot працює. Натисніть CTRL+C, щоби вийти."
+
+[FeedbackBotShuttingDown]
+other = "Вимикання…"
+
+[FeedbackBotSynchronizingCommands]
+other = "Синхронізація команд із Discord…"
+
+[FeedbackBotDoneSynchronizingCommands]
+other = "Синхронізацію команд із Discord завершено."
+
+[BallotSummaryVoteRecorded]
+other = "Голос зараховано!"
+
+[BallotSummaryHereIsSummary]
+other = "Ось підсумок ваших рішень:"
+
+[DescriptionOfMeritProfileOfPoll]
+other = "Профіль заслуг опитування «{{.Name}}»"
+
+[SomeParticipants]
+zero = "Немає учасників"
+one = "Один учасник"
+other = "{{.Amount}} учасників"
+
+[TheFavoriteProposalIs]
+other = "Найкраща пропозиція — це"
+
+[TheFavoriteProposalsAre]
+other = "Найкращими пропозиціями є"
+
+[ActionVote]
+other = "Голосувати"
+
+[ActionShowResults]
+other = "Показати результати"
+
+[ActionPublish]
+other = "Опублікувати"
+
+[CommandMjCreateName]
+other = "створити"
+
+[CommandMjCreateDescription]
+other = "Створити нове опитування"
+
+[CommandMjExplainName]
+other = "пояснити"
+
+[CommandMjExplainDescription]
+other = "Пояснює, що таке мажоритарне голосування, ніби тобі п’ять років"
+
+[CommandMjHelpName]
+other = "допомога"
+
+[CommandMjHelpDescription]
+other = "Загальна довідка про те, як взаємодіяти зі мною"
+
+[CommandMjInfoName]
+other = "інформація"
+
+[CommandMjInfoDescription]
+other = "Показує різну інформацію про мене на цьому сервері"
+
+[HelpHello]
+other = "Привіт!"
+
+[HelpMyPurposeIs]
+other = "Моя мета — допомогти тобі створювати опитування за методом мажоритарного голосування."
+
+[HelpWhatIsMj]
+other = "Що таке мажоритарне голосування?"
+
+[HelpWhatIsMjAnswer]
+other = "Досить крута **система голосування.** Вона використовується у французьких :flag_fr: винних 🍷 конкурсах. Вона проста, витончена та справедлива."
+
+[HelpCanBotReadMessage]
+other = "Чи може цей бот читати наші повідомлення?"
+
+[HelpCanBotReadMessageAnswer]
+other = "**Ні.** Заради додаткової приватності цьому сучасному боту НЕ дозволено читати повідомлення, він може лише реагувати на власну команду `/mj` та взаємодії з кнопками."
+
+[HelpCanUseMoreThanFiveGrades]
+other = "Чи можу я використовувати більше 5 оцінок?"
+
+[HelpCanUseMoreThanFiveGradesAnswer]
+other = "**Наразі ні.** Discord обмежує кількість кнопок у рядку дії до 5, тому нам знадобиться більше винахідливості, аби підтримувати більше оцінок."
+
+[HelpCanUseMoreProposals]
+other = "Чи можу я використати більше 5 пропозицій?"
+
+[HelpCanUseMoreProposalsAnswer]
+other = "**Так.** Discord наразі не підтримує варіативні команди в застосунку, але як обхідний шлях ви можете вказувати кілька пропозицій для одного поля, використовуючи символ `|` як роздільник."
+
+[ExplainWhyMj]
+other = "Чому мажоритарне голосування?"
+
+[ExplainWhyMjSubtitle]
+other = "Бо це настільки круто, що воно буквально какає веселками! :rainbow: :poop:"
+
+[ExplainWhyMjParagraph]
+other = "У звичайних _одномандатних опитуваннях_ ви повинні обрати одну — і тільки одну — пропозицію, і так само відхилити всі інші, навіть якщо ви, ймовірно, віддаєте перевагу одній над іншою серед тих, що були відхилені.\n\nЦя відсутність тонкощів має жахливі наслідки для якості опитування та демократії загалом, як-от широко зневажувана _двопартійна система_ в США та так само ненависне _корисне голосування_ у Франції.\n\nВ опитуваннях за методом _мажоритарного голосування_ ви можете висловити свою думку щодо кожної пропозиції.\n\nТепер ви нарешті можете сказати, що любите банани **і** полуницю більше, ніж шпинат! Чудово, чи не так?\n"
+
+[ExplainHowMj]
+other = "Як зрештою ранжуються пропозиції?"
+
+[ExplainHowMjSubtitle]
+other = "Звісно, магією! :magic_wand: _(жартую)_"
+
+[ExplainHowMjParagraph]
+other = "Пропозиції ранжуються за їхньою _медіанною оцінкою_, яку також називають _мажоритарною оцінкою_.\n\nМедіанна оцінка — це оцінка, що знаходиться рівно посередині; саме тому ми показуємо вертикальну лінію посередині профілів заслуг.\n"
+
+[ExplainCheatMj]
+other = "Чи можна хитрувати?"
+
+[ExplainCheatMjSubtitle]
+other = "Не те, щоб ми про це знали. :sauropod: :seedling:"
+
+[ExplainCheatMjParagraph]
+other = "Метод мажоритарного голосування був відкритий двома вченими _(Мішелем Балінскі та Рідою Ларакі)_ у 2003 році, і їхньою метою було саме знайти таку виборчу систему, яка була б _антистратегічною_.\n\nЯкщо ви вважаєте, що знайшли спосіб обійти або покращити цього бота, приєднуйтесь до нашого Discord.\n"
+
+[ParameterSubject]
+other = "суб’єкт"
+
+[ParameterSubjectDescription]
+other = "Тема опитування, наприклад «Дата зустрічі»"
+
+[ParameterProposalA]
+other = "пропозиція_а"
+
+[ParameterProposalADescription]
+other = "Назва першої пропозиції, як-от «П’ятниця»"
+
+[ParameterProposalB]
+other = "пропозиція_б"
+
+[ParameterProposalBDescription]
+other = "Назва другої пропозиції, як-от «Піцца»"
+
+[ParameterProposalC]
+other = "пропозиція_в"
+
+[ParameterProposalCDescription]
+other = "Назва третьої пропозиції, як-от «Божоле»"
+
+[ParameterProposalD]
+other = "пропозиція_г"
+
+[ParameterProposalDDescription]
+other = "Назва четвертої пропозиції, як-от «Мішель»"
+
+[ParameterProposalE]
+other = "пропозиція_д"
+
+[ParameterProposalEDescription]
+other = "Назва п’ятої пропозиції, як-от «Колін»"
+
+[ParameterProposalF]
+other = "пропозиція_е"
+
+[ParameterProposalFDescription]
+other = "Якщо вам потрібно більше пропозицій, використовуйте | як роздільник"
+
+[ParameterGrading]
+other = "оцінювання"
+
+[ParameterGradingDescription]
+other = "Оцінки, які слід використовувати в цьому опитуванні"
+
+[ErrorPollNotFound]
+other = "О ні! Це опитування, ймовірно, було видалено."
+
+[ErrorNoParticipants]
+other = "Ніхто не взяв участі в цьому опитуванні. Спробуйте ще раз, коли в опитуванні з’являться учасники."
+
+[ErrorPollHasNoProposals]
+other = "Хвилинку… У цьому опитуванні немає жодної пропозиції?!"
+
+[ErrorPollCannotCountBallots]
+other = "Не вдалося підрахувати голоси!? Попередьте свого адміністратора."
