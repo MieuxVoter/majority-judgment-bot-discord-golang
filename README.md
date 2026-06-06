@@ -36,7 +36,7 @@
 
 ## Installation
 
-This bot is in the _public beta_ stage.  Join us on [Discord](https://discord.gg/rAAQG9S) and ask around for an invitation !
+This bot is in the _public beta_ stage.  Join us on [Discord](https://discord.gg/k9YRuZPSZs) and ask around for an invitation !
 
 
 ## Usage
