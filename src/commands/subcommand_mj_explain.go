@@ -53,7 +53,7 @@ func handleExplainCommand(
 	message += fmt.Sprintf("### 😸 %s\n", localizer.T("ExplainCheatMj"))
 	message += fmt.Sprintf("> %s\n\n", localizer.T("ExplainCheatMjSubtitle"))
 	message += fmt.Sprintf("%s  ", localizer.T("ExplainCheatMjParagraph"))
-	message += "https://discord.gg/rAAQG9S :sparkles:"
+	message += "https://discord.gg/k9YRuZPSZs :sparkles:"
 
 	//		"It is the highest given grade where at least 50% of the participants gave this grade or higher, " +
 	//		"hence the _majority_ in _majority judgment_.\n" +
