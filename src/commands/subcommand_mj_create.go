@@ -4,6 +4,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/sarulabs/di/v2"
 	"log"
+	"log/slog"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/domain"
@@ -21,6 +22,7 @@ type CreateMjSubcommand struct {
 	orm          *xorm.Engine
 	gradings     *services.Gradings
 	localization *locales.Localization
+	logger       *slog.Logger
 }
 
 func (c CreateMjSubcommand) GetTranslationKey() string {
@@ -144,11 +146,12 @@ func (c CreateMjSubcommand) Handle(input provider.Input) error {
 		return provider.GetResponder(input).RespondUserError(input, message)
 	}
 
-	return handleCreateCommand(c.orm, input)
+	return handleCreateCommand(c.orm, c.logger, input)
 }
 
 func handleCreateCommand(
 	orm *xorm.Engine,
+	logger *slog.Logger,
 	input provider.Input,
 ) error {
 
@@ -180,11 +183,18 @@ func handleCreateCommand(
 	grading, _ := input.GetOptionString("create", "grading", "🤮😐😌😀🤩")
 	secrecy, _ := input.GetOptionString("create", "secrecy", "secret")
 
+	logger.Info(
+		"creating poll",
+		"title", subject,
+		"proposals", proposalsNames,
+	)
+
 	err = doCreatePoll(orm, input, subject, proposalsNames, grading, secrecy)
 
 	return err
 }
 
+// doCreatePoll should be a method on another service, perhaps PollFactory
 func doCreatePoll(
 	orm *xorm.Engine,
 	input provider.Input,
@@ -261,6 +271,7 @@ func init() {
 				orm:          ctn.Get("database.engine").(*xorm.Engine),
 				gradings:     ctn.Get("gradings").(*services.Gradings),
 				localization: ctn.Get("localization").(*locales.Localization),
+				logger:       ctn.Get("logger").(*slog.Logger),
 			}
 			return cmd, nil
 		},

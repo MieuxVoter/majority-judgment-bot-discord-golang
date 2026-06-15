@@ -11,7 +11,9 @@ import (
 // It helps us to get out (somewhat gracefully) of our typing woes.
 type DiscordInteraction interface {
 	CreateMessage(messageCreate discord.MessageCreate, opts ...rest.RequestOpt) error
+	DeferCreateMessage(ephemeral bool, opts ...rest.RequestOpt) error
 	UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error
+	UpdateDeferredMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error
 }
 
 // DiscordCommandInput wrapper for command data coming from Discord's userland.
@@ -75,8 +77,16 @@ func (d DiscordCommandInput) CreateMessage(messageCreate discord.MessageCreate, 
 	return d.Event.CreateMessage(messageCreate, opts...)
 }
 
+func (d DiscordCommandInput) DeferCreateMessage(ephemeral bool, opts ...rest.RequestOpt) error {
+	return d.Event.DeferCreateMessage(ephemeral, opts...)
+}
+
 func (d DiscordCommandInput) UpdateMessage(_ discord.MessageUpdate, _ ...rest.RequestOpt) error {
 	return fmt.Errorf("cannot update a message from a command")
+}
+
+func (d DiscordCommandInput) UpdateDeferredMessage(_ discord.MessageUpdate, _ ...rest.RequestOpt) error {
+	return fmt.Errorf("cannot update a deferred message from a command")
 }
 
 // DiscordButtonInput is a wrapper for button data coming from Discord's userland.
@@ -129,6 +139,19 @@ func (d DiscordButtonInput) CreateMessage(messageCreate discord.MessageCreate, o
 	return d.Event.CreateMessage(messageCreate, opts...)
 }
 
+func (d DiscordButtonInput) DeferCreateMessage(ephemeral bool, opts ...rest.RequestOpt) error {
+	return d.Event.DeferCreateMessage(ephemeral, opts...)
+}
+
 func (d DiscordButtonInput) UpdateMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error {
 	return d.Event.UpdateMessage(messageUpdate, opts...)
+}
+
+func (d DiscordButtonInput) UpdateDeferredMessage(messageUpdate discord.MessageUpdate, opts ...rest.RequestOpt) error {
+	_, err := d.Event.Client().Rest.UpdateInteractionResponse(
+		d.Event.ApplicationID(),
+		d.Event.Token(),
+		messageUpdate,
+	)
+	return err
 }
