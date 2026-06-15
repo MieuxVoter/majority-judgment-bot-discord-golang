@@ -102,7 +102,7 @@ func (r DiscordResponder) RespondPollView(
 					discord.NewSmallSeparator(),
 					discord.NewSection(
 						discord.NewTextDisplay(
-							fmt.Sprintf(":closed_lock_with_key:"),
+							fmt.Sprintf(":closed_lock_with_key: ")+localizer.T("SecretBallot"),
 							//fmt.Sprintf(":eyes:", amountOfVotes),
 						),
 					).WithAccessory(

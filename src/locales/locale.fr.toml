@@ -19,6 +19,9 @@ other = "Voilà un récapitulatif de votre bulletin de vote :"
 [DescriptionOfMeritProfileOfPoll]
 other = "Profil de mérite du scrutin «{{.Name}}»"
 
+[SecretBallot]
+other = "bulletin secret"
+
 [SomeParticipants]
 zero = "Aucune participation"
 one = "Une participation"

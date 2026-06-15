@@ -19,6 +19,9 @@ other = "Here's the summary of your judgments:"
 [DescriptionOfMeritProfileOfPoll]
 other = "Merit profile of the poll «{{.Name}}»"
 
+[SecretBallot]
+other = "secret ballot"
+
 [SomeParticipants]
 zero = "No participants"
 one = "One participant"
