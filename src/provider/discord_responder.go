@@ -10,6 +10,7 @@ import (
 	"github.com/mozillazg/go-slugify"
 	"github.com/sarulabs/di/v2"
 	"log"
+	"log/slog"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/locales"
@@ -25,6 +26,7 @@ type DiscordResponder struct {
 	orm          *xorm.Engine
 	analysis     *services.Analysis
 	localization *locales.Localization
+	logger       *slog.Logger
 }
 
 func (r DiscordResponder) sanitizeTitle(title string) string {
@@ -220,6 +222,12 @@ func (r DiscordResponder) RespondPollResult(
 
 		localizer := r.localization.GetLocalizer(input.GetActorLanguage())
 
+		// Our PNG generation is super long (~5s), so let's use a deferred response
+		deferErr := d.DeferCreateMessage(asPrivateMessage)
+		if deferErr != nil {
+			return deferErr
+		}
+
 		rendererProposals := make([]merit.Proposal, len(proposals))
 		gradesOutlines := make([][]uint8, len(proposals))
 		for i, proposal := range pollResult.ProposalsSorted {
@@ -335,9 +343,9 @@ func (r DiscordResponder) RespondPollResult(
 			)
 		}
 
-		msg := discord.MessageCreate{
-			Flags: flags,
-			Components: []discord.LayoutComponent{
+		msg := discord.MessageUpdate{
+			Flags: &flags,
+			Components: &[]discord.LayoutComponent{
 				msgContainer,
 			},
 			Files: []*discord.File{
@@ -355,7 +363,8 @@ func (r DiscordResponder) RespondPollResult(
 				//),
 			},
 		}
-		return d.CreateMessage(msg)
+
+		return d.UpdateDeferredMessage(msg)
 	}
 
 	return RaiseInvalidProviderError("Discord:RespondPollResult")
@@ -468,6 +477,7 @@ func init() {
 				orm:          ctn.Get("database.engine").(*xorm.Engine),
 				analysis:     ctn.Get("analysis").(*services.Analysis),
 				localization: ctn.Get("localization").(*locales.Localization),
+				logger:       ctn.Get("logger").(*slog.Logger),
 			}
 			return responder, nil
 		},

@@ -5,6 +5,7 @@ import (
 	"github.com/mieuxvoter/majority-judgment-library-go/judgment"
 	"github.com/sarulabs/di/v2"
 	"log"
+	"log/slog"
 	"main/src/container"
 	db "main/src/database"
 	"main/src/locales"
@@ -24,6 +25,7 @@ type PollResultsButton struct {
 	orm          *xorm.Engine
 	gradings     *services.Gradings
 	localization *locales.Localization
+	logger       *slog.Logger
 }
 
 func (b PollResultsButton) GetRegex() *regexp.Regexp {
@@ -61,6 +63,7 @@ func (b PollResultsButton) Handle(
 	handled, err = handlePollResult(
 		b.orm,
 		b.localization,
+		b.logger,
 		input,
 		pollId,
 		true,
@@ -72,6 +75,7 @@ func (b PollResultsButton) Handle(
 func handlePollResult(
 	orm *xorm.Engine,
 	localization *locales.Localization,
+	logger *slog.Logger,
 	input provider.Input,
 	pollId uint64,
 	asPrivateMessage bool,
@@ -184,6 +188,13 @@ func handlePollResult(
 	judgeVendorId, _ := input.GetActorVendorId()
 	canInspect, _ := security.CanUserInspectBallots(orm, judgeVendorId, poll)
 
+	logger.Info(
+		"showing poll results",
+		"id", pollId,
+		"title", title,
+		"winners", winners,
+	)
+
 	err = provider.GetResponder(input).RespondPollResult(
 		input,
 		poll,
@@ -207,6 +218,7 @@ func init() {
 				orm:          ctn.Get("database.engine").(*xorm.Engine),
 				gradings:     ctn.Get("gradings").(*services.Gradings),
 				localization: ctn.Get("localization").(*locales.Localization),
+				logger:       ctn.Get("logger").(*slog.Logger),
 			}
 			return cmd, nil
 		},

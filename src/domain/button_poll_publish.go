@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/sarulabs/di/v2"
 	"log"
+	"log/slog"
 	"main/src/container"
 	"main/src/locales"
 	"main/src/provider"
@@ -18,6 +19,7 @@ var buttonPollPublishPattern = "/button/poll/{pollId}/publish"
 type PollPublishButton struct {
 	orm          *xorm.Engine
 	localization *locales.Localization
+	logger       *slog.Logger
 }
 
 func (b PollPublishButton) GetRegex() *regexp.Regexp {
@@ -53,6 +55,7 @@ func (b PollPublishButton) Handle(input provider.ButtonInput) (handled bool, err
 	handled, err = handlePollResult(
 		b.orm,
 		b.localization,
+		b.logger,
 		input,
 		pollId,
 		false,
@@ -68,6 +71,7 @@ func init() {
 			cmd := &PollPublishButton{
 				orm:          ctn.Get("database.engine").(*xorm.Engine),
 				localization: ctn.Get("localization").(*locales.Localization),
+				logger:       ctn.Get("logger").(*slog.Logger),
 			}
 			return cmd, nil
 		},
